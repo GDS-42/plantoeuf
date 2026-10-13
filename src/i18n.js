@@ -264,7 +264,7 @@
       entre: "entre {basse} et {haute}",
       sur: "sans fourchette : valeur sûre",
       repere: "Fourchette de {basse} à {haute}, médiane {mediane}",
-      oeufs: "{valeur} œufs",
+      oeufs: "{valeur}\u00a0œufs",
       detail: {
         cultures: "Cultures",
         oeufs: "Œufs",
@@ -466,7 +466,7 @@
       du: "du {date}",
       au: "au {date}",
       // Une culture plantée plusieurs fois sur un espace : « Laitue batavia × 2 ».
-      fois: "{culture} × {nombre}",
+      fois: "{culture}\u00a0×\u00a0{nombre}",
       aucunePlantation: "aucune pour l'instant",
       effectif: { un: "1 poule", plusieurs: "{nombre} poules" },
       arriveeLot: "arrivée le {date}",

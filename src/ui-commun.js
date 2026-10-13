@@ -48,7 +48,7 @@
   // P2 : une fourchette à lire d'un coup d'œil — la médiane en évidence, la basse et la haute à côté,
   // plus discrètes. Un seul nombre si les trois sont égaux. unite : texte ajouté après les valeurs.
   function elementFourchette(f, format = nombre, unite = "") {
-    const suffixe = unite ? ` ${unite}` : "";
+    const suffixe = unite ? `\u00a0${unite}` : "";
     const mediane = element("span", { class: "f-mediane" }, format.format(f.mediane) + suffixe);
     if (f.basse === f.mediane && f.mediane === f.haute) return element("span", { class: "f" }, mediane);
     return element("span", { class: "f" }, mediane, " ",
