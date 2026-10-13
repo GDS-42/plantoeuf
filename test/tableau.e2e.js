@@ -47,3 +47,62 @@ test("[T05] sans plantation, le tableau annonce qu'aucune récolte n'est prévue
   await expect(page.locator("#tableau-vide")).toBeVisible();
   await expect(page.locator("#tableau")).toBeHidden();
 });
+
+const { ajouterEspace, ajouterPlantation } = require("./outils.js");
+
+// ---- T06 — EX-05 : le tableau se recalcule à chaque modification du plan, sans autre action.
+
+async function caMai(page) {
+  return (await caseDuTableau(page, "courgette", "ca", "2026-05")).mediane;
+}
+
+test("[T06] modifier la surface d'une plantation recalcule le tableau sans autre action", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirS2(page);
+  expect(await caMai(page)).toBeCloseTo(421.875, 6);
+
+  await page.locator("#liste-plantations li", { hasText: "Black Beauty" }).locator('[data-action="modifier"]').click();
+  await page.locator("#plantation-surface").fill("50");
+  await page.locator("#plantation-ajouter").click();
+
+  await expect.poll(() => caMai(page)).toBeCloseTo(421.875 / 2, 6);
+});
+
+test("[T06] changer un prix, ajouter ou supprimer une plantation recalcule le tableau", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirS2(page);
+
+  await page.locator("#liste-cultures li", { hasText: "courgette" }).locator('[data-action="modifier"]').click();
+  await page.locator("#culture-prix").fill("4");
+  await page.locator("#culture-ajouter").click();
+  await expect.poll(() => caMai(page)).toBeCloseTo(168.75 * 4, 6);
+
+  await ajouterPlantation(page, { variete: "Black Beauty", espace: "planche 1", surface: 100, date: "2026-03-01" });
+  await expect.poll(() => caMai(page)).toBeCloseTo(2 * 168.75 * 4, 6);
+
+  const supprimer = page.locator('#liste-plantations [data-action="supprimer"]');
+  while (await supprimer.count()) await supprimer.first().click();
+  await expect(page.locator("#tableau")).toBeHidden();
+  await expect(page.locator("#tableau-vide")).toBeVisible();
+});
+
+test("[T06] une modification faite dans un autre onglet recalcule le tableau ouvert, sans l'écraser ensuite", async ({ context }) => {
+  const premier = await context.newPage();
+  await premier.goto("index.html");
+  await saisirS2(premier);
+  const second = await context.newPage();
+  await second.goto("index.html");
+  expect(await caMai(second)).toBeCloseTo(421.875, 6);
+
+  await premier.locator("#liste-plantations li", { hasText: "Black Beauty" }).locator('[data-action="modifier"]').click();
+  await premier.locator("#plantation-surface").fill("50");
+  await premier.locator("#plantation-ajouter").click();
+  await expect.poll(() => caMai(second)).toBeCloseTo(421.875 / 2, 6);
+
+  // Une saisie dans le second onglet ne doit pas effacer la modification faite dans le premier.
+  await ajouterEspace(second, { nom: "planche 2", surface: 30 });
+  const troisieme = await context.newPage();
+  await troisieme.goto("index.html");
+  await expect(troisieme.locator("#liste-espaces")).toContainText("planche 2");
+  expect(await caMai(troisieme)).toBeCloseTo(421.875 / 2, 6);
+});

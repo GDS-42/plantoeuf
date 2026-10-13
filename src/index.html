@@ -177,7 +177,7 @@
 (function () {
   "use strict";
 
-  const ferme = Store.ouvrir(window.localStorage);
+  let ferme = Store.ouvrir(window.localStorage);
   const T = Textes;
   const nombre = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
   const jour = new Intl.DateTimeFormat("fr-FR", { timeZone: "UTC" });
@@ -467,6 +467,14 @@
     }
   });
   document.querySelectorAll("form[data-objet]").forEach(brancherFormulaire);
+
+  // EX-05 : une modification faite dans un autre onglet recalcule aussi cette page. Relire la ferme
+  // évite en plus qu'une saisie ici n'écrase ce qui a été enregistré là-bas.
+  window.addEventListener("storage", (evenement) => {
+    if (evenement.key !== null && evenement.key !== Store.CLE) return;
+    ferme = Store.ouvrir(window.localStorage);
+    rafraichir();
+  });
 
   rafraichir();
 })();

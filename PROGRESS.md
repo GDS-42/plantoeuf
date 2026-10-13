@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N1 · Sessions consommées : 5 / 15 (seuil d'alerte)
+Tranche en cours : N1 · Sessions consommées : 6 / 15 (seuil d'alerte)
 
 ---
 
@@ -428,4 +428,63 @@ Running 4 tests using 1 worker
 
   4 passed (2.4s)
 == T05 : vérification verte ==
+```
+
+## 13/10/2026 · T06 — Recalcul automatique du tableau
+
+- Session 6 du seuil d'alerte.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Résultat : **vert**. `./verify.sh T06` → exit 0 (3 tests de bout en bout) ; `./verify.sh N1` → exit 0.
+- Fichiers : `src/index.html`, `test/tableau.e2e.js` (tests ajoutés à la fin, ceux de T05 inchangés).
+- Rouge d'abord, en partie seulement : les deux tests de modification dans la même page étaient **verts dès l'écriture**, car le rafraîchissement unique (T03), branché sur le tableau en T05, recalculait déjà tout ; ils figent l'exigence. Le test « autre onglet » était rouge (tableau de l'autre onglet resté à 421,875 € au lieu de 210,94 €). Un défaut de mon propre test (boutons détachés après rafraîchissement) a été corrigé avant le commit.
+- Ajout : la page écoute l'événement `storage` ; une modification faite dans un autre onglet recalcule le tableau et évite qu'une saisie dans l'onglet resté ouvert n'écrase les données.
+- Commit : « T06 — Recalcul automatique du tableau à chaque modification ».
+
+Preuve (`./verify.sh T06`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 40209 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 79.190076
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 2 - test/squelette.test.js
+  ---
+  duration_ms: 73.437948
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 3 - test/store.test.js
+  ---
+  duration_ms: 90.170999
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 110.786315
+== Tests de bout en bout (Playwright) ==
+
+Running 3 tests using 1 worker
+
+  ✓  1 test/tableau.e2e.js:59:1 › [T06] modifier la surface d'une plantation recalcule le tableau sans autre action (685ms)
+  ✓  2 test/tableau.e2e.js:71:1 › [T06] changer un prix, ajouter ou supprimer une plantation recalcule le tableau (767ms)
+  ✓  3 test/tableau.e2e.js:89:1 › [T06] une modification faite dans un autre onglet recalcule le tableau ouvert, sans l'écraser ensuite (862ms)
+
+  3 passed (3.0s)
+== T06 : vérification verte ==
 ```

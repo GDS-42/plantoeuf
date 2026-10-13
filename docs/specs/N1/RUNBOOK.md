@@ -92,5 +92,6 @@ Une ferme fictive de 10 plantations donne un tableau CA / marge par culture et p
 - T05 · Le CA se calcule plantation par plantation, au prix de sa variété (surcharge possible), puis s'additionne par culture. Le volume d'une culture additionne ses plantations, toutes dans l'unité de la culture. Le total de la ferme ne donne que CA et marge, les volumes n'ayant pas la même unité.
 - T05 · Colonnes : du premier au dernier mois qui reçoit une semaine de récolte. Une ligne par culture qui a au moins une plantation active (variété et culture actives), rangée par nom. Montants arrondis à l'euro, volumes au dixième ; la valeur exacte reste dans `data-valeur`.
 - T05 · Le tableau est en tête de page ; chaque case montre la médiane en gras, la basse et la haute en dessous ; la légende et les en-têtes disent « estimation » et « fourchette basse – médiane – haute » (EX-09).
+- T06 · Recalcul : chaque enregistrement relance `rafraichir()`, qui recalcule listes et tableau depuis les données enregistrées. Une modification venue d'un autre onglet (événement `storage`) relit la ferme puis rafraîchit : sans cela, l'onglet resté ouvert écrasait les données de l'autre à sa prochaine saisie.
 
 ## ✎ Bilan de fin de tranche
