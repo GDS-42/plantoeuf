@@ -125,3 +125,42 @@ test("[T20] S6 : la liste des séances donne le nombre de séances datées et le
   await expect(seance).toContainText("9 séances");
   await expect(seance).toContainText("24,6");
 });
+
+// ---- T21 : la vue « Offre et demande » (EX-20, scénario S4)
+
+test("[T21] S4 : la vue « Offre et demande » montre, semaine par semaine, où la production dépasse ou manque", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirS2(page);
+  await saisirMarche(page);
+  await expect(page.locator("#tableau")).toBeVisible();
+  await page.locator("#onglet-offre").click();
+  await expect(page.locator("#section-offre")).toBeVisible();
+  await expect(page.locator("#tableau")).toBeHidden();
+
+  const offre = page.locator('#matrice tbody tr[data-mesure="offre"]', { hasText: "courgette" });
+  const premiere = offre.locator('td[data-semaine="2026-04-27"]');
+  await expect(premiere).toHaveAttribute("data-etat", "depasse");
+  await expect(premiere).toHaveAttribute("data-sur", "true");
+  expect(Number(await premiere.locator(".ecart").getAttribute("data-valeur"))).toBeCloseTo(13.75, 6);
+  const derniere = offre.locator('td[data-semaine="2026-06-22"]');
+  await expect(derniere).toHaveAttribute("data-etat", "manque");
+  expect(Number(await derniere.locator(".ecart").getAttribute("data-valeur"))).toBeCloseTo(-20, 6);
+  await expect(page.locator('#matrice thead th[data-semaine="2026-04-27"]')).toContainText("18");
+
+  await page.locator("#onglet-tableau").click();
+  await expect(page.locator("#tableau")).toBeVisible();
+  await expect(page.locator("#section-offre")).toBeHidden();
+});
+
+test("[T21] EX-09 : offre et demande s'affichent en fourchette, signalées comme estimations", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirS2(page);
+  await saisirMarche(page);
+  await page.locator("#onglet-offre").click();
+  const demande = page.locator('#matrice tbody tr[data-mesure="demande"]').first();
+  await expect(demande.locator("th")).toContainText(/estim/i);
+  const cellule = demande.locator('td[data-semaine="2026-04-27"]');
+  const valeur = async (niveau) => Number(await cellule.locator(`.${niveau}`).getAttribute("data-valeur"));
+  expect([await valeur("basse"), await valeur("mediane"), await valeur("haute")]).toEqual([15, 20, 25]);
+  await expect(page.locator("#section-offre .legende")).toContainText(/fourchette/i);
+});

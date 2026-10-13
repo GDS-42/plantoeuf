@@ -131,3 +131,98 @@ test("[T20] S6 : les séances datées de la ferme, avec leur coût ; une séance
   const total = seances.reduce((somme, s) => somme + s.cout.mediane, 0);
   proche(total, 221.4);
 });
+
+// ---- T21 : offre et demande par culture et par semaine (EX-20, scénario S4)
+
+// Scénario S1 : courgette à 3 kg/m², 10 % de pertes, 60 jours, 8 semaines ; 100 m² le 1er mars 2026.
+const COURGETTE = { id: "c1", nom: "courgette", unite: "kg", rendement: f(3), prix: f(2, 2.5, 3), joursAvantRecolte: 60, semainesRecolte: 8, pertes: 10 };
+const BLACK_BEAUTY = { id: "v1", cultureId: "c1", nom: "Black Beauty", rendement: null, prix: null, joursAvantRecolte: null, semainesRecolte: null, pertes: null };
+const PLANTATION_S1 = { id: "p1", varieteId: "v1", espaceId: "e1", surface: 100, date: "2026-03-01" };
+const DEBOUCHE = { id: "d1", pointVenteId: "pv1", produitId: "c1", prix: f(2.5), volumeParSeance: f(20) };
+
+function fermeS4(complements = {}) {
+  return {
+    cultures: [COURGETTE, ...(complements.cultures || [])],
+    varietes: [BLACK_BEAUTY, ...(complements.varietes || [])],
+    plantations: complements.plantations || [PLANTATION_S1],
+    pointsVente: [MARCHE, ...(complements.pointsVente || [])],
+    seances: [SAMEDI, ...(complements.seances || [])],
+    debouches: complements.debouches || [DEBOUCHE],
+  };
+}
+
+function caseOD(resultat, produitId, lundi) {
+  return resultat.lignes.find((l) => l.produitId === produitId).semaines[lundi];
+}
+
+test("[T21] une semaine va du lundi au dimanche ; son numéro suit la norme ISO 8601", () => {
+  assert.equal(Calc.lundiDe("2026-04-27"), "2026-04-27");
+  assert.equal(Calc.lundiDe("2026-05-03"), "2026-04-27");
+  assert.equal(Calc.lundiDe("2026-01-01"), "2025-12-29");
+  assert.equal(Calc.numeroDeSemaine("2026-04-27"), 18);
+  assert.equal(Calc.numeroDeSemaine("2025-12-29"), 1);
+  assert.equal(Calc.numeroDeSemaine("2027-01-01"), 53);
+});
+
+test("[T21] S4 : la courgette dépasse de 13,75 kg la semaine du 27 avril, sûrement", () => {
+  const od = Calc.offreDemande(fermeS4());
+  const semaine = caseOD(od, "c1", "2026-04-27");
+  procheFourchette(semaine.offre, f(33.75));
+  procheFourchette(semaine.demande, f(20));
+  proche(semaine.ecart, 13.75);
+  assert.equal(semaine.etat, "depasse");
+  assert.equal(semaine.sur, true);
+});
+
+test("[T21] S4 : elle manque de 20 kg la semaine du 22 juin, sûrement ; les semaines vont du 27 avril au 22 juin", () => {
+  const od = Calc.offreDemande(fermeS4());
+  assert.deepEqual(od.semaines, ["2026-04-27", "2026-05-04", "2026-05-11", "2026-05-18", "2026-05-25", "2026-06-01", "2026-06-08", "2026-06-15", "2026-06-22"]);
+  const semaine = caseOD(od, "c1", "2026-06-22");
+  procheFourchette(semaine.offre, f(0));
+  procheFourchette(semaine.demande, f(20));
+  proche(semaine.ecart, -20);
+  assert.equal(semaine.etat, "manque");
+  assert.equal(semaine.sur, true);
+});
+
+test("[T21] quand les fourchettes se recouvrent, l'état suit la médiane mais n'est pas sûr", () => {
+  const od = Calc.offreDemande(fermeS4({ debouches: [{ ...DEBOUCHE, volumeParSeance: f(20, 35, 50) }] }));
+  const semaine = caseOD(od, "c1", "2026-05-04");
+  assert.equal(semaine.etat, "manque");
+  assert.equal(semaine.sur, false);
+  const equilibre = caseOD(Calc.offreDemande(fermeS4({ debouches: [{ ...DEBOUCHE, volumeParSeance: f(33.75) }] })), "c1", "2026-05-04");
+  assert.equal(equilibre.etat, "equilibre");
+});
+
+test("[T21] la demande additionne les séances de la semaine ; une culture sans débouché est signalée comme telle", () => {
+  const mardi = { ...SAMEDI, id: "s2", jour: 2, debut: "2026-04-28", fin: "2026-06-30" };
+  const brede = { ...COURGETTE, id: "c2", nom: "brède", unite: "botte" };
+  const od = Calc.offreDemande(fermeS4({
+    seances: [mardi],
+    cultures: [brede],
+    varietes: [{ ...BLACK_BEAUTY, id: "v2", cultureId: "c2" }],
+    plantations: [PLANTATION_S1, { ...PLANTATION_S1, id: "p2", varieteId: "v2" }],
+  }));
+  procheFourchette(caseOD(od, "c1", "2026-05-04").demande, f(40));
+  const sansDebouche = caseOD(od, "c2", "2026-05-04");
+  assert.equal(sansDebouche.etat, "sans_debouche");
+  assert.equal(sansDebouche.demande, null);
+  procheFourchette(sansDebouche.offre, f(33.75));
+  assert.deepEqual(od.lignes.map((l) => l.nom), ["brède", "courgette"]);
+});
+
+test("[T21] séances, débouchés et points de vente supprimés ne font plus de demande", () => {
+  const supprime = "2026-10-13T08:00:00.000Z";
+  const sansSeance = fermeS4();
+  sansSeance.seances = [{ ...SAMEDI, supprimeLe: supprime }];
+  const semaine = caseOD(Calc.offreDemande(sansSeance), "c1", "2026-05-04");
+  procheFourchette(semaine.demande, f(0));
+  assert.equal(semaine.etat, "depasse");
+
+  const debouchesSupprime = fermeS4({ debouches: [{ ...DEBOUCHE, supprimeLe: supprime }] });
+  const pointSupprime = fermeS4();
+  pointSupprime.pointsVente = [{ ...MARCHE, supprimeLe: supprime }];
+  for (const donnees of [debouchesSupprime, pointSupprime]) {
+    assert.equal(caseOD(Calc.offreDemande(donnees), "c1", "2026-05-04").etat, "sans_debouche");
+  }
+});

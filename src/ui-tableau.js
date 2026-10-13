@@ -72,5 +72,5 @@
         [element("th", { scope: "row" }, T.tableau.marge)], casesDe(tableau.total.mois, "marge"), tableau.total.total.marge, enEuros));
   }
 
-  globalThis.UiTableau = { afficher };
+  globalThis.UiTableau = { afficher, outils: { caseFourchette } };
 })();

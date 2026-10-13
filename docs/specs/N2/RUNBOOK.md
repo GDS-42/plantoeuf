@@ -65,9 +65,14 @@ Le format exporté reste en version 1 : un fichier de N1 s'importe dans N2 (les 
 
 ## ✎ Surprises et découvertes
 
+- T21 · La règle CSS qui fixe la colonne Total à droite visait toutes les grilles : la dernière semaine de la matrice se retrouvait collée au bord. Règle limitée à `#tableau`.
+- T21 · Le test `[T12]` P1-S1 (Total visible à 1280 × 720) dépend de la hauteur occupée au-dessus du tableau : la barre d'onglets et la légende doivent rester sur une ligne chacune.
+
 ## ✎ Décisions
 
 - T19 · Trois panneaux de plus dans le volet de saisie, après les plantations, sur le modèle des autres (titre, nombre, formulaire, liste, mode modification). La mécanique des formulaires reste dans `UiSaisie` ; `UiVentes` affiche les listes et remplit les listes déroulantes (point de vente, culture vendue). Le jour d'une séance s'enregistre comme un nombre, de 1 (lundi) à 7 (dimanche).
 - T20 · Une séance régulière donne ses séances datées : le premier jour dit à partir de la première date, puis toutes les semaines jusqu'à la dernière, incluse. Coût d'une séance datée = frais + 2 × distance × coût du km, niveau par niveau ; il s'affiche dans la liste des séances avec leur nombre.
+- T21 · Semaine du lundi au dimanche, désignée par son lundi et son numéro ISO 8601. L'offre d'une semaine reprend la règle du jour du milieu de N1 ; la demande additionne le volume vendable de chaque séance datée de la semaine. État d'une case : « dépasse », « manque » ou « équilibre » selon la médiane de l'écart offre − demande ; « sûr » quand les fourchettes ne se recouvrent pas. Une culture sans débouché a une offre mais pas de demande, et le dit.
+- T21 · Le volet de projection prend des onglets (« Par culture » ouvert par défaut, « Offre et demande ») ; la matrice garde la colonne des cultures fixée à gauche et colore chaque case selon son état, avec le texte de l'état pour qui ne voit pas les couleurs.
 
 ## ✎ Bilan de fin de tranche

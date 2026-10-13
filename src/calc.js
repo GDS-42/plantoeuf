@@ -30,6 +30,11 @@
     return ((new Date(versJour(date) * JOUR_MS).getUTCDay() + 6) % 7) + 1;
   }
 
+  // Le lundi de la semaine (du lundi au dimanche) qui contient la date.
+  function lundiDe(date) {
+    return ajouterJours(date, 1 - jourDeLaSemaine(date));
+  }
+
   // ---- Fourchettes : { basse, mediane, haute }
 
   function fourchetteNulle() {
@@ -270,13 +275,106 @@
     return resultat;
   }
 
+  // ---- Offre et demande par semaine (EX-20)
+
+  const PRECISION = 1e-9;
+
+  function ajouterDans(table, cle, semaine, fourchette) {
+    if (!table.has(cle)) table.set(cle, new Map());
+    const parSemaine = table.get(cle);
+    parSemaine.set(semaine, somme(parSemaine.get(semaine) || fourchetteNulle(), fourchette));
+  }
+
+  // Offre de chaque culture, par semaine (son lundi) : une semaine de récolte compte entière dans la
+  // semaine du calendrier qui contient son jour du milieu (granularité à la semaine, règle de N1).
+  function offreParSemaine(donnees) {
+    const offre = new Map();
+    for (const { plantation, culture, p } of plantationsCalculables(donnees)) {
+      for (const semaine of productionHebdomadaire(plantation, p)) {
+        ajouterDans(offre, culture.id, lundiDe(ajouterJours(semaine.debut, 3)), semaine.volume);
+      }
+    }
+    return offre;
+  }
+
+  // Débouchés qui comptent : actifs, à un point de vente actif, pour une culture active.
+  function debouchesActifs({ pointsVente = [], debouches = [], cultures = [] }) {
+    const pointsParId = new Map(pointsVente.filter((p) => !p.supprimeLe).map((p) => [p.id, p]));
+    const culturesActives = new Set(cultures.filter((c) => !c.supprimeLe).map((c) => c.id));
+    return debouches
+      .filter((d) => !d.supprimeLe && pointsParId.has(d.pointVenteId) && culturesActives.has(d.produitId))
+      .map((debouche) => ({ debouche, pointVente: pointsParId.get(debouche.pointVenteId) }));
+  }
+
+  // Demande de chaque culture, par semaine : volume vendable de chaque débouché, à chaque séance datée de son point de vente.
+  function demandeParSemaine(donnees) {
+    const seancesParPoint = new Map();
+    for (const seance of seancesDeLaFerme(donnees)) {
+      if (!seancesParPoint.has(seance.pointVenteId)) seancesParPoint.set(seance.pointVenteId, []);
+      seancesParPoint.get(seance.pointVenteId).push(seance);
+    }
+    const demande = new Map();
+    for (const { debouche } of debouchesActifs(donnees)) {
+      if (!demande.has(debouche.produitId)) demande.set(debouche.produitId, new Map());
+      for (const seance of seancesParPoint.get(debouche.pointVenteId) || []) {
+        ajouterDans(demande, debouche.produitId, lundiDe(seance.date), debouche.volumeParSeance);
+      }
+    }
+    return demande;
+  }
+
+  // Numéro de la semaine selon la norme ISO 8601 (celle des calendriers français) : la semaine 1 contient le premier jeudi de l'année.
+  function numeroDeSemaine(date) {
+    const jeudi = ajouterJours(lundiDe(date), 3);
+    const premierJanvier = jeudi.slice(0, 4) + "-01-01";
+    return Math.floor((versJour(jeudi) - versJour(premierJanvier)) / 7) + 1;
+  }
+
+  function semainesEntre(premiere, derniere) {
+    const liste = [];
+    for (let lundi = premiere; lundi <= derniere; lundi = ajouterJours(lundi, 7)) liste.push(lundi);
+    return liste;
+  }
+
+  // Par culture et par semaine : l'offre, la demande (null pour une culture sans débouché), l'écart des
+  // médianes, l'état (depasse, manque, equilibre, sans_debouche) et sa sûreté (fourchettes disjointes).
+  function offreDemande(donnees) {
+    const offre = offreParSemaine(donnees);
+    const demande = demandeParSemaine(donnees);
+    const lundis = [...offre.values(), ...demande.values()].flatMap((m) => [...m.keys()]).sort();
+    const semaines = lundis.length ? semainesEntre(lundis[0], lundis[lundis.length - 1]) : [];
+    const cultures = (donnees.cultures || []).filter((c) => !c.supprimeLe && (offre.has(c.id) || demande.has(c.id)))
+      .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+
+    const lignes = cultures.map((culture) => {
+      const ligne = { produitId: culture.id, nom: culture.nom, unite: culture.unite, semaines: {} };
+      for (const lundi of semaines) {
+        const o = (offre.get(culture.id) && offre.get(culture.id).get(lundi)) || fourchetteNulle();
+        if (!demande.has(culture.id)) {
+          ligne.semaines[lundi] = { offre: o, demande: null, ecart: null, etat: "sans_debouche", sur: false };
+          continue;
+        }
+        const d = demande.get(culture.id).get(lundi) || fourchetteNulle();
+        const ecart = o.mediane - d.mediane;
+        const etat = Math.abs(ecart) < PRECISION ? "equilibre" : ecart > 0 ? "depasse" : "manque";
+        const sur = etat === "depasse" ? o.basse > d.haute + PRECISION : etat === "manque" ? o.haute < d.basse - PRECISION : false;
+        ligne.semaines[lundi] = { offre: o, demande: d, ecart, etat, sur };
+      }
+      return ligne;
+    });
+    return { semaines, lignes };
+  }
+
   return {
     CHAMPS_SURCHARGEABLES,
     ajouterJours,
     jourDeLaSemaine,
+    lundiDe,
     seancesDatees,
     coutSeance,
     seancesDeLaFerme,
+    offreDemande,
+    numeroDeSemaine,
     parametres,
     datesRecolte,
     productionTotale,

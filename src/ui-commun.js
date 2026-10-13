@@ -73,6 +73,20 @@
     });
   }
 
+  // Onglets : un clic montre le panneau de l'onglet et cache les autres.
+  function brancherOnglets(liste) {
+    const onglets = [...liste.querySelectorAll('[role="tab"]')];
+    for (const onglet of onglets) {
+      onglet.addEventListener("click", () => {
+        for (const autre of onglets) {
+          const choisi = autre === onglet;
+          autre.setAttribute("aria-selected", String(choisi));
+          document.getElementById(autre.getAttribute("aria-controls")).hidden = !choisi;
+        }
+      });
+    }
+  }
+
   globalThis.UiCommun = {
     T,
     formats: { nombre, euros, volumes },
@@ -87,5 +101,6 @@
     nomDe,
     parNom,
     traduire,
+    brancherOnglets,
   };
 })();

@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N2 · Sessions consommées : 3 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : N2 · Sessions consommées : 4 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -2075,4 +2075,105 @@ Running 1 test using 1 worker
 
   1 passed (1.5s)
 == T20 : vérification verte ==
+```
+
+## 13/10/2026 · T21 — Offre et demande par culture et par semaine ; vue « Offre et demande »
+
+- Session 4 / 12 du seuil d'alerte de N2.
+- Modèle : Opus 5.5, effort élevé · **Reprises : 0** · Relecteur : Fable, contexte frais → **CONFORME**.
+  - Remarques non retenues comme écarts : (1) l'écart affiché dans une case de la matrice est l'écart des médianes, un seul nombre, alors qu'AGENTS.md veut des fourchettes ; le scénario S4 l'écrit ainsi (« dépasse de 13,75 kg … sûrement ») et la légende le dit — **question posée à l'humain** ; (2) le diff touche aussi `src/ui-commun.js` et `src/ui-tableau.js`, absents du champ `fichiers` de T21 ; (3) « au prix de la culture » simplifie « au prix de sa variété ou de la culture », comme les textes de T19.
+- Résultat : **vert**. `./verify.sh T21` → exit 0 (6 tests unitaires, 2 de bout en bout) ; `./verify.sh N2` → exit 0 (63 tests unitaires, 52 de bout en bout).
+- Fichiers : `src/calc.js` (`lundiDe`, `offreParSemaine`, `demandeParSemaine`, `numeroDeSemaine`, `semainesEntre`, `offreDemande`), `src/ui-ventes.js` (matrice offre-demande), `src/ui-commun.js` (onglets), `src/ui-tableau.js` (la colonne Total fixée ne vaut que pour le tableau économique), `src/index.html` (onglets « Par culture » et « Offre et demande »), `src/i18n.js`, `test/ventes.test.js`, `test/ventes.e2e.js`.
+- Rouge d'abord : 6 tests unitaires rouges (`Calc.offreDemande is not a function`…), 2 tests de bout en bout rouges (onglet « Offre et demande » absent).
+- Commit : « T21 — Offre et demande par culture et par semaine ; vue « Offre et demande » ».
+
+Preuve (`./verify.sh T21`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 99604 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 85.225527
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 68.335102
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 52.077125
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 54.971071
+  type: 'test'
+  ...
+# Subtest: [T21] une semaine va du lundi au dimanche ; son numéro suit la norme ISO 8601
+ok 5 - [T21] une semaine va du lundi au dimanche ; son numéro suit la norme ISO 8601
+  ---
+  duration_ms: 2.514069
+  type: 'test'
+  ...
+# Subtest: [T21] S4 : la courgette dépasse de 13,75 kg la semaine du 27 avril, sûrement
+ok 6 - [T21] S4 : la courgette dépasse de 13,75 kg la semaine du 27 avril, sûrement
+  ---
+  duration_ms: 1.24171
+  type: 'test'
+  ...
+# Subtest: [T21] S4 : elle manque de 20 kg la semaine du 22 juin, sûrement ; les semaines vont du 27 avril au 22 juin
+ok 7 - [T21] S4 : elle manque de 20 kg la semaine du 22 juin, sûrement ; les semaines vont du 27 avril au 22 juin
+  ---
+  duration_ms: 1.708768
+  type: 'test'
+  ...
+# Subtest: [T21] quand les fourchettes se recouvrent, l'état suit la médiane mais n'est pas sûr
+ok 8 - [T21] quand les fourchettes se recouvrent, l'état suit la médiane mais n'est pas sûr
+  ---
+  duration_ms: 0.833326
+  type: 'test'
+  ...
+# Subtest: [T21] la demande additionne les séances de la semaine ; une culture sans débouché est signalée comme telle
+ok 9 - [T21] la demande additionne les séances de la semaine ; une culture sans débouché est signalée comme telle
+  ---
+  duration_ms: 8.04518
+  type: 'test'
+  ...
+# Subtest: [T21] séances, débouchés et points de vente supprimés ne font plus de demande
+ok 10 - [T21] séances, débouchés et points de vente supprimés ne font plus de demande
+  ---
+  duration_ms: 0.736209
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 162.817329
+== Tests de bout en bout (Playwright) ==
+
+Running 2 tests using 1 worker
+
+  ✓  1 test/ventes.e2e.js:131:1 › [T21] S4 : la vue « Offre et demande » montre, semaine par semaine, où la production dépasse ou manque (924ms)
+  ✓  2 test/ventes.e2e.js:155:1 › [T21] EX-09 : offre et demande s'affichent en fourchette, signalées comme estimations (780ms)
+
+  2 passed (2.4s)
+== T21 : vérification verte ==
 ```

@@ -3,8 +3,63 @@
 (function () {
   "use strict";
 
-  const { T, formats, remplir, afficherFourchette, afficherDate, nomDe, parNom } = UiCommun;
+  const { T, formats, remplir, element, afficherFourchette, afficherDate, nomDe, parNom } = UiCommun;
   const { afficherListe, remplirChoix } = UiSaisie.outils;
+  const { caseFourchette } = UiTableau.outils;
+  const jourCourt = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" });
+
+  // ---- Vue « Offre et demande » (EX-20)
+
+  function enteteSemaine(lundi) {
+    return element("th", { scope: "col", "data-semaine": lundi },
+      remplir(T.offre.semaine, { numero: Calc.numeroDeSemaine(lundi) }), element("br"), jourCourt.format(new Date(lundi + "T00:00:00Z")));
+  }
+
+  function caseOffre(semaine, lundi, unite) {
+    const td = caseFourchette(semaine.offre, (v) => formats.volumes.format(v), { "data-semaine": lundi, "data-etat": semaine.etat, "data-sur": String(semaine.sur) });
+    td.classList.add(`etat-${semaine.etat}`);
+    const ecart = semaine.ecart === null ? "" : formats.volumes.format(Math.abs(semaine.ecart));
+    let titre = remplir(T.offre.etats[semaine.etat], { ecart, unite });
+    if (semaine.sur) titre += ` (${T.offre.sur})`;
+    td.setAttribute("title", titre);
+    if (semaine.ecart !== null && semaine.etat !== "equilibre") {
+      const signe = semaine.ecart > 0 ? "+" : "−";
+      td.append(element("span", { class: "ecart", "data-valeur": String(semaine.ecart) }, signe + ecart));
+    }
+    return td;
+  }
+
+  function caseDemande(semaine, lundi) {
+    if (semaine.demande === null) {
+      return element("td", { "data-semaine": lundi, class: "nul", title: T.offre.sansDebouche }, element("span", { class: "mediane" }, T.tableau.nul));
+    }
+    return caseFourchette(semaine.demande, (v) => formats.volumes.format(v), { "data-semaine": lundi });
+  }
+
+  function afficherOffreDemande(od) {
+    const vide = od.lignes.length === 0;
+    document.getElementById("matrice-vide").hidden = !vide;
+    document.getElementById("matrice-legende").hidden = vide;
+    const table = document.getElementById("matrice");
+    table.hidden = vide;
+    if (vide) return;
+    table.tHead.replaceChildren(element("tr", {},
+      element("th", { scope: "col" }, T.offre.culture),
+      element("th", { scope: "col" }, T.offre.estimation),
+      ...od.semaines.map(enteteSemaine)));
+    table.tBodies[0].replaceChildren(...od.lignes.flatMap((ligne) => {
+      const unite = T.unitesVente[ligne.unite];
+      return [
+        element("tr", { "data-produit": ligne.produitId, "data-mesure": "offre" },
+          element("th", { rowspan: "2", scope: "rowgroup" }, ligne.nom),
+          element("th", { scope: "row" }, remplir(T.offre.offre, { unite })),
+          ...od.semaines.map((lundi) => caseOffre(ligne.semaines[lundi], lundi, unite))),
+        element("tr", { "data-produit": ligne.produitId, "data-mesure": "demande" },
+          element("th", { scope: "row" }, remplir(T.offre.demande, { unite })),
+          ...od.semaines.map((lundi) => caseDemande(ligne.semaines[lundi], lundi))),
+      ];
+    }));
+  }
 
   function resumePointVente(pointVente) {
     return [pointVente.nom,
@@ -60,6 +115,8 @@
       remplirChoix(document.getElementById("seance-pointVenteId"), choixPoints);
       remplirChoix(document.getElementById("debouche-pointVenteId"), choixPoints);
       remplirChoix(document.getElementById("debouche-produitId"), cultures.map((c) => ({ valeur: c.id, libelle: c.nom })));
+
+      afficherOffreDemande(Calc.offreDemande(donnees));
     }
 
     return { afficher };
