@@ -29,7 +29,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": false,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T35",
@@ -41,7 +41,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": false,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T36",

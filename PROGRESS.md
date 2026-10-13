@@ -4466,3 +4466,72 @@ dist/index.html : 170780 octets
   13 passed (10.8s)
 == T33 : vérification verte ==
 ```
+
+## 13/10/2026 · T35 — Ventes : points de vente en cartes, offre et demande lisible, page Ventes
+
+- Modèle : Opus 5.5, effort élevé (agent dans une copie de travail séparée, en parallèle de T34 et T36) · Reprises : 0 · Relecture : non requise (`relecture: false`) ; revue de l'orchestrateur sur captures.
+- Fait : vue « Points de vente » en cartes triées par résultat médian (résultat en fourchette, barre basse–haute autour de zéro sur une échelle commune, « Perte probable » / « Peut perdre de l'argent »), tableau mensuel à une mesure au choix (Résultat, Chiffre d'affaires, Coût des séances, Séances) ; « Offre et demande » en matrice teintée (excédent bleu, manque ambre, trois intensités, écart signé, cadre de l'écart sûr), bilan de saison par produit, détail en fourchettes de la semaine choisie (clic, focus, flèches) ; page Ventes en lignes à faits alignés ; tiroirs de séance et de débouché qui disent quoi faire quand il manque un point de vente ou une culture ; textes d'état vide réécrits.
+- Calcul ajouté : `Calc.bilanOffreDemande` (pure), test unitaire dans `test/p2-ventes.test.js`.
+- Tests migrés (assertions de valeur gardées) : `test/ventes.e2e.js`, `test/exemple-ventes.e2e.js` ; formats adaptés : « 15 / 20 / 25 » → « 20 kg par séance » et « 15 à 25 » ; sélecteurs `th[rowspan]` et `td.etat-*` remplacés par leurs équivalents P2.
+- Constat transmis à l'humain : avec la ferme d'exemple, la matrice est presque toute en manque (la production est sous ce que les trois points de vente peuvent prendre) : fidèle aux données.
+- Fusion : sans conflit, commit `142c58e`.
+
+Preuve (`./verify.sh T35` sur la branche fusionnée, extrait) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 263161 octets
+== Tests unitaires (node --test) ==
+# pass 9
+# fail 0
+== Tests de bout en bout (Playwright) ==
+  ✓   1 test/p2-ventes.e2e.js:55:1 › [T35] EX-34 : une carte par point de vente, du meilleur résultat médian au moins bon, avec ses fourchettes (546ms)
+  ✓   2 test/p2-ventes.e2e.js:82:1 › [T35] un résultat négatif se voit : signe moins, couleur d'alerte, mention, part de la barre sous zéro (460ms)
+  ✓   3 test/p2-ventes.e2e.js:111:1 › [T35] EX-34 : le tableau des points de vente montre une mesure à la fois, au choix, sans changer les valeurs exactes (495ms)
+  ✓   4 test/p2-ventes.e2e.js:139:1 › [T35] EX-34 : dans le tableau, médiane en évidence, fourchette dessous, unité dans l'en-tête, négatif marqué, en-têtes et total figés (371ms)
+  ✓   5 test/p2-ventes.e2e.js:173:1 › [T35] EX-20 : la matrice offre-demande a une ligne par produit ; chaque case est colorée selon l'état et porte l'écart signé (484ms)
+  ✓   6 test/p2-ventes.e2e.js:214:1 › [T35] le bilan de la saison de chaque produit compte ses semaines en excédent et en manque (381ms)
+  ✓   7 test/p2-ventes.e2e.js:226:1 › [T35] la semaine choisie se lit en détail : offre, demande et écart en fourchettes, et les ventes par point de vente (530ms)
+  ✓   8 test/p2-ventes.e2e.js:264:1 › [T35] page Ventes : chaque ligne donne ses faits, fourchettes comprises (396ms)
+  ✓   9 test/p2-ventes.e2e.js:288:1 › [T35] EX-36 : sans point de vente, les vues et les listes disent ce qu'elles contiendront et mènent au geste suivant (583ms)
+  ✓  10 test/p2-ventes.e2e.js:309:1 › [T35] EX-36 : les tiroirs de séance et de débouché disent quoi faire quand il manque un point de vente ou une culture (1.1s)
+  ✓  11 test/p2-ventes.e2e.js:389:3 › [T35] EX-37 : vues et page des ventes lisibles (taille, contraste), ferme d'exemple, thème clair (846ms)
+  ✓  12 test/p2-ventes.e2e.js:389:3 › [T35] EX-37 : vues et page des ventes lisibles (taille, contraste), ferme d'exemple, thème sombre (826ms)
+  ✓  13 test/p2-ventes.e2e.js:407:1 › [T35] EX-37 : aucun défilement horizontal de la page sur les vues de vente, de 360 à 1920 px ; seuls les tableaux défilent dans leur boîte (2.0s)
+  13 passed (10.0s)
+== T35 : vérification verte ==
+```
+
+## 13/10/2026 · T34 — Synthèse : chiffres clés, graphique mensuel, tableau à une mesure
+
+- Modèle : Opus 5.5, effort élevé (agent dans une copie de travail séparée) · Reprises : 0 · Relecture : non requise ; revue de l'orchestrateur sur captures.
+- Fait : quatre tuiles (chiffre d'affaires, coûts déduits, marge, œufs) avec médiane, fourchette et repère sur une échelle commune ; graphique SVG mois par mois (barres du chiffre d'affaires avec halo de la fourchette, marge en ligne avec bande, zéro, graduations rondes, infobulle au survol et au clavier, résumé « meilleur mois ») ; tableau « Par culture » à une ligne par culture et une mesure au choix (Chiffre d'affaires, Marge, Volume), teinte sur cinq niveaux, unité en en-tête, Total figé à droite, pied « Toute la ferme » en euros ; vue vide qui propose la première étape manquante.
+- Calcul ajouté : `Calc.chiffresCles` (pure), test unitaire dans `test/p2-synthese.test.js`.
+- Tests migrés : `test/presentation.e2e.js` (tests de mise en page P1 remplacés par leurs équivalents P2 ou retirés quand le socle les couvre ; audit de lisibilité étendu à chaque page), `test/tableau.e2e.js`, `test/tranche.e2e.js` (navigation seulement).
+- Fusion : un conflit dans `src/i18n.js` (espaces de noms voisins `vueSynthese` / `vueVentes`), résolu en gardant les deux ; toutes les clés de texte référencées existent (vérifié par script). Après fusion : 76 tests de bout en bout des zones fusionnées et 99 unitaires verts. Commit `ad625d4`.
+
+Preuve (`./verify.sh T34` sur la branche fusionnée, extrait) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 263161 octets
+== Tests unitaires (node --test) ==
+# pass 10
+# fail 0
+== Tests de bout en bout (Playwright) ==
+  ✓   1 test/p2-synthese.e2e.js:35:1 › [T34] EX-33 : les chiffres clés donnent le chiffre d'affaires, les coûts, la marge et les œufs, justes et en fourchette (962ms)
+  ✓   2 test/p2-synthese.e2e.js:73:1 › [T34] EX-33 : les chiffres clés suivent les modifications ; sans poules, pas de tuile œufs ; sans coût, aucun n'est inventé (1.8s)
+  ✓   3 test/p2-synthese.e2e.js:88:1 › [T34] EX-33 : le graphique montre chaque mois du tableau, le chiffre d'affaires et la marge avec leur fourchette (937ms)
+  ✓   4 test/p2-synthese.e2e.js:129:1 › [T34] EX-33 : au survol ou au clavier, une infobulle donne les fourchettes exactes du mois (501ms)
+  ✓   5 test/p2-synthese.e2e.js:156:1 › [T34] EX-33 : le graphique remplit la largeur de sa carte et se redessine quand elle change (417ms)
+  ✓   6 test/p2-synthese.e2e.js:186:1 › [T34] EX-34, P2-S3 : chiffres clés et graphique présents ; une ligne par culture ; passer au volume change la mesure sans changer les valeurs (624ms)
+  ✓   7 test/p2-synthese.e2e.js:224:1 › [T34] EX-34 : la médiane en évidence, la fourchette dessous en petit, l'unité dans l'en-tête et non dans les cases (532ms)
+  ✓   8 test/p2-synthese.e2e.js:248:1 › [T34] EX-34 : une teinte proportionnelle à la valeur montre la saison d'un coup d'œil ; le total est mis à part (460ms)
+  ✓   9 test/p2-synthese.e2e.js:267:1 › [T34] EX-34, EX-13 : les mois, les cultures et le total restent visibles pendant le défilement du tableau (504ms)
+  ✓  10 test/p2-synthese.e2e.js:293:1 › [T34] EX-34 : l'atelier poules garde son bandeau, et sa ligne suit la mesure choisie (624ms)
+  ✓  11 test/p2-synthese.e2e.js:313:1 › [T34] EX-33, EX-36 : sans production, ni chiffres clés ni graphique ; la vue « Par culture » dit ce qu'elle montrera et propose le geste suivant (2.0s)
+  ✓  12 test/p2-synthese.e2e.js:392:3 › [T34] EX-37 : textes de la synthèse d'au moins 12 px et contrastés à 4,5:1, graphique et infobulle compris — thème clair (634ms)
+  ✓  13 test/p2-synthese.e2e.js:392:3 › [T34] EX-37 : textes de la synthèse d'au moins 12 px et contrastés à 4,5:1, graphique et infobulle compris — thème sombre (561ms)
+  13 passed (11.6s)
+== T34 : vérification verte ==
+```
