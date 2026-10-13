@@ -24,6 +24,9 @@
     --info-texte: #1d3f6e;
     --erreur: #a12a1a;
     --entete-tableau: #eaf0e8;
+    --atelier-fond: #f6f0e2;
+    --atelier-texte: #5a4a1f;
+    --atelier-surface: #fffcf5;
     --largeur-saisie: 30rem;
   }
   html, body { height: 100%; }
@@ -108,11 +111,15 @@
   .grille thead th { position: sticky; top: 0; z-index: 3; background: var(--entete-tableau); font-weight: 600; text-align: right; white-space: nowrap; border-bottom-color: var(--trait-fort); }
   .grille thead th:nth-child(1), .grille thead th:nth-child(2) { text-align: left; white-space: normal; z-index: 4; }
   .grille thead th:nth-child(1), .grille tbody th[rowspan], .grille tfoot th[rowspan] { position: sticky; left: 0; width: var(--col-culture); min-width: var(--col-culture); max-width: var(--col-culture); box-sizing: border-box; }
-  .grille thead th:nth-child(2), .grille tbody th:not([rowspan]), .grille tfoot th:not([rowspan]) { position: sticky; left: var(--col-culture); width: var(--col-mesure); min-width: var(--col-mesure); max-width: var(--col-mesure); box-sizing: border-box; box-shadow: 1px 0 0 var(--trait-fort); }
+  .grille thead th:nth-child(2), .grille tbody th:not([rowspan]):not([colspan]), .grille tfoot th:not([rowspan]) { position: sticky; left: var(--col-culture); width: var(--col-mesure); min-width: var(--col-mesure); max-width: var(--col-mesure); box-sizing: border-box; box-shadow: 1px 0 0 var(--trait-fort); }
   .grille tbody th, .grille tfoot th { z-index: 2; text-align: left; font-weight: normal; color: var(--encre); }
   .grille th[rowspan] { font-weight: 600; }
   .grille tbody tr[data-mesure="marge"] > *, .grille tfoot tr:last-child > * { border-bottom-color: var(--trait-fort); }
   .grille td { text-align: right; white-space: nowrap; min-width: 5.5rem; }
+  .grille tr.bandeau-atelier > th { padding: 0.3rem 0.55rem; background: var(--surface-douce); color: var(--encre-douce); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; border-bottom-color: var(--trait-fort); }
+  .grille tr.bandeau-atelier > th > span { position: sticky; left: 0.55rem; }
+  .grille tr.bandeau-atelier[data-atelier="poules"] > th { background: var(--atelier-fond); color: var(--atelier-texte); }
+  .grille tbody tr[data-culture="oeufs"] > * { background: var(--atelier-surface); }
   .grille td .mediane { display: block; font-weight: 600; }
   .grille td .bornes { display: block; font-size: 0.8rem; color: var(--encre-douce); }
   .grille td.nul .mediane { color: var(--encre-douce); font-weight: 400; }

@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : S3 · Sessions consommées : 3 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : S3 · Sessions consommées : 4 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -3465,4 +3465,100 @@ Running 1 test using 1 worker
 
   1 passed (1.1s)
 == T28 : vérification verte ==
+```
+
+## 13/10/2026 · T29 — Atelier poules dans le tableau économique ; aliment déduit de la marge de la ferme
+
+- Session 4 / 11 du seuil d'alerte de S3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (mois du jeudi pour œufs et aliment, marge de l'atelier et de la ferme du pire au meilleur, synthèse, `sans_lot_comme_n2` ; scénarios S7 et S9 recalculés à part ; maquette A respectée).
+  - Remarques non bloquantes : sans culture, pas de bandeau « Maraîchage » (pas de section vide) ; œufs affichés en entiers, valeur exacte gardée dans la page ; `aDebouche` à faire évoluer en T30 ; la légende parle de séances et d'aliment même sans lot.
+- Résultat : **vert**. `./verify.sh T29` → exit 0 (4 tests unitaires, 2 de bout en bout) ; `./verify.sh S3` → exit 0 (87 tests unitaires, 65 de bout en bout).
+- Fichiers : `src/calc.js` (`tableau` : `poules`, aliment dans le total de la ferme), `src/ui-tableau.js` (bandeaux d'atelier, bloc « Œufs », ligne « Coût de l'aliment » au pied, synthèse), `src/index.html` (styles des bandeaux et du bloc), `src/ui-commun.js` (format des entiers), `src/i18n.js`, `test/poules.test.js`, `test/poules.e2e.js`.
+- Rouge d'abord : 4 tests unitaires et 1 de bout en bout rouges. Puis, après lecture d'une capture, un 2e test de bout en bout rouge : les œufs s'affichaient avec une décimale (« 1 854,7 ») et la première colonne restait « Culture » ; corrigé (œufs en entiers, « Culture ou atelier »).
+- Commit : « T29 — Atelier poules dans le tableau économique ; aliment déduit de la marge de la ferme ».
+
+Preuve (`./verify.sh T29`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 129694 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 85.416874
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 82.952798
+  type: 'test'
+  ...
+# Subtest: [T29] S7 : l'atelier poules donne par mois les œufs, le chiffre d'affaires, l'aliment et sa marge
+ok 3 - [T29] S7 : l'atelier poules donne par mois les œufs, le chiffre d'affaires, l'aliment et sa marge
+  ---
+  duration_ms: 13.23795
+  type: 'test'
+  ...
+# Subtest: [T29] S9 : la marge de la ferme déduit l'aliment ; le chiffre d'affaires de la ferme compte les œufs
+ok 4 - [T29] S9 : la marge de la ferme déduit l'aliment ; le chiffre d'affaires de la ferme compte les œufs
+  ---
+  duration_ms: 1.246478
+  type: 'test'
+  ...
+# Subtest: [T29] sans_lot_comme_n2 : une ferme sans lot actif n'a ni atelier poules ni aliment dans son tableau
+ok 5 - [T29] sans_lot_comme_n2 : une ferme sans lot actif n'a ni atelier poules ni aliment dans son tableau
+  ---
+  duration_ms: 2.043894
+  type: 'test'
+  ...
+# Subtest: [T29] les cases de l'atelier et de la ferme restent ordonnées ; la marge va du pire au meilleur
+ok 6 - [T29] les cases de l'atelier et de la ferme restent ordonnées ; la marge va du pire au meilleur
+  ---
+  duration_ms: 0.324803
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 4 - test/squelette.test.js
+  ---
+  duration_ms: 67.866189
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 5 - test/store.test.js
+  ---
+  duration_ms: 65.659995
+  type: 'test'
+  ...
+1..0
+# Subtest: test/ventes.test.js
+ok 6 - test/ventes.test.js
+  ---
+  duration_ms: 75.545617
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 187.505731
+== Tests de bout en bout (Playwright) ==
+
+Running 2 tests using 1 worker
+
+  ✓  1 test/poules.e2e.js:118:1 › [T29] S7 et S9 : le tableau montre l'atelier poules sous son bandeau, et la marge de la ferme déduit l'aliment (390ms)
+  ✓  2 test/poules.e2e.js:135:1 › [T29] les œufs se comptent en nombres entiers, et la première colonne nomme cultures et atelier (402ms)
+
+  2 passed (1.5s)
+== T29 : vérification verte ==
 ```

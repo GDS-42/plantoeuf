@@ -168,6 +168,9 @@
   // semaine de récolte dans le mois de son jour du milieu. Une culture avec débouché compte ce qui se vend
   // (Calc.ventes), chaque semaine dans le mois de son jeudi. Le coût des séances se déduit de la marge de
   // la ferme (EX-23) ; la marge d'une culture reste égale à son chiffre d'affaires.
+  // S3 (EX-27) : l'atelier poules, à part des cultures (`poules`, null sans lot actif) — œufs, chiffre
+  // d'affaires, aliment et marge de l'atelier par mois, chaque semaine dans le mois de son jeudi ; la marge
+  // de la ferme déduit aussi l'aliment.
   function tableau(donnees) {
     const ventesParCulture = ventes(donnees);
     const parCulture = new Map();
@@ -201,7 +204,15 @@
       couts.set(mois, somme(couts.get(mois) || fourchetteNulle(), seance.cout));
     }
 
-    const tousLesMois = [...[...parCulture.values()].flatMap((c) => [...c.mois.keys()]), ...couts.keys()].sort();
+    const lots = (donnees.lots || []).filter((l) => !l.supprimeLe);
+    const poulesParMois = new Map();
+    for (const [lundi, semaine] of lots.length ? poulesParSemaine(donnees) : []) {
+      const m = moisDuJeudi(lundi);
+      const c = poulesParMois.get(m) || { volume: fourchetteNulle(), ca: fourchetteNulle(), aliment: fourchetteNulle() };
+      poulesParMois.set(m, { volume: somme(c.volume, semaine.oeufs), ca: somme(c.ca, semaine.valeur), aliment: somme(c.aliment, semaine.aliment) });
+    }
+
+    const tousLesMois = [...[...parCulture.values()].flatMap((c) => [...c.mois.keys()]), ...couts.keys(), ...poulesParMois.keys()].sort();
     const mois = tousLesMois.length ? moisEntre(tousLesMois[0], tousLesMois[tousLesMois.length - 1]) : [];
     const avecMarge = (c) => ({ volume: c.volume, ca: c.ca, marge: { ...c.ca } });
     const totalFerme = { mois: {}, total: caseVide() };
@@ -222,12 +233,29 @@
         return ligne;
       });
 
-    // Le total de la ferme additionne des unités différentes : seuls le chiffre d'affaires, les coûts et la marge y ont un sens.
-    const bilan = (ca, cout) => ({ ca, couts: cout, marge: soustraire(ca, cout) });
-    const total = { mois: {}, total: bilan(totalFerme.total.ca, [...couts.values()].reduce(somme, fourchetteNulle())) };
-    for (const m of mois) total.mois[m] = bilan(totalFerme.mois[m].ca, couts.get(m) || fourchetteNulle());
+    let poules = null;
+    if (lots.length) {
+      const vide = () => ({ volume: fourchetteNulle(), ca: fourchetteNulle(), aliment: fourchetteNulle() });
+      const avecMargeAtelier = (c) => ({ ...c, marge: soustraire(c.ca, c.aliment) });
+      const cumul = vide();
+      poules = { lots: lots.length, effectif: lots.reduce((n, l) => n + l.effectif, 0), aDebouche: false, mois: {} };
+      for (const m of mois) {
+        const c = poulesParMois.get(m) || vide();
+        poules.mois[m] = avecMargeAtelier(c);
+        for (const cle of ["volume", "ca", "aliment"]) cumul[cle] = somme(cumul[cle], c[cle]);
+      }
+      poules.total = avecMargeAtelier(cumul);
+    }
 
-    return { mois, lignes, total };
+    // Le total de la ferme additionne des unités différentes : seuls le chiffre d'affaires, les coûts et la marge y ont un sens.
+    // Marge de la ferme = chiffre d'affaires − coût des séances (− aliment s'il y a des poules), du pire au meilleur.
+    const bilan = (ca, cout, atelier) => (atelier
+      ? { ca: somme(ca, atelier.ca), couts: cout, aliment: atelier.aliment, marge: soustraire(soustraire(somme(ca, atelier.ca), cout), atelier.aliment) }
+      : { ca, couts: cout, marge: soustraire(ca, cout) });
+    const total = { mois: {}, total: bilan(totalFerme.total.ca, [...couts.values()].reduce(somme, fourchetteNulle()), poules && poules.total) };
+    for (const m of mois) total.mois[m] = bilan(totalFerme.mois[m].ca, couts.get(m) || fourchetteNulle(), poules && poules.mois[m]);
+
+    return { mois, lignes, poules, total };
   }
 
   // ---- Sur-occupation des espaces (EX-06)

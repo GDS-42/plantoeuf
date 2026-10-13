@@ -112,3 +112,31 @@ test("[T28] S7 : la liste des lots donne les œufs d'une semaine de ponte et le 
   await expect(ligneLot(page, "Lot 1")).toContainText("532 œufs par semaine de ponte");
   await expect(ligneLot(page, "Lot 1")).toContainText("aliment 50,4 / 50,4 / 50,4 € par semaine");
 });
+
+// ---- T29 : l'atelier poules dans le tableau économique (EX-27, scénarios S7 et S9)
+
+test("[T29] S7 et S9 : le tableau montre l'atelier poules sous son bandeau, et la marge de la ferme déduit l'aliment", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirLot(page);
+  await expect(page.locator("#tableau")).toBeVisible();
+  await expect(page.locator('#tableau tbody tr.bandeau-atelier[data-atelier="poules"]')).toContainText(/atelier poules/i);
+  const total = async (selecteur) => Number(await page.locator(`${selecteur} td[data-mois="total"] .mediane`).getAttribute("data-valeur"));
+  const oeufs = (mesure) => `#tableau tbody tr[data-culture="oeufs"][data-mesure="${mesure}"]`;
+  expect(await total(oeufs("volume"))).toBeCloseTo(2660, 6);
+  expect(await total(oeufs("ca"))).toBeCloseTo(1064, 6);
+  expect(await total(oeufs("aliment"))).toBeCloseTo(302.4, 6);
+  expect(await total(oeufs("marge"))).toBeCloseTo(761.6, 6);
+  await expect(page.locator(`${oeufs("aliment")} th`)).toContainText(/aliment/i);
+  expect(await total('#tableau tfoot tr[data-mesure="aliment"]')).toBeCloseTo(302.4, 6);
+  expect(await total('#tableau tfoot tr[data-mesure="marge"]')).toBeCloseTo(761.6, 6);
+  await expect(page.locator("#synthese .mediane")).toHaveText("1 064 €");
+});
+
+test("[T29] les œufs se comptent en nombres entiers, et la première colonne nomme cultures et atelier", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirLot(page, { ponte: "0,72", pertes: "8" });
+  const cases = page.locator('#tableau tbody tr[data-culture="oeufs"][data-mesure="volume"] td .mediane');
+  await expect(cases.first()).toBeVisible();
+  for (const texte of await cases.allTextContents()) expect(texte).toMatch(/^(—|[\d\s]+)$/);
+  await expect(page.locator("#tableau thead th").first()).toHaveText(/culture ou atelier/i);
+});

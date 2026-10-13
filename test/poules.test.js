@@ -138,3 +138,67 @@ test("[T28] chaque niveau de la fourchette se calcule avec les valeurs de ce niv
   procheFourchette(semaine.valeur, f(100 * 0.7 * 7 * 0.95 * 0.3, 532 * 0.4, 100 * 0.9 * 7 * 0.95 * 0.5));
   procheFourchette(semaine.aliment, f(100 * 0.11 * 7 * 0.5, 50.4, 100 * 0.13 * 7 * 0.7));
 });
+
+// ---- T29 : l'atelier poules dans le tableau économique (EX-27, scénarios S7 et S9)
+
+function ordonnee(fourchette) {
+  return fourchette.basse <= fourchette.mediane + 1e-9 && fourchette.mediane <= fourchette.haute + 1e-9;
+}
+
+// La courgette du scénario S1 (N1) : 33,75 kg par semaine du 30 avril au 24 juin 2026, 675 € sur la saison.
+const COURGETTE = { id: "c1", nom: "courgette", unite: "kg", rendement: f(3), prix: f(2, 2.5, 3), joursAvantRecolte: 60, semainesRecolte: 8, pertes: 10 };
+const BLACK_BEAUTY = { id: "v1", cultureId: "c1", nom: "Black Beauty", rendement: null, prix: null, joursAvantRecolte: null, semainesRecolte: null, pertes: null };
+const PLANTATION_S1 = { id: "p1", varieteId: "v1", espaceId: "e1", surface: 100, date: "2026-03-01" };
+
+test("[T29] S7 : l'atelier poules donne par mois les œufs, le chiffre d'affaires, l'aliment et sa marge", () => {
+  const tableau = Calc.tableau({ lots: [LOT] });
+  assert.deepEqual(tableau.mois, ["2026-04", "2026-05"]);
+  assert.deepEqual(tableau.lignes, []);
+  const { poules } = tableau;
+  assert.equal(poules.lots, 1);
+  assert.equal(poules.effectif, 100);
+  procheFourchette(poules.mois["2026-04"].volume, f(2128));
+  procheFourchette(poules.mois["2026-05"].volume, f(532));
+  procheFourchette(poules.mois["2026-04"].aliment, f(252));
+  procheFourchette(poules.mois["2026-05"].aliment, f(50.4));
+  procheFourchette(poules.total.volume, f(2660));
+  procheFourchette(poules.total.ca, f(1064));
+  procheFourchette(poules.total.aliment, f(302.4));
+  procheFourchette(poules.total.marge, f(1064 - 302.4));
+});
+
+test("[T29] S9 : la marge de la ferme déduit l'aliment ; le chiffre d'affaires de la ferme compte les œufs", () => {
+  const seul = Calc.tableau({ lots: [LOT] }).total;
+  procheFourchette(seul.total.ca, f(1064));
+  procheFourchette(seul.total.aliment, f(302.4));
+  procheFourchette(seul.total.marge, f(761.6));
+  procheFourchette(seul.mois["2026-04"].marge, f(2128 * 0.4 - 252));
+
+  const avecCourgette = Calc.tableau({ cultures: [COURGETTE], varietes: [BLACK_BEAUTY], plantations: [PLANTATION_S1], lots: [LOT] });
+  assert.deepEqual(avecCourgette.mois, ["2026-04", "2026-05", "2026-06"]);
+  assert.equal(avecCourgette.lignes.length, 1);
+  procheFourchette(avecCourgette.total.total.ca, f(540 + 1064, 675 + 1064, 810 + 1064));
+  procheFourchette(avecCourgette.total.total.marge, f(540 + 1064 - 302.4, 675 + 1064 - 302.4, 810 + 1064 - 302.4));
+});
+
+test("[T29] sans_lot_comme_n2 : une ferme sans lot actif n'a ni atelier poules ni aliment dans son tableau", () => {
+  const sansLot = { cultures: [COURGETTE], varietes: [BLACK_BEAUTY], plantations: [PLANTATION_S1] };
+  const attendu = Calc.tableau(sansLot);
+  assert.equal(attendu.poules, null);
+  assert.deepEqual(Object.keys(attendu.total.total).sort(), ["ca", "couts", "marge"]);
+  const lotSupprime = { ...LOT, supprimeLe: "2026-04-01T08:00:00.000Z" };
+  assert.deepEqual(Calc.tableau({ ...sansLot, lots: [lotSupprime] }), attendu);
+  assert.deepEqual(Calc.tableau({ ...sansLot, lots: [] }), attendu);
+});
+
+test("[T29] les cases de l'atelier et de la ferme restent ordonnées ; la marge va du pire au meilleur", () => {
+  const lot = { ...LOT, ponte: f(0.6, 0.8, 0.9), aliment: f(110, 120, 140), prixAliment: f(0.5, 0.6, 0.8), prixOeuf: f(0.3, 0.4, 0.45) };
+  const tableau = Calc.tableau({ lots: [lot] });
+  for (const m of tableau.mois) {
+    for (const cle of ["volume", "ca", "aliment", "marge"]) assert.ok(ordonnee(tableau.poules.mois[m][cle]), `${m} ${cle}`);
+    for (const cle of ["ca", "aliment", "marge"]) assert.ok(ordonnee(tableau.total.mois[m][cle]), `ferme ${m} ${cle}`);
+  }
+  const { ca, aliment, marge } = tableau.poules.total;
+  proche(marge.basse, ca.basse - aliment.haute);
+  proche(marge.haute, ca.haute - aliment.basse);
+});

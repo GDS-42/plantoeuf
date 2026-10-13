@@ -8,6 +8,7 @@
   const jour = new Intl.DateTimeFormat("fr-FR", { timeZone: "UTC" });
   const euros = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0, signDisplay: "negative" });
   const volumes = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
+  const entiers = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
   const nomDuMois = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" });
 
   function texte(chemin) {
@@ -89,7 +90,7 @@
 
   globalThis.UiCommun = {
     T,
-    formats: { nombre, euros, volumes },
+    formats: { nombre, euros, volumes, entiers },
     texte,
     remplir,
     element,
