@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : P1 · Sessions consommées : 3 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
+Tranche en cours : P1 · Sessions consommées : 4 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
 
 ---
 
@@ -1309,4 +1309,71 @@ Running 5 tests using 1 worker
 
   5 passed (2.5s)
 == T13 : vérification verte ==
+```
+
+## 13/10/2026 · T14 — Tableau lisible et synthèse de la saison
+
+- Session 4 / 9 du seuil d'alerte de P1.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Résultat : **vert**. `./verify.sh T14` → exit 0 (4 tests) ; `./verify.sh P1` → exit 0 (48 tests unitaires, 41 de bout en bout dont les 26 de N1 inchangés).
+- Fichiers : `src/index.html` (synthèse dans la barre du haut, légende hors du tableau, en-têtes et colonnes figés), `src/ui-tableau.js` (synthèse, cases nulles), `src/i18n.js`, `test/presentation.e2e.js`.
+- Rouge d'abord : les 4 tests `[T14]` rouges (noms et mois sortis de la vue au défilement, synthèse absente, cases nulles en « 0 »).
+- Scénario P1-S3 : 675 € entre 540 € et 810 € pour la ferme de S2, puis 338 € entre 270 € et 405 € à 50 m².
+- Commit : « T14 — Tableau : mois et noms figés au défilement ; synthèse de la saison en tête ».
+
+Preuve (`./verify.sh T14`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 75164 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 68.594048
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 69.782872
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 65.588461
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 61.905029
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 139.95897
+== Tests de bout en bout (Playwright) ==
+
+Running 4 tests using 1 worker
+
+  ✓  1 test/presentation.e2e.js:151:1 › [T14] P1-S2 : les mois et les cultures restent visibles pendant le défilement du tableau (281ms)
+  ✓  2 test/presentation.e2e.js:169:1 › [T14] P1-S3 : la synthèse donne le chiffre d'affaires estimé de la saison en fourchette, et suit les modifications (582ms)
+  ✓  3 test/presentation.e2e.js:188:1 › [T14] la synthèse reste en tête quel que soit le défilement (249ms)
+  ✓  4 test/presentation.e2e.js:196:1 › [T14] une case vide du tableau s'affiche discrètement (217ms)
+
+  4 passed (2.0s)
+== T14 : vérification verte ==
 ```

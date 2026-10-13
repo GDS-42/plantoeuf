@@ -66,6 +66,12 @@
       ajouter: "Ajouter la plantation",
       aucun: "Aucune plantation pour l'instant.",
     },
+    synthese: {
+      titre: "Chiffre d'affaires estimé de la saison",
+      entre: "entre",
+      et: "et",
+      vide: "—",
+    },
     tableau: {
       titre: "Tableau économique",
       legende: "Estimations : chaque case donne une fourchette, la valeur médiane en gras, les valeurs basse et haute en dessous. La marge est égale au chiffre d'affaires tant que les charges ne sont pas saisies.",
@@ -78,6 +84,7 @@
       ferme: "Toute la ferme",
       aucun: "Aucune récolte prévue : ajoutez des plantations pour voir le tableau.",
       euros: "{valeur} €",
+      nul: "—",
     },
     exemple: {
       proposition: "Première visite ? Découvrez l'outil avec une ferme d'exemple de La Réunion : {plantations} plantations sur la saison fraîche. Vous pourrez l'effacer d'un clic.",

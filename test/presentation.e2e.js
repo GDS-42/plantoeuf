@@ -143,3 +143,59 @@ test("[T13] une barre de raccourcis mène à chaque panneau de saisie", async ({
     await expect(page.locator(`#section-${objet} h2`)).toBeInViewport();
   }
 });
+
+const { saisirS2 } = require("./outils.js");
+
+// ---- T14 — EX-13, EX-14 : en-têtes figés, synthèse de la saison.
+
+test("[T14] P1-S2 : les mois et les cultures restent visibles pendant le défilement du tableau", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await chargerExemple(page);
+  const boite = page.locator("#tableau-defilement");
+  const debord = await boite.evaluate((el) => ({ x: el.scrollWidth - el.clientWidth, y: el.scrollHeight - el.clientHeight }));
+  expect(debord.x).toBeGreaterThan(0);
+  expect(debord.y).toBeGreaterThan(0);
+
+  await boite.evaluate((el) => {
+    el.scrollLeft = el.scrollWidth;
+    el.scrollTop = el.scrollHeight;
+  });
+  await expect(page.locator("#tableau thead th[data-mois]").last()).toBeInViewport();
+  await expect(page.locator("#tableau tbody th[rowspan]", { hasText: "Tomate" })).toBeInViewport();
+  const marge = page.locator("#tableau tbody tr[data-mesure=\"marge\"]").last().locator("th");
+  await expect(marge).toBeInViewport();
+});
+
+test("[T14] P1-S3 : la synthèse donne le chiffre d'affaires estimé de la saison en fourchette, et suit les modifications", async ({ page }) => {
+  await page.goto("index.html");
+  const synthese = page.locator("#synthese");
+  await expect(synthese).toBeVisible();
+  await saisirS2(page);
+
+  await expect(synthese).toContainText(/estim/i);
+  await expect(synthese.locator(".mediane")).toHaveText("675 €");
+  await expect(synthese.locator(".basse")).toHaveText("540 €");
+  await expect(synthese.locator(".haute")).toHaveText("810 €");
+
+  await page.locator("#liste-plantations li", { hasText: "Black Beauty" }).locator('[data-action="modifier"]').click();
+  await page.locator("#plantation-surface").fill("50");
+  await page.locator("#plantation-ajouter").click();
+  await expect(synthese.locator(".mediane")).toHaveText("338 €");
+  await expect(synthese.locator(".basse")).toHaveText("270 €");
+  await expect(synthese.locator(".haute")).toHaveText("405 €");
+});
+
+test("[T14] la synthèse reste en tête quel que soit le défilement", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await chargerExemple(page);
+  await page.locator("#section-sauvegarde").scrollIntoViewIfNeeded();
+  await page.locator("#tableau-defilement").evaluate((el) => { el.scrollTop = el.scrollHeight; });
+  await expect(page.locator("#synthese")).toBeInViewport();
+});
+
+test("[T14] une case vide du tableau s'affiche discrètement", async ({ page }) => {
+  await chargerExemple(page);
+  const vide = page.locator("#tableau td.nul").first();
+  await expect(vide.locator(".mediane")).toHaveText("—");
+  await expect(vide.locator(".bornes")).toBeHidden();
+});

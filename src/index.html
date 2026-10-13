@@ -39,8 +39,12 @@
   .marque { display: flex; align-items: baseline; gap: 0.6rem; }
   .marque h1 { font-size: 1.3rem; }
   .marque span { color: var(--barre-douce); font-size: 0.95rem; }
-  .barre nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
-  .barre nav a { color: #ffffff; font-size: 0.95rem; }
+  .synthese { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; }
+  .synthese-titre { color: var(--barre-douce); font-size: 0.8rem; }
+  .synthese-valeur { font-variant-numeric: tabular-nums; }
+  .synthese .mediane { font-size: 1.25rem; font-weight: 700; }
+  .synthese-bornes { margin-left: 0.4rem; color: var(--barre-douce); font-size: 0.875rem; }
+  .pour-lecteur-d-ecran { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
   /* Bandeaux d'information et d'alerte */
   .bandeau { flex: none; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; padding: 0.5rem 1.25rem; background: var(--alerte-fond); color: var(--alerte-texte); border-bottom: 1px solid var(--trait); }
@@ -92,24 +96,28 @@
   #import-message { margin: 0; padding: 0 1rem 0.75rem; font-weight: 600; color: var(--accent-fonce); }
   #import-message.erreur { color: var(--erreur); }
 
-  /* Tableau économique */
+  /* Tableau économique : mois figés en haut, culture et estimation à gauche, total à droite (EX-13) */
   .volet-projection h2 { font-size: 1.15rem; }
-  table#tableau { border-collapse: collapse; font-size: 0.875rem; font-variant-numeric: tabular-nums; }
-  #tableau caption { caption-side: top; text-align: left; padding: 0.5rem 0.75rem; color: var(--encre-douce); }
-  #tableau th, #tableau td { border: 1px solid var(--trait); padding: 0.3rem 0.5rem; vertical-align: top; }
-  #tableau thead th { background: var(--entete-tableau); white-space: nowrap; }
-  #tableau tbody th, #tableau tfoot th { text-align: left; font-weight: normal; }
+  .legende { margin: 0; color: var(--encre-douce); font-size: 0.875rem; }
+  table#tableau { --col-culture: 8.5rem; --col-mesure: 9.5rem; border-collapse: separate; border-spacing: 0; font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+  #tableau th, #tableau td { border-right: 1px solid var(--trait); border-bottom: 1px solid var(--trait); padding: 0.3rem 0.55rem; vertical-align: top; background: var(--surface); }
+  #tableau thead th { position: sticky; top: 0; z-index: 3; background: var(--entete-tableau); font-weight: 600; text-align: right; white-space: nowrap; border-bottom-color: var(--trait-fort); }
+  #tableau thead th:nth-child(1), #tableau thead th:nth-child(2) { text-align: left; white-space: normal; z-index: 4; }
+  #tableau thead th:nth-child(1), #tableau tbody th[rowspan], #tableau tfoot th[rowspan] { position: sticky; left: 0; width: var(--col-culture); min-width: var(--col-culture); max-width: var(--col-culture); box-sizing: border-box; }
+  #tableau thead th:nth-child(2), #tableau tbody th:not([rowspan]), #tableau tfoot th:not([rowspan]) { position: sticky; left: var(--col-culture); width: var(--col-mesure); min-width: var(--col-mesure); max-width: var(--col-mesure); box-sizing: border-box; box-shadow: 1px 0 0 var(--trait-fort); }
+  #tableau tbody th, #tableau tfoot th { z-index: 2; text-align: left; font-weight: normal; color: var(--encre); }
   #tableau th[rowspan] { font-weight: 600; }
-  #tableau td { text-align: right; white-space: nowrap; }
+  #tableau tbody tr[data-mesure="marge"] > *, #tableau tfoot tr:last-child > * { border-bottom-color: var(--trait-fort); }
+  #tableau td { text-align: right; white-space: nowrap; min-width: 5.5rem; }
   #tableau td .mediane { display: block; font-weight: 600; }
   #tableau td .bornes { display: block; font-size: 0.8rem; color: var(--encre-douce); }
-  #tableau tfoot { border-top: 2px solid var(--trait-fort); }
+  #tableau td.nul .mediane { color: var(--encre-douce); font-weight: 400; }
+  #tableau td.nul .bornes { display: none; }
+  #tableau tfoot th, #tableau tfoot td { background: var(--surface-douce); }
+  #tableau tfoot tr:first-child > * { border-top: 2px solid var(--trait-fort); }
   /* La colonne Total reste au bord droit pendant que les mois défilent : le chiffre de la saison reste sous les yeux. */
-  #tableau thead th:last-child, #tableau td[data-mois="total"] { position: sticky; right: 0; z-index: 1; box-shadow: -1px 0 0 var(--trait-fort); }
-  #tableau thead th:last-child { background: var(--entete-tableau); }
-  #tableau tbody td[data-mois="total"] { background: var(--surface); }
-  #tableau tfoot td[data-mois="total"] { background: var(--surface-douce); }
-  #tableau tfoot td, #tableau tfoot th { background: var(--surface-douce); }
+  #tableau thead th:last-child, #tableau td[data-mois="total"] { position: sticky; right: 0; z-index: 2; box-shadow: -1px 0 0 var(--trait-fort); }
+  #tableau thead th:last-child { z-index: 4; }
 
   /* Écran étroit : une seule colonne, la projection en premier */
   @media (max-width: 1099px) {
@@ -128,6 +136,13 @@
   <div class="marque">
     <h1 data-texte="marque"></h1>
     <span data-texte="sousTitre"></span>
+  </div>
+  <div id="synthese" class="synthese" aria-live="polite">
+    <span class="synthese-titre" data-texte="synthese.titre"></span>
+    <span class="synthese-valeur">
+      <span class="mediane" data-valeur="0"></span>
+      <span class="synthese-bornes"><span data-texte="synthese.entre"></span> <span class="basse" data-valeur="0"></span> <span data-texte="synthese.et"></span> <span class="haute" data-valeur="0"></span></span>
+    </span>
   </div>
 </header>
 
@@ -309,10 +324,11 @@
 <main class="volet-projection" id="volet-projection">
   <section id="section-tableau">
     <h2 data-texte="tableau.titre"></h2>
+    <p id="tableau-legende" class="legende" data-texte="tableau.legende"></p>
     <p id="tableau-vide" data-texte="tableau.aucun"></p>
     <div class="defilement" id="tableau-defilement">
       <table id="tableau">
-        <caption data-texte="tableau.legende"></caption>
+        <caption class="pour-lecteur-d-ecran" data-texte="tableau.legende"></caption>
         <thead></thead>
         <tbody></tbody>
         <tfoot></tfoot>

@@ -5,11 +5,27 @@
   const { T, formats, remplir, element, afficherMois, enEuros } = UiCommun;
 
   // Une case : la médiane en gras, la basse et la haute dessous ; data-valeur garde le nombre exact.
+  // Une case nulle affiche un tiret, discret, et garde ses valeurs exactes.
   function caseFourchette(fourchette, format, attributs) {
-    const valeur = (niveau) => element("span", { class: niveau, "data-valeur": String(fourchette[niveau]) }, format(fourchette[niveau]));
+    const nulle = fourchette.haute === 0;
+    const valeur = (niveau) => element("span", { class: niveau, "data-valeur": String(fourchette[niveau]) },
+      nulle ? T.tableau.nul : format(fourchette[niveau]));
     const td = element("td", attributs, valeur("mediane"), element("span", { class: "bornes" }, valeur("basse"), " – ", valeur("haute")));
-    if (fourchette.haute === 0) td.classList.add("nul");
+    if (nulle) td.classList.add("nul");
     return td;
+  }
+
+  // EX-14 : le chiffre d'affaires estimé de la saison, en fourchette, en tête de l'outil.
+  function afficherSynthese(tableau) {
+    const synthese = document.getElementById("synthese");
+    const vide = tableau.lignes.length === 0;
+    const ca = tableau.total.total.ca;
+    for (const niveau of ["basse", "mediane", "haute"]) {
+      const el = synthese.querySelector(`.${niveau}`);
+      el.dataset.valeur = String(ca[niveau]);
+      el.textContent = vide ? T.synthese.vide : enEuros(ca[niveau]);
+    }
+    synthese.querySelector(".synthese-bornes").hidden = vide;
   }
 
   function ligneDuTableau(attributs, entetes, cases, total, format) {
@@ -20,7 +36,9 @@
 
   // tableau : résultat de Calc.tableau.
   function afficher(tableau) {
+    afficherSynthese(tableau);
     const vide = tableau.lignes.length === 0;
+    document.getElementById("tableau-legende").hidden = vide;
     document.getElementById("tableau-vide").hidden = !vide;
     const table = document.getElementById("tableau");
     table.hidden = vide;
