@@ -89,5 +89,8 @@ Une ferme fictive de 10 plantations donne un tableau CA / marge par culture et p
 - T04 · Granularité à la semaine (SPEC, points tranchés) : pour une période quelconque (un mois du tableau), une semaine de récolte compte entière dans la période qui contient son jour du milieu, c'est-à-dire la plupart de ses jours. S1 : avril 0, mai 5 semaines, juin 3 semaines. Première version au prorata des jours, corrigée avant commit sur remarque du relecteur.
 - T04 · Fin de récolte = première récolte + 7 × semaines − 1 jour (S1 : 30 avril → 24 juin inclus). Dates en « AAAA-MM-JJ », calculées en jours UTC. Production = surface × rendement × (100 − pertes) / 100, sur chaque niveau de la fourchette.
 - T04 · Les dates de récolte s'affichent dans la liste des plantations (`test/recolte.e2e.js`, hors liste `fichiers`, car `./verify.sh T04` exige un test Playwright `[T04]`).
+- T05 · Le CA se calcule plantation par plantation, au prix de sa variété (surcharge possible), puis s'additionne par culture. Le volume d'une culture additionne ses plantations, toutes dans l'unité de la culture. Le total de la ferme ne donne que CA et marge, les volumes n'ayant pas la même unité.
+- T05 · Colonnes : du premier au dernier mois qui reçoit une semaine de récolte. Une ligne par culture qui a au moins une plantation active (variété et culture actives), rangée par nom. Montants arrondis à l'euro, volumes au dixième ; la valeur exacte reste dans `data-valeur`.
+- T05 · Le tableau est en tête de page ; chaque case montre la médiane en gras, la basse et la haute en dessous ; la légende et les en-têtes disent « estimation » et « fourchette basse – médiane – haute » (EX-09).
 
 ## ✎ Bilan de fin de tranche

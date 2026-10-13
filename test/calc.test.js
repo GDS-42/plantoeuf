@@ -109,3 +109,115 @@ test("[T04] granularité à la semaine : une semaine compte entière dans la pé
   procheFourchette(Calc.productionSurPeriode(PLANTATION_S1, p, "2026-04-30", "2026-05-02"), f(0));
   procheFourchette(Calc.productionSurPeriode(PLANTATION_S1, p, "2026-05-03", "2026-05-03"), f(33.75));
 });
+
+// ---- T05 : tableau économique par culture et par mois (EX-04, scénario S2)
+
+function fermeS2(complements = {}) {
+  return {
+    cultures: [COURGETTE, ...(complements.cultures || [])],
+    varietes: [SANS_SURCHARGE, ...(complements.varietes || [])],
+    plantations: [PLANTATION_S1, ...(complements.plantations || [])],
+  };
+}
+
+function ordonnee(fourchette) {
+  return fourchette.basse <= fourchette.mediane && fourchette.mediane <= fourchette.haute;
+}
+
+test("[T05] S2 : en mai, le CA de la courgette est une fourchette dont la médiane vaut le volume de mai × 2,50 €", () => {
+  const tableau = Calc.tableau(fermeS2());
+  const ligne = tableau.lignes.find((l) => l.cultureId === "c1");
+  const mai = ligne.mois["2026-05"];
+
+  procheFourchette(mai.volume, f(5 * 33.75));
+  assert.ok(ordonnee(mai.ca));
+  assert.ok(mai.ca.basse < mai.ca.haute);
+  proche(mai.ca.mediane, mai.volume.mediane * 2.5);
+  procheFourchette(mai.ca, f(5 * 33.75 * 2, 5 * 33.75 * 2.5, 5 * 33.75 * 3));
+});
+
+test("[T05] EX-04 : par culture et par mois, volume, CA et marge en fourchette ; marge égale au CA en N1", () => {
+  const tableau = Calc.tableau(fermeS2());
+  assert.deepEqual(tableau.mois, ["2026-05", "2026-06"]);
+  assert.equal(tableau.lignes.length, 1);
+  const [ligne] = tableau.lignes;
+  assert.equal(ligne.nom, "courgette");
+  assert.equal(ligne.unite, "kg");
+  assert.deepEqual(Object.keys(ligne.mois), ["2026-05", "2026-06"]);
+
+  procheFourchette(ligne.mois["2026-06"].volume, f(3 * 33.75));
+  procheFourchette(ligne.mois["2026-06"].ca, f(3 * 33.75 * 2, 3 * 33.75 * 2.5, 3 * 33.75 * 3));
+  procheFourchette(ligne.total.volume, f(270));
+  procheFourchette(ligne.total.ca, f(540, 675, 810));
+  for (const cle of [...tableau.mois.map((m) => ligne.mois[m]), ligne.total]) {
+    assert.deepEqual(cle.marge, cle.ca);
+    assert.ok(ordonnee(cle.volume) && ordonnee(cle.ca) && ordonnee(cle.marge));
+  }
+});
+
+test("[T05] le CA se calcule plantation par plantation, au prix de sa variété", () => {
+  const variete = { ...SANS_SURCHARGE, id: "v2", nom: "Ronde de Nice", prix: f(4) };
+  const tableau = Calc.tableau(fermeS2({ varietes: [variete], plantations: [{ ...PLANTATION_S1, id: "p2", varieteId: "v2" }] }));
+  const [ligne] = tableau.lignes;
+  procheFourchette(ligne.total.volume, f(540));
+  procheFourchette(ligne.total.ca, f(270 * 2 + 270 * 4, 270 * 2.5 + 270 * 4, 270 * 3 + 270 * 4));
+});
+
+test("[T05] une ligne par culture, rangée par nom, et le total de la ferme par mois", () => {
+  const brede = { ...COURGETTE, id: "c2", nom: "brède", unite: "botte", rendement: f(10), prix: f(1, 1.5, 2), joursAvantRecolte: 30, semainesRecolte: 2, pertes: 0 };
+  const tableau = Calc.tableau(fermeS2({
+    cultures: [brede],
+    varietes: [{ ...SANS_SURCHARGE, id: "v2", cultureId: "c2" }],
+    plantations: [{ ...PLANTATION_S1, id: "p2", varieteId: "v2", surface: 10, date: "2026-05-01" }],
+  }));
+  assert.deepEqual(tableau.lignes.map((l) => l.nom), ["brède", "courgette"]);
+  // Brède : 100 bottes du 31 mai au 13 juin, 50 par semaine ; semaines du 31 mai et du 7 juin → juin.
+  const ligneBrede = tableau.lignes[0];
+  procheFourchette(ligneBrede.mois["2026-05"].volume, f(0));
+  procheFourchette(ligneBrede.mois["2026-06"].volume, f(100));
+  procheFourchette(tableau.total.mois["2026-06"].ca, f(3 * 33.75 * 2 + 100, 3 * 33.75 * 2.5 + 150, 3 * 33.75 * 3 + 200));
+  procheFourchette(tableau.total.total.ca, f(540 + 100, 675 + 150, 810 + 200));
+  assert.deepEqual(tableau.total.total.marge, tableau.total.total.ca);
+});
+
+test("[T05] les plantations supprimées, ou dont la variété ou la culture est supprimée, ne comptent pas", () => {
+  const supprime = "2026-10-13T08:00:00.000Z";
+  const variete = { ...SANS_SURCHARGE, id: "v2" };
+  const tableau = Calc.tableau(fermeS2({
+    cultures: [{ ...COURGETTE, id: "c3", nom: "tomate", supprimeLe: supprime }],
+    varietes: [variete, { ...SANS_SURCHARGE, id: "v3", cultureId: "c3" }, { ...SANS_SURCHARGE, id: "v4", supprimeLe: supprime }],
+    plantations: [
+      { ...PLANTATION_S1, id: "p2", varieteId: "v2", supprimeLe: supprime },
+      { ...PLANTATION_S1, id: "p3", varieteId: "v3" },
+      { ...PLANTATION_S1, id: "p4", varieteId: "v4" },
+      { ...PLANTATION_S1, id: "p5", varieteId: "inconnue" },
+    ],
+  }));
+  assert.deepEqual(tableau.lignes.map((l) => l.nom), ["courgette"]);
+  procheFourchette(tableau.lignes[0].total.volume, f(270));
+});
+
+test("[T05] une ferme sans plantation donne un tableau vide", () => {
+  const tableau = Calc.tableau({ cultures: [COURGETTE], varietes: [SANS_SURCHARGE], plantations: [] });
+  assert.deepEqual(tableau.mois, []);
+  assert.deepEqual(tableau.lignes, []);
+  procheFourchette(tableau.total.total.ca, f(0));
+});
+
+test("[T05] une ferme de 200 plantations se calcule en moins d'une seconde", () => {
+  const cultures = [];
+  const varietes = [];
+  const plantations = [];
+  for (let c = 0; c < 20; c++) {
+    cultures.push({ ...COURGETTE, id: `c${c}`, nom: `culture ${c}`, semainesRecolte: 4 + (c % 12) });
+    varietes.push({ ...SANS_SURCHARGE, id: `v${c}`, cultureId: `c${c}` });
+  }
+  for (let i = 0; i < 200; i++) {
+    plantations.push({ ...PLANTATION_S1, id: `p${i}`, varieteId: `v${i % 20}`, date: Calc.ajouterJours("2026-01-05", 3 * i) });
+  }
+  const debut = process.hrtime.bigint();
+  const tableau = Calc.tableau({ cultures, varietes, plantations });
+  const ms = Number(process.hrtime.bigint() - debut) / 1e6;
+  assert.equal(tableau.lignes.length, 20);
+  assert.ok(ms < 1000, `${ms} ms`);
+});

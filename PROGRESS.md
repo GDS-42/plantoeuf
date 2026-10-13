@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N1 · Sessions consommées : 4 / 15 (seuil d'alerte)
+Tranche en cours : N1 · Sessions consommées : 5 / 15 (seuil d'alerte)
 
 ---
 
@@ -333,4 +333,99 @@ Running 1 test using 1 worker
 
   1 passed (1.5s)
 == T04 : vérification verte ==
+```
+
+## 13/10/2026 · T05 — Tableau économique par culture et par mois
+
+- Session 5 du seuil d'alerte.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME**.
+- Résultat : **vert**. `./verify.sh T05` → exit 0 (7 tests unitaires, 4 de bout en bout) ; `./verify.sh N1` → exit 0.
+- Fichiers : `src/calc.js`, `src/index.html`, `src/i18n.js`, `test/calc.test.js`, `test/tableau.e2e.js`, et `test/outils.js` (aides de saisie partagées par les nouveaux tests de bout en bout, ni test unitaire ni test Playwright).
+- Rouge d'abord : 7 tests unitaires rouges (`Calc.tableau is not a function`), 4 de bout en bout rouges (tableau absent).
+- S2 : mai = 5 semaines × 33,75 kg = 168,75 kg ; CA 337,5 / 421,875 / 506,25 € ; médiane = volume de mai × 2,50 €. 200 plantations : bien moins d'une seconde (test unitaire).
+- Commit : « T05 — Tableau économique par culture et par mois, en fourchette ».
+
+Preuve (`./verify.sh T05`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 39829 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+# Subtest: [T05] S2 : en mai, le CA de la courgette est une fourchette dont la médiane vaut le volume de mai × 2,50 €
+ok 1 - [T05] S2 : en mai, le CA de la courgette est une fourchette dont la médiane vaut le volume de mai × 2,50 €
+  ---
+  duration_ms: 5.914736
+  type: 'test'
+  ...
+# Subtest: [T05] EX-04 : par culture et par mois, volume, CA et marge en fourchette ; marge égale au CA en N1
+ok 2 - [T05] EX-04 : par culture et par mois, volume, CA et marge en fourchette ; marge égale au CA en N1
+  ---
+  duration_ms: 2.552361
+  type: 'test'
+  ...
+# Subtest: [T05] le CA se calcule plantation par plantation, au prix de sa variété
+ok 3 - [T05] le CA se calcule plantation par plantation, au prix de sa variété
+  ---
+  duration_ms: 0.615032
+  type: 'test'
+  ...
+# Subtest: [T05] une ligne par culture, rangée par nom, et le total de la ferme par mois
+ok 4 - [T05] une ligne par culture, rangée par nom, et le total de la ferme par mois
+  ---
+  duration_ms: 7.478891
+  type: 'test'
+  ...
+# Subtest: [T05] les plantations supprimées, ou dont la variété ou la culture est supprimée, ne comptent pas
+ok 5 - [T05] les plantations supprimées, ou dont la variété ou la culture est supprimée, ne comptent pas
+  ---
+  duration_ms: 0.520548
+  type: 'test'
+  ...
+# Subtest: [T05] une ferme sans plantation donne un tableau vide
+ok 6 - [T05] une ferme sans plantation donne un tableau vide
+  ---
+  duration_ms: 0.203347
+  type: 'test'
+  ...
+# Subtest: [T05] une ferme de 200 plantations se calcule en moins d'une seconde
+ok 7 - [T05] une ferme de 200 plantations se calcule en moins d'une seconde
+  ---
+  duration_ms: 16.327764
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 2 - test/squelette.test.js
+  ---
+  duration_ms: 77.785701
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 3 - test/store.test.js
+  ---
+  duration_ms: 92.116708
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 125.160207
+== Tests de bout en bout (Playwright) ==
+
+Running 4 tests using 1 worker
+
+  ✓  1 test/tableau.e2e.js:5:1 › [T05] S2 : en mai, la ligne courgette donne un CA en fourchette dont la médiane vaut le volume de mai × 2,50 € (592ms)
+  ✓  2 test/tableau.e2e.js:19:1 › [T05] EX-04 : le tableau donne pour chaque mois le volume, le chiffre d'affaires et la marge (502ms)
+  ✓  3 test/tableau.e2e.js:34:1 › [T05] EX-09 : les en-têtes signalent des estimations en fourchette basse / médiane / haute (492ms)
+  ✓  4 test/tableau.e2e.js:45:1 › [T05] sans plantation, le tableau annonce qu'aucune récolte n'est prévue (111ms)
+
+  4 passed (2.4s)
+== T05 : vérification verte ==
 ```

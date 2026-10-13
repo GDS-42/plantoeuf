@@ -57,6 +57,19 @@
       ajouter: "Ajouter la plantation",
       aucun: "Aucune plantation pour l'instant.",
     },
+    tableau: {
+      titre: "Tableau économique",
+      legende: "Estimations : chaque case donne une fourchette, la valeur médiane en gras, les valeurs basse et haute en dessous. La marge est égale au chiffre d'affaires tant que les charges ne sont pas saisies.",
+      culture: "Culture",
+      estimation: "Estimation (fourchette basse – médiane – haute)",
+      volume: "Volume estimé ({unite})",
+      ca: "Chiffre d'affaires estimé (€)",
+      marge: "Marge estimée (€)",
+      total: "Total",
+      ferme: "Toute la ferme",
+      aucun: "Aucune récolte prévue : ajoutez des plantations pour voir le tableau.",
+      euros: "{valeur} €",
+    },
     // Morceaux des lignes de liste.
     resume: {
       surface: "{valeur} m²",

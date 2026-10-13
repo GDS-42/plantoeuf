@@ -100,6 +100,89 @@
     return total;
   }
 
+  // ---- Tableau économique (EX-04)
+
+  function produit(a, b) {
+    return { basse: a.basse * b.basse, mediane: a.mediane * b.mediane, haute: a.haute * b.haute };
+  }
+
+  // Mois « AAAA-MM » de la semaine : celui de son jour du milieu, comme pour productionSurPeriode.
+  function moisDeLaSemaine(semaine) {
+    return ajouterJours(semaine.debut, 3).slice(0, 7);
+  }
+
+  function moisSuivant(mois) {
+    const [annee, numero] = mois.split("-").map(Number);
+    return numero === 12 ? `${annee + 1}-01` : `${annee}-${String(numero + 1).padStart(2, "0")}`;
+  }
+
+  function moisEntre(premier, dernier) {
+    const liste = [];
+    for (let mois = premier; mois <= dernier; mois = moisSuivant(mois)) liste.push(mois);
+    return liste;
+  }
+
+  function caseVide() {
+    return { volume: fourchetteNulle(), ca: fourchetteNulle() };
+  }
+
+  function ajouterA(cumul, volume, ca) {
+    cumul.volume = somme(cumul.volume, volume);
+    cumul.ca = somme(cumul.ca, ca);
+  }
+
+  // Volume, CA (volume × prix) et marge (égale au CA en N1) par culture et par mois, en fourchette.
+  // Le CA se calcule plantation par plantation, au prix de sa variété. Seuls comptent les
+  // enregistrements actifs dont la variété et la culture sont actives.
+  function tableau({ cultures = [], varietes = [], plantations = [] }) {
+    const actifs = (liste) => liste.filter((e) => !e.supprimeLe);
+    const culturesParId = new Map(actifs(cultures).map((c) => [c.id, c]));
+    const varietesParId = new Map(actifs(varietes).map((v) => [v.id, v]));
+    const parCulture = new Map();
+
+    for (const plantation of actifs(plantations)) {
+      const variete = varietesParId.get(plantation.varieteId);
+      const culture = variete && culturesParId.get(variete.cultureId);
+      if (!culture) continue;
+      const p = parametres(culture, variete);
+      if (!parCulture.has(culture.id)) parCulture.set(culture.id, { culture, mois: new Map() });
+      const parMois = parCulture.get(culture.id).mois;
+      for (const semaine of productionHebdomadaire(plantation, p)) {
+        const mois = moisDeLaSemaine(semaine);
+        if (!parMois.has(mois)) parMois.set(mois, caseVide());
+        ajouterA(parMois.get(mois), semaine.volume, produit(semaine.volume, p.prix));
+      }
+    }
+
+    const tousLesMois = [...parCulture.values()].flatMap((c) => [...c.mois.keys()]).sort();
+    const mois = tousLesMois.length ? moisEntre(tousLesMois[0], tousLesMois[tousLesMois.length - 1]) : [];
+    const avecMarge = (c) => ({ volume: c.volume, ca: c.ca, marge: { ...c.ca } });
+    const totalFerme = { mois: {}, total: caseVide() };
+    for (const m of mois) totalFerme.mois[m] = caseVide();
+
+    const lignes = [...parCulture.values()]
+      .sort((a, b) => a.culture.nom.localeCompare(b.culture.nom, "fr"))
+      .map(({ culture, mois: parMois }) => {
+        const ligne = { cultureId: culture.id, nom: culture.nom, unite: culture.unite, mois: {}, total: caseVide() };
+        for (const m of mois) {
+          const c = parMois.get(m) || caseVide();
+          ligne.mois[m] = avecMarge(c);
+          ajouterA(ligne.total, c.volume, c.ca);
+          ajouterA(totalFerme.mois[m], c.volume, c.ca);
+          ajouterA(totalFerme.total, c.volume, c.ca);
+        }
+        ligne.total = avecMarge(ligne.total);
+        return ligne;
+      });
+
+    // Le total de la ferme additionne des unités différentes : seuls le CA et la marge y ont un sens.
+    const sansVolume = (c) => ({ ca: c.ca, marge: { ...c.ca } });
+    const total = { mois: {}, total: sansVolume(totalFerme.total) };
+    for (const m of mois) total.mois[m] = sansVolume(totalFerme.mois[m]);
+
+    return { mois, lignes, total };
+  }
+
   return {
     CHAMPS_SURCHARGEABLES,
     ajouterJours,
@@ -108,5 +191,6 @@
     productionTotale,
     productionSurPeriode,
     productionHebdomadaire,
+    tableau,
   };
 });
