@@ -292,3 +292,15 @@ test("[T15] EX-16 : l'élément qui a le focus clavier porte un contour visible"
     expect(contour.style !== "none" && contour.largeur >= 2, JSON.stringify(contour)).toBe(true);
   }
 });
+
+// ---- T16 — vérification de bout en bout : sur un grand écran, le tableau occupe toute sa boîte.
+
+test("[T16] à 1920 × 1080, le tableau occupe toute la largeur de sa boîte", async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await chargerExemple(page);
+  const { boite, tableau } = await page.evaluate(() => ({
+    boite: document.getElementById("tableau-defilement").clientWidth,
+    tableau: document.getElementById("tableau").getBoundingClientRect().width,
+  }));
+  expect(tableau).toBeGreaterThanOrEqual(boite - 1);
+});

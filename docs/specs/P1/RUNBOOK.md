@@ -77,3 +77,10 @@ La tranche ne touche ni au modèle de données ni au format exporté : une ferme
 - T15 · Focus clavier : contour vert de 3 px, décalé vers l'intérieur pour les zones qui défilent (le volet de saisie et la boîte du tableau peuvent recevoir le focus pour défiler au clavier).
 
 ## ✎ Bilan de fin de tranche
+
+- **Résultat** : T11 à T16 passent ; `./verify.sh P1` → exit 0 (48 tests unitaires, 45 de bout en bout). Deux volets sur PC : panneaux de saisie titrés à gauche, synthèse et tableau toujours visibles à droite, mois et noms figés au défilement, total figé à droite. Les 74 tests de N1 sont restés verts sans modification tout au long de la refonte.
+- **En attente** : T17, la validation visuelle par l'humain sur les captures à 1366 × 768 et 1920 × 1080 (EX-17). `passe` reste à `false` jusqu'à son accord.
+- **Coût** : 6 sessions sur 9. Aucune reprise ; relectures Fable de T11 et T12 conformes ; évaluation de la tranche conforme.
+- **Ce qui a servi** : les maquettes sur le canevas de design pour choisir entre deux mises en page avant le code ; les tests de N1 comme filet pendant le découpage du rendu en modules ; des captures relues à chaque tâche, qui ont fait figer la colonne Total (T12) et élargir le tableau (T16).
+- **Tests verts dès l'écriture** : les deux garde-fous de T12 et les deux audits de contraste de T15 ; consigné à chaque entrée.
+- **Pour la suite** : sous 1100 px, la barre du haut défile avec la page (hors périmètre de P1). Les panneaux de N2 et S3 se logeront dans le volet de saisie, leurs vues dans le volet de projection.
