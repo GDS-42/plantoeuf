@@ -1,6 +1,6 @@
 // T07 — EX-06, scénario S3 : un espace sur-occupé est signalé, sans bloquer la saisie.
 const { test, expect } = require("@playwright/test");
-const { ajouterEspace, ajouterCulture, ajouterVariete, ajouterPlantation } = require("./outils.js");
+const { aller, ajouterEspace, ajouterCulture, ajouterVariete, ajouterPlantation } = require("./outils.js");
 
 async function saisirS3(page) {
   await ajouterEspace(page, { nom: "planche 4", surface: 30 });
@@ -19,6 +19,7 @@ test("[T07] S3 : « planche 4 » porte un signal de sur-occupation pour juin, et
   await page.goto("index.html");
   await saisirS3(page);
 
+  await aller(page, "espaces");
   const signal = page.locator("#liste-espaces li", { hasText: "planche 4" }).locator(".sur-occupation");
   await expect(signal).toBeVisible();
   await expect(signal).toContainText("juin 2026");
@@ -33,11 +34,14 @@ test("[T07] S3 : « planche 4 » porte un signal de sur-occupation pour juin, et
 test("[T07] le signal disparaît dès que la sur-occupation est corrigée", async ({ page }) => {
   await page.goto("index.html");
   await saisirS3(page);
+  await aller(page, "espaces");
   await expect(page.locator("#liste-espaces li", { hasText: "planche 4" }).locator(".sur-occupation")).toBeVisible();
 
+  await aller(page, "plantations");
   await page.locator("#liste-plantations li", { hasText: "planche 4" }).last().locator('[data-action="modifier"]').click();
   await page.locator("#plantation-surface").fill("10");
   await page.locator("#plantation-ajouter").click();
 
+  await aller(page, "espaces");
   await expect(page.locator("#liste-espaces li", { hasText: "planche 4" }).locator(".sur-occupation")).toHaveCount(0);
 });

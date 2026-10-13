@@ -1,20 +1,27 @@
-// Lots de poules (S3) : liste et résumé du panneau de saisie. Le formulaire passe par la mécanique
-// commune de UiSaisie ; les calculs de ponte et d'aliment sont dans calc.js.
+// Lots de poules (S3) : liste du panneau de saisie. Le formulaire passe par la mécanique commune de
+// UiSaisie ; les calculs de ponte et d'aliment sont dans calc.js ; le repère des périodes des lots est
+// dessiné par ui-calendrier.js.
 (function () {
   "use strict";
 
-  const { T, formats, remplir, afficherFourchette, afficherDate } = UiCommun;
-  const { afficherListe } = UiSaisie.outils;
+  const { T, formats, remplir, elementFourchette, afficherDate } = UiCommun;
+  const { afficherListe, contenuLigne, morceaux, periode } = UiSaisie.outils;
+  const F = T.vueFerme;
 
+  // P2 : le nom et l'effectif, les dates, puis la ponte, les œufs d'une semaine de ponte et le coût
+  // d'une semaine d'aliment (EX-26), chacun en fourchette.
   function resumeLot(lot) {
-    return [lot.nom,
-      remplir(T.resume.effectif, { valeur: formats.nombre.format(lot.effectif) }),
-      remplir(T.resume.arrivee, { valeur: afficherDate(lot.arrivee) }),
-      remplir(T.resume.ponteLot, { debut: afficherDate(lot.debutPonte), fin: afficherDate(lot.reforme) }),
-      remplir(T.resume.ponteParJour, { valeur: afficherFourchette(lot.ponte) }),
-      // EX-26 : les œufs d'une semaine de ponte et le coût d'une semaine d'aliment.
-      remplir(T.resume.oeufsParSemaine, { valeur: afficherFourchette(Calc.oeufsParSemaine(lot), formats.entiers) }),
-      remplir(T.resume.alimentParSemaine, { valeur: afficherFourchette(Calc.coutAlimentParSemaine(lot)) })].join(" · ");
+    return contenuLigne({
+      titre: lot.nom,
+      puces: [{ texte: remplir(lot.effectif === 1 ? F.effectif.un : F.effectif.plusieurs, { nombre: formats.nombre.format(lot.effectif) }), ton: "oeuf" }],
+      sousTitre: morceaux([remplir(F.arriveeLot, { date: afficherDate(lot.arrivee) }), remplir(F.reformeLot, { date: afficherDate(lot.reforme) })], " · "),
+      faits: [
+        [F.faits.ponte, periode(lot.debutPonte, lot.reforme), "ponte"],
+        [F.faits.ponteParPoule, elementFourchette(lot.ponte, formats.nombre, F.oeuf), "ponteParPoule"],
+        [F.faits.oeufs, elementFourchette(Calc.oeufsParSemaine(lot), formats.entiers), "oeufs"],
+        [F.faits.aliment, elementFourchette(Calc.coutAlimentParSemaine(lot), formats.nombre, F.euros), "aliment"],
+      ],
+    });
   }
 
   // saisie : le module de saisie (élément en cours de modification).

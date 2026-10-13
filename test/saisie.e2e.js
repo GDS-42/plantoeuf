@@ -1,6 +1,8 @@
 // T03 — EX-01 : saisie, modification et suppression des espaces, cultures, variétés et plantations,
 // retrouvées après fermeture et réouverture du fichier.
 const { test, expect } = require("@playwright/test");
+// P2 : chaque liste est sur sa page, chaque formulaire s'ouvre dans un tiroir (EX-30, EX-31).
+const { aller, ouvrir, modifier } = require("./outils.js");
 
 // Choisit dans une liste déroulante l'option dont le texte contient `texte`.
 async function choisir(page, select, texte) {
@@ -9,6 +11,7 @@ async function choisir(page, select, texte) {
 }
 
 async function ajouterEspace(page, { nom, surface, type = "plein_champ" }) {
+  await ouvrir(page, "espaces");
   await page.locator("#espace-nom").fill(nom);
   await page.locator("#espace-surface").fill(String(surface));
   await page.locator("#espace-type").selectOption(type);
@@ -16,6 +19,7 @@ async function ajouterEspace(page, { nom, surface, type = "plein_champ" }) {
 }
 
 async function ajouterCulture(page, c) {
+  await ouvrir(page, "cultures");
   await page.locator("#culture-nom").fill(c.nom);
   await page.locator("#culture-famille").fill(c.famille);
   await page.locator("#culture-unite").selectOption(c.unite);
@@ -28,6 +32,7 @@ async function ajouterCulture(page, c) {
 }
 
 async function ajouterVariete(page, { nom, culture, surcharges = {} }) {
+  await ouvrir(page, "varietes");
   await page.locator("#variete-nom").fill(nom);
   await choisir(page, "#variete-cultureId", culture);
   for (const [champ, valeur] of Object.entries(surcharges)) {
@@ -37,6 +42,7 @@ async function ajouterVariete(page, { nom, culture, surcharges = {} }) {
 }
 
 async function ajouterPlantation(page, { variete, espace, surface, date }) {
+  await ouvrir(page, "plantations");
   await choisir(page, "#plantation-varieteId", variete);
   await choisir(page, "#plantation-espaceId", espace);
   await page.locator("#plantation-surface").fill(String(surface));
@@ -75,18 +81,25 @@ test("[T03] espaces, cultures, variétés et plantations sont saisis, listés et
   await page.goto("index.html");
   await saisirUneFerme(page);
 
+  // P2 : une fourchette se lit « médiane, puis basse à haute » : 2 / 2,5 / 3 € le kg s'affiche « 2,5 €/kg 2 à 3 ».
+  await aller(page, "espaces");
   await expect(ligne(page, "espaces", "planche 4")).toContainText("30");
-  await expect(ligne(page, "cultures", "courgette")).toContainText("2 / 2,5 / 3");
+  await aller(page, "cultures");
+  await expect(ligne(page, "cultures", "courgette")).toContainText("2,5 €/kg 2 à 3");
   await expect(ligne(page, "varietes", "Black Beauty")).toContainText("courgette");
   await expect(ligne(page, "varietes", "Black Beauty")).toContainText("55");
+  await aller(page, "plantations");
   await expect(ligne(page, "plantations", "Black Beauty")).toContainText("planche 4");
   await page.close();
 
   const reouverte = await context.newPage();
   await reouverte.goto("index.html");
+  await aller(reouverte, "espaces");
   await expect(ligne(reouverte, "espaces", "planche 4")).toHaveCount(1);
-  await expect(ligne(reouverte, "cultures", "courgette")).toContainText("2 / 2,5 / 3");
+  await aller(reouverte, "cultures");
+  await expect(ligne(reouverte, "cultures", "courgette")).toContainText("2,5 €/kg 2 à 3");
   await expect(ligne(reouverte, "varietes", "Black Beauty")).toContainText("55");
+  await aller(reouverte, "plantations");
   await expect(ligne(reouverte, "plantations", "Black Beauty")).toContainText("planche 4");
   await expect(ligne(reouverte, "plantations", "Black Beauty")).toContainText("20");
 });
@@ -112,19 +125,20 @@ test("[T03] une modification est enregistrée et retrouvée après réouverture"
   await page.goto("index.html");
   await saisirUneFerme(page);
 
-  await ligne(page, "espaces", "planche 4").locator('[data-action="modifier"]').click();
+  await modifier(page, "espaces", "planche 4");
   await expect(page.locator("#espace-nom")).toHaveValue("planche 4");
   await page.locator("#espace-surface").fill("45");
   await page.locator("#espace-ajouter").click();
   await expect(ligne(page, "espaces", "planche 4")).toContainText("45");
 
-  await ligne(page, "cultures", "courgette").locator('[data-action="modifier"]').click();
+  // P2 : 2,2 / 2,8 / 3,5 s'affiche « 2,8 €/kg 2,2 à 3,5 » (médiane, puis basse à haute).
+  await modifier(page, "cultures", "courgette");
   await expect(page.locator("#culture-prix")).toHaveValue("2 / 2,5 / 3");
   await page.locator("#culture-prix").fill("2,2 / 2,8 / 3,5");
   await page.locator("#culture-ajouter").click();
-  await expect(ligne(page, "cultures", "courgette")).toContainText("2,2 / 2,8 / 3,5");
+  await expect(ligne(page, "cultures", "courgette")).toContainText("2,8 €/kg 2,2 à 3,5");
 
-  await ligne(page, "plantations", "Black Beauty").locator('[data-action="modifier"]').click();
+  await modifier(page, "plantations", "Black Beauty");
   await page.locator("#plantation-surface").fill("25");
   await page.locator("#plantation-ajouter").click();
   await expect(ligne(page, "plantations", "Black Beauty")).toContainText("25");
@@ -132,8 +146,11 @@ test("[T03] une modification est enregistrée et retrouvée après réouverture"
 
   const reouverte = await context.newPage();
   await reouverte.goto("index.html");
+  await aller(reouverte, "espaces");
   await expect(ligne(reouverte, "espaces", "planche 4")).toContainText("45");
-  await expect(ligne(reouverte, "cultures", "courgette")).toContainText("2,2 / 2,8 / 3,5");
+  await aller(reouverte, "cultures");
+  await expect(ligne(reouverte, "cultures", "courgette")).toContainText("2,8 €/kg 2,2 à 3,5");
+  await aller(reouverte, "plantations");
   await expect(ligne(reouverte, "plantations", "Black Beauty")).toContainText("25");
   expect(await stockees(reouverte, "espaces")).toHaveLength(1);
   expect(await stockees(reouverte, "plantations")).toHaveLength(1);
@@ -144,15 +161,19 @@ test("[T03] une suppression retire l'élément des listes, même après réouver
   await page.goto("index.html");
   await saisirUneFerme(page);
 
+  await aller(page, "plantations");
   await ligne(page, "plantations", "Black Beauty").locator('[data-action="supprimer"]').click();
   await expect(ligne(page, "plantations", "Black Beauty")).toHaveCount(0);
+  await aller(page, "cultures");
   await ligne(page, "varietes", "Black Beauty").locator('[data-action="supprimer"]').click();
   await expect(ligne(page, "varietes", "Black Beauty")).toHaveCount(0);
   await page.close();
 
   const reouverte = await context.newPage();
   await reouverte.goto("index.html");
+  await aller(reouverte, "plantations");
   await expect(ligne(reouverte, "plantations", "Black Beauty")).toHaveCount(0);
+  await aller(reouverte, "cultures");
   await expect(ligne(reouverte, "varietes", "Black Beauty")).toHaveCount(0);
   await expect(ligne(reouverte, "cultures", "courgette")).toHaveCount(1);
 

@@ -2,9 +2,11 @@
 // EX-08 : rappel d'export à l'ouverture après 7 jours de modifications non exportées.
 const fs = require("node:fs");
 const { test, expect } = require("@playwright/test");
-const { ajouterEspace, saisirS2, caseDuTableau } = require("./outils.js");
+const { aller, ajouterEspace, saisirS2, caseDuTableau } = require("./outils.js");
 
+// P2 : « Exporter » est sur la page Sauvegarde ; « Exporter maintenant » du rappel, en tête de toutes les pages.
 async function exporter(page, bouton = "#exporter") {
+  if (bouton === "#exporter") await aller(page, "sauvegarde");
   const [telechargement] = await Promise.all([page.waitForEvent("download"), page.locator(bouton).click()]);
   return { nom: telechargement.suggestedFilename(), texte: fs.readFileSync(await telechargement.path(), "utf8") };
 }
@@ -30,9 +32,12 @@ test("[T08] EX-07 : Exporter produit un fichier JSON que Importer restaure à l'
   // Un autre navigateur, vide : l'import y restaure la même ferme.
   const cible = await browser.newPage();
   await cible.goto("index.html");
+  await aller(cible, "sauvegarde");
   await cible.locator("#importer").setInputFiles({ name: export1.nom, mimeType: "application/json", buffer: Buffer.from(export1.texte) });
   await expect(cible.locator("#import-message")).toBeVisible();
+  await aller(cible, "plantations");
   await expect(cible.locator("#liste-plantations")).toContainText("Black Beauty");
+  await aller(cible, "espaces");
   await expect(cible.locator("#liste-espaces")).not.toContainText("planche abandonnée");
   expect((await caseDuTableau(cible, "courgette", "ca", "2026-05")).mediane).toBeCloseTo(421.875, 6);
 
@@ -46,8 +51,11 @@ test("[T08] l'import remplace la ferme ouverte après confirmation", async ({ pa
   const sauvegarde = await exporter(page);
   await ajouterEspace(page, { nom: "planche ajoutée après l'export", surface: 10 });
 
+  await aller(page, "sauvegarde");
   page.once("dialog", (dialogue) => dialogue.accept());
   await page.locator("#importer").setInputFiles({ name: sauvegarde.nom, mimeType: "application/json", buffer: Buffer.from(sauvegarde.texte) });
+  await expect(page.locator("#import-message")).toBeVisible();
+  await aller(page, "espaces");
   await expect(page.locator("#liste-espaces")).not.toContainText("planche ajoutée après l'export");
   await expect(page.locator("#liste-espaces")).toContainText("planche 1");
 });
@@ -56,12 +64,14 @@ test("[T08] un fichier illisible est refusé avec un message, et la ferme reste 
   await page.goto("index.html");
   await ajouterEspace(page, { nom: "planche 1", surface: 30 });
 
+  await aller(page, "sauvegarde");
   page.on("dialog", (dialogue) => dialogue.accept());
   await page.locator("#importer").setInputFiles({ name: "notes.json", mimeType: "application/json", buffer: Buffer.from("{ pas du json") });
   await expect(page.locator("#import-message")).toBeVisible();
   await expect(page.locator("#import-message")).toHaveClass(/erreur/);
   await page.locator("#importer").setInputFiles({ name: "autre.json", mimeType: "application/json", buffer: Buffer.from('{"application":"autre"}') });
   await expect(page.locator("#import-message")).toHaveClass(/erreur/);
+  await aller(page, "espaces");
   await expect(page.locator("#liste-espaces")).toContainText("planche 1");
 });
 
