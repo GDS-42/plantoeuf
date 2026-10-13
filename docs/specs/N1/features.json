@@ -48,7 +48,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": true,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T03",
@@ -70,7 +70,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": false,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T04",
@@ -92,7 +92,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": true,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T05",
@@ -118,7 +118,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": true,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T06",
@@ -139,7 +139,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": false,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T07",
@@ -162,7 +162,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": false,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T08",
@@ -186,7 +186,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": true,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T09",
@@ -208,7 +208,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": false,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T10",
@@ -243,7 +243,7 @@
       "modele": "fable",
       "effort": "high",
       "relecture": false,
-      "passe": false
+      "passe": true
     }
   ],
   "mode": "simple",

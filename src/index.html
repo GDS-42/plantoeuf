@@ -5,88 +5,598 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>plantoeuf</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 60rem; margin: 1rem auto; padding: 0 1rem; color: #1f2a1f; }
+  body { font-family: system-ui, sans-serif; max-width: 70rem; margin: 1rem auto; padding: 0 1rem; color: #1f2a1f; background: #fbfcf8; }
   h1 { font-size: 1.4rem; }
-  form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; margin-bottom: 1rem; }
-  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; }
+  h2 { font-size: 1.15rem; border-bottom: 1px solid #c9d3c0; padding-bottom: 0.25rem; margin-top: 2rem; }
+  nav a { margin-right: 1rem; }
+  form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; margin-bottom: 1rem; padding: 0.75rem; background: #eef2e8; border-radius: 0.4rem; }
+  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; }
   input, select, button { font: inherit; padding: 0.3rem 0.5rem; }
-  [hidden] { display: none; }
+  input[type="number"] { width: 7rem; }
+  .aide { flex-basis: 100%; margin: 0; font-size: 0.85rem; color: #4d5a46; }
+  .erreur { flex-basis: 100%; margin: 0; color: #a12a1a; font-weight: 600; }
+  ul.liste { list-style: none; padding: 0; }
+  ul.liste li { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid #e1e6da; }
+  ul.liste li span.resume { flex: 1 1 20rem; }
+  .defilement { overflow-x: auto; }
+  table#tableau { border-collapse: collapse; font-size: 0.85rem; }
+  #tableau caption { caption-side: top; text-align: left; padding: 0.4rem 0; color: #4d5a46; }
+  #tableau th, #tableau td { border: 1px solid #d5dccd; padding: 0.3rem 0.5rem; vertical-align: top; }
+  #tableau thead th { background: #eef2e8; white-space: nowrap; }
+  #tableau tbody th, #tableau tfoot th { text-align: left; font-weight: normal; }
+  #tableau th[rowspan] { font-weight: 600; }
+  #tableau td { text-align: right; white-space: nowrap; }
+  #tableau td .mediane { display: block; font-weight: 600; }
+  #tableau td .bornes { display: block; font-size: 0.75rem; color: #5a6652; }
+  #tableau td.nul { color: #a3ad9b; }
+  .bandeau.exemple { background: #e3eefa; color: #1d3a5c; }
+  .bandeau { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin: 1rem 0; padding: 0.6rem 0.9rem; border-radius: 0.4rem; background: #fff0d4; color: #5c3300; }
+  #import-message { font-weight: 600; color: #2f5a1c; }
+  #import-message.erreur { color: #a12a1a; }
+  .sur-occupation { margin-left: 0.5rem; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #7a3f00; background: #fff0d4; }
+  #tableau tfoot { border-top: 2px solid #8a9a7e; }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
-<h1 data-texte="titre"></h1>
+<header>
+  <h1 data-texte="titre"></h1>
+  <nav>
+    <a href="#section-tableau" data-texte="tableau.titre"></a>
+    <a href="#section-espaces" data-texte="espaces.titre"></a>
+    <a href="#section-cultures" data-texte="cultures.titre"></a>
+    <a href="#section-varietes" data-texte="varietes.titre"></a>
+    <a href="#section-plantations" data-texte="plantations.titre"></a>
+    <a href="#section-sauvegarde" data-texte="sauvegarde.titre"></a>
+  </nav>
+</header>
 
-<section>
+<div id="proposition-exemple" class="bandeau exemple" hidden>
+  <span id="proposition-texte"></span>
+  <button id="charger-exemple" type="button" data-texte="exemple.charger"></button>
+</div>
+
+<div id="bandeau-exemple" class="bandeau exemple" hidden>
+  <span data-texte="exemple.chargee"></span>
+  <button id="effacer-exemple" type="button" data-texte="exemple.effacer"></button>
+</div>
+
+<div id="rappel-export" class="bandeau" role="alert" hidden>
+  <span id="rappel-texte"></span>
+  <button id="rappel-exporter" type="button" data-texte="sauvegarde.rappelExporter"></button>
+</div>
+
+<section id="section-tableau">
+  <h2 data-texte="tableau.titre"></h2>
+  <p id="tableau-vide" data-texte="tableau.aucun"></p>
+  <div class="defilement">
+    <table id="tableau">
+      <caption data-texte="tableau.legende"></caption>
+      <thead></thead>
+      <tbody></tbody>
+      <tfoot></tfoot>
+    </table>
+  </div>
+</section>
+
+<section id="section-espaces">
   <h2 data-texte="espaces.titre"></h2>
-  <form id="form-espace">
+  <form id="form-espace" data-objet="espaces">
     <label><span data-texte="espaces.nom"></span>
-      <input id="espace-nom" name="nom" required>
+      <input id="espace-nom" data-champ="nom" required>
     </label>
     <label><span data-texte="espaces.surface"></span>
-      <input id="espace-surface" name="surface" type="number" min="0" step="any" required>
+      <input id="espace-surface" data-champ="surface" data-format="nombre" type="number" min="0" step="any" required>
     </label>
     <label><span data-texte="espaces.type"></span>
-      <select id="espace-type" name="type"></select>
+      <select id="espace-type" data-champ="type" data-options="typesEspace"></select>
     </label>
     <button id="espace-ajouter" type="submit" data-texte="espaces.ajouter"></button>
+    <button id="espace-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+    <p id="espace-erreur" class="erreur" role="alert" hidden></p>
   </form>
   <p id="espaces-vide" data-texte="espaces.aucun"></p>
-  <ul id="liste-espaces"></ul>
+  <ul id="liste-espaces" class="liste"></ul>
+</section>
+
+<section id="section-cultures">
+  <h2 data-texte="cultures.titre"></h2>
+  <form id="form-culture" data-objet="cultures">
+    <label><span data-texte="cultures.nom"></span>
+      <input id="culture-nom" data-champ="nom" required>
+    </label>
+    <label><span data-texte="cultures.famille"></span>
+      <input id="culture-famille" data-champ="famille">
+    </label>
+    <label><span data-texte="cultures.unite"></span>
+      <select id="culture-unite" data-champ="unite" data-options="unitesVente"></select>
+    </label>
+    <label><span data-texte="cultures.rendement"></span>
+      <input id="culture-rendement" data-champ="rendement" data-format="fourchette" required>
+    </label>
+    <label><span data-texte="cultures.prix"></span>
+      <input id="culture-prix" data-champ="prix" data-format="fourchette" required>
+    </label>
+    <label><span data-texte="cultures.joursAvantRecolte"></span>
+      <input id="culture-joursAvantRecolte" data-champ="joursAvantRecolte" data-format="nombre" type="number" min="0" step="1" required>
+    </label>
+    <label><span data-texte="cultures.semainesRecolte"></span>
+      <input id="culture-semainesRecolte" data-champ="semainesRecolte" data-format="nombre" type="number" min="1" step="1" required>
+    </label>
+    <label><span data-texte="cultures.pertes"></span>
+      <input id="culture-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any" required>
+    </label>
+    <p class="aide" data-texte="cultures.aideFourchette"></p>
+    <button id="culture-ajouter" type="submit" data-texte="cultures.ajouter"></button>
+    <button id="culture-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+    <p id="culture-erreur" class="erreur" role="alert" hidden></p>
+  </form>
+  <p id="cultures-vide" data-texte="cultures.aucun"></p>
+  <ul id="liste-cultures" class="liste"></ul>
+</section>
+
+<section id="section-varietes">
+  <h2 data-texte="varietes.titre"></h2>
+  <form id="form-variete" data-objet="varietes">
+    <label><span data-texte="varietes.nom"></span>
+      <input id="variete-nom" data-champ="nom" required>
+    </label>
+    <label><span data-texte="varietes.culture"></span>
+      <select id="variete-cultureId" data-champ="cultureId" required></select>
+    </label>
+    <label><span data-texte="cultures.rendement"></span>
+      <input id="variete-rendement" data-champ="rendement" data-format="fourchette">
+    </label>
+    <label><span data-texte="cultures.prix"></span>
+      <input id="variete-prix" data-champ="prix" data-format="fourchette">
+    </label>
+    <label><span data-texte="cultures.joursAvantRecolte"></span>
+      <input id="variete-joursAvantRecolte" data-champ="joursAvantRecolte" data-format="nombre" type="number" min="0" step="1">
+    </label>
+    <label><span data-texte="cultures.semainesRecolte"></span>
+      <input id="variete-semainesRecolte" data-champ="semainesRecolte" data-format="nombre" type="number" min="1" step="1">
+    </label>
+    <label><span data-texte="cultures.pertes"></span>
+      <input id="variete-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any">
+    </label>
+    <p class="aide"><span data-texte="varietes.aide"></span> <span data-texte="cultures.aideFourchette"></span></p>
+    <button id="variete-ajouter" type="submit" data-texte="varietes.ajouter"></button>
+    <button id="variete-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+    <p id="variete-erreur" class="erreur" role="alert" hidden></p>
+  </form>
+  <p id="varietes-vide" data-texte="varietes.aucun"></p>
+  <ul id="liste-varietes" class="liste"></ul>
+</section>
+
+<section id="section-plantations">
+  <h2 data-texte="plantations.titre"></h2>
+  <form id="form-plantation" data-objet="plantations">
+    <label><span data-texte="plantations.variete"></span>
+      <select id="plantation-varieteId" data-champ="varieteId" required></select>
+    </label>
+    <label><span data-texte="plantations.espace"></span>
+      <select id="plantation-espaceId" data-champ="espaceId" required></select>
+    </label>
+    <label><span data-texte="plantations.surface"></span>
+      <input id="plantation-surface" data-champ="surface" data-format="nombre" type="number" min="0" step="any" required>
+    </label>
+    <label><span data-texte="plantations.date"></span>
+      <input id="plantation-date" data-champ="date" type="date" required>
+    </label>
+    <button id="plantation-ajouter" type="submit" data-texte="plantations.ajouter"></button>
+    <button id="plantation-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+    <p id="plantation-erreur" class="erreur" role="alert" hidden></p>
+  </form>
+  <p id="plantations-vide" data-texte="plantations.aucun"></p>
+  <ul id="liste-plantations" class="liste"></ul>
+</section>
+
+<section id="section-sauvegarde">
+  <h2 data-texte="sauvegarde.titre"></h2>
+  <p data-texte="sauvegarde.explication"></p>
+  <p>
+    <button id="exporter" type="button" data-texte="sauvegarde.exporter"></button>
+  </p>
+  <p>
+    <label><span data-texte="sauvegarde.importer"></span>
+      <input id="importer" type="file" accept=".json,application/json">
+    </label>
+  </p>
+  <p id="import-message" role="status" hidden></p>
 </section>
 
 <script src="i18n.js"></script>
 <script src="store.js"></script>
 <script src="calc.js"></script>
+<script src="exemple.js"></script>
 <script>
 (function () {
   "use strict";
 
-  const ferme = Store.ouvrir(window.localStorage);
+  let ferme = Store.ouvrir(window.localStorage);
+  const T = Textes;
+  const nombre = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
+  const jour = new Intl.DateTimeFormat("fr-FR", { timeZone: "UTC" });
+  const euros = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+  const volumes = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
+  const nomDuMois = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" });
+  const CHAMPS_SURCHARGEABLES = Calc.CHAMPS_SURCHARGEABLES;
+
+  // ---- Outils d'affichage
 
   function texte(chemin) {
-    return chemin.split(".").reduce((objet, cle) => objet[cle], Textes);
+    return chemin.split(".").reduce((objet, cle) => objet[cle], T);
   }
 
-  function element(balise, contenu) {
+  function remplir(modele, valeurs) {
+    return modele.replace(/\{(\w+)\}/g, (_, cle) => valeurs[cle]);
+  }
+
+  function element(balise, attributs, ...enfants) {
     const el = document.createElement(balise);
-    el.textContent = contenu;
+    for (const [nom, valeur] of Object.entries(attributs || {})) el.setAttribute(nom, valeur);
+    el.append(...enfants);
     return el;
   }
 
-  function afficherEspaces() {
-    const espaces = ferme.espaces();
-    document.getElementById("espaces-vide").hidden = espaces.length > 0;
-    document.getElementById("liste-espaces").replaceChildren(
-      ...espaces.map((espace) => element("li",
-        espace.nom + " · " + espace.surface + " " + Textes.espaces.unite + " · " + Textes.typesEspace[espace.type]))
-    );
+  function afficherFourchette(f) {
+    return [f.basse, f.mediane, f.haute].map((v) => nombre.format(v)).join(" / ");
   }
 
-  document.title = Textes.titre;
+  // Une fourchette dans un champ de saisie : un seul nombre si les trois sont égaux.
+  function saisieFourchette(f) {
+    const valeurs = f.basse === f.mediane && f.mediane === f.haute ? [f.mediane] : [f.basse, f.mediane, f.haute];
+    return valeurs.map((v) => String(v).replace(".", ",")).join(" / ");
+  }
+
+  function afficherDate(iso) {
+    return jour.format(new Date(iso + "T00:00:00Z"));
+  }
+
+  // Nom d'un enregistrement référencé, marqué s'il a été supprimé.
+  function nomDe(enregistrement) {
+    if (!enregistrement) return T.commun.supprime;
+    return enregistrement.supprimeLe ? `${enregistrement.nom} ${T.commun.supprime}` : enregistrement.nom;
+  }
+
+  function parId(objet) {
+    return new Map(ferme.lister(objet, { avecSupprimes: true }).map((e) => [e.id, e]));
+  }
+
+  function parNom(a, b) {
+    return a.nom.localeCompare(b.nom, "fr");
+  }
+
+  // ---- Lignes des listes
+
+  function resumeChamp(champ, valeur, unite) {
+    const affiche = typeof valeur === "object" ? afficherFourchette(valeur) : nombre.format(valeur);
+    return remplir(T.resume[champ], { valeur: affiche, unite: T.unitesVente[unite] });
+  }
+
+  function resumeEspace(espace, surOccupation) {
+    const texte = [espace.nom, remplir(T.resume.surface, { valeur: nombre.format(espace.surface) }), T.typesEspace[espace.type]].join(" · ");
+    if (!surOccupation) return texte;
+    const mois = surOccupation.mois.map((m) => remplir(T.espaces.moisSurOccupe, {
+      mois: nomDuMois.format(new Date(m.mois + "-01T00:00:00Z")), surface: nombre.format(m.surface),
+    })).join(", ");
+    return [texte, element("span", { class: "sur-occupation", role: "status" },
+      remplir(T.espaces.surOccupation, { mois, surface: nombre.format(espace.surface) }))];
+  }
+
+  function resumeCulture(culture) {
+    const nom = culture.famille ? `${culture.nom} (${culture.famille})` : culture.nom;
+    return [nom, T.unitesVente[culture.unite],
+      ...CHAMPS_SURCHARGEABLES.map((champ) => resumeChamp(champ, culture[champ], culture.unite))].join(" · ");
+  }
+
+  function resumeVariete(variete, cultures) {
+    const culture = cultures.get(variete.cultureId);
+    const surcharges = CHAMPS_SURCHARGEABLES.filter((champ) => variete[champ] !== null && variete[champ] !== undefined)
+      .map((champ) => resumeChamp(champ, variete[champ], culture ? culture.unite : "kg"));
+    return [variete.nom, nomDe(culture), ...(surcharges.length ? surcharges : [T.varietes.memesValeurs])].join(" · ");
+  }
+
+  function resumePlantation(plantation, varietes, cultures, espaces) {
+    const variete = varietes.get(plantation.varieteId);
+    const culture = variete && cultures.get(variete.cultureId);
+    const nom = variete ? `${nomDe(culture)} ${nomDe(variete)}` : nomDe(variete);
+    const morceaux = [nom, nomDe(espaces.get(plantation.espaceId)),
+      remplir(T.resume.surface, { valeur: nombre.format(plantation.surface) }),
+      remplir(T.resume.date, { valeur: afficherDate(plantation.date) })];
+    if (culture) {
+      const recolte = Calc.datesRecolte(plantation, Calc.parametres(culture, variete));
+      morceaux.push(remplir(T.resume.recolte, { debut: afficherDate(recolte.debut), fin: afficherDate(recolte.fin) }));
+    }
+    return morceaux.join(" · ");
+  }
+
+  function afficherListe(objet, enregistrements, resume) {
+    document.getElementById(`${objet}-vide`).hidden = enregistrements.length > 0;
+    document.getElementById(`liste-${objet}`).replaceChildren(...enregistrements.map((e) => element("li", { "data-id": e.id },
+      element("span", { class: "resume" }, ...[].concat(resume(e))),
+      element("button", { type: "button", "data-action": "modifier" }, T.commun.modifier),
+      element("button", { type: "button", "data-action": "supprimer" }, T.commun.supprimer))));
+  }
+
+  // ---- Tableau économique
+
+  // Une case : la médiane en gras, la basse et la haute dessous ; data-valeur garde le nombre exact.
+  function caseFourchette(fourchette, format, attributs) {
+    const valeur = (niveau) => element("span", { class: niveau, "data-valeur": String(fourchette[niveau]) }, format(fourchette[niveau]));
+    const td = element("td", attributs, valeur("mediane"), element("span", { class: "bornes" }, valeur("basse"), " – ", valeur("haute")));
+    if (fourchette.haute === 0) td.classList.add("nul");
+    return td;
+  }
+
+  function enEuros(valeur) {
+    return remplir(T.tableau.euros, { valeur: euros.format(valeur) });
+  }
+
+  function ligneDuTableau(attributs, entetes, cases, total, format) {
+    return element("tr", attributs, ...entetes,
+      ...cases.map(([mois, fourchette]) => caseFourchette(fourchette, format, { "data-mois": mois })),
+      caseFourchette(total, format, { "data-mois": "total" }));
+  }
+
+  function afficherTableau(tableau) {
+    const vide = tableau.lignes.length === 0;
+    document.getElementById("tableau-vide").hidden = !vide;
+    const table = document.getElementById("tableau");
+    table.hidden = vide;
+    if (vide) return;
+
+    table.tHead.replaceChildren(element("tr", {},
+      element("th", { scope: "col" }, T.tableau.culture),
+      element("th", { scope: "col" }, T.tableau.estimation),
+      ...tableau.mois.map((m) => element("th", { scope: "col", "data-mois": m }, nomDuMois.format(new Date(m + "-01T00:00:00Z")))),
+      element("th", { scope: "col" }, T.tableau.total)));
+
+    const casesDe = (parMois, mesure) => tableau.mois.map((m) => [m, parMois[m][mesure]]);
+    table.tBodies[0].replaceChildren(...tableau.lignes.flatMap((ligne) => {
+      const unite = T.unitesVente[ligne.unite];
+      return [
+        ligneDuTableau({ "data-culture": ligne.cultureId, "data-mesure": "volume" },
+          [element("th", { rowspan: "3", scope: "rowgroup" }, ligne.nom), element("th", { scope: "row" }, remplir(T.tableau.volume, { unite }))],
+          casesDe(ligne.mois, "volume"), ligne.total.volume, (v) => volumes.format(v)),
+        ligneDuTableau({ "data-culture": ligne.cultureId, "data-mesure": "ca" },
+          [element("th", { scope: "row" }, T.tableau.ca)], casesDe(ligne.mois, "ca"), ligne.total.ca, enEuros),
+        ligneDuTableau({ "data-culture": ligne.cultureId, "data-mesure": "marge" },
+          [element("th", { scope: "row" }, T.tableau.marge)], casesDe(ligne.mois, "marge"), ligne.total.marge, enEuros),
+      ];
+    }));
+
+    table.tFoot.replaceChildren(
+      ligneDuTableau({ "data-culture": "ferme", "data-mesure": "ca" },
+        [element("th", { rowspan: "2", scope: "rowgroup" }, T.tableau.ferme), element("th", { scope: "row" }, T.tableau.ca)],
+        casesDe(tableau.total.mois, "ca"), tableau.total.total.ca, enEuros),
+      ligneDuTableau({ "data-culture": "ferme", "data-mesure": "marge" },
+        [element("th", { scope: "row" }, T.tableau.marge)], casesDe(tableau.total.mois, "marge"), tableau.total.total.marge, enEuros));
+  }
+
+  // ---- Listes déroulantes
+
+  function remplirChoix(select, options) {
+    const courant = select.value;
+    select.replaceChildren(element("option", { value: "" }, T.commun.choisir),
+      ...options.map((o) => element("option", { value: o.valeur }, o.libelle)));
+    select.value = options.some((o) => o.valeur === courant) ? courant : "";
+  }
+
+  // ---- Formulaires
+
+  const formulaires = {};
+
+  function lireFormulaire(formulaire) {
+    const champs = {};
+    for (const entree of formulaire.querySelectorAll("[data-champ]")) {
+      const champ = entree.dataset.champ;
+      if (entree.dataset.format === "nombre") champs[champ] = entree.value === "" ? null : entree.valueAsNumber;
+      else if (entree.dataset.format === "fourchette") champs[champ] = Store.lireFourchette(entree.value);
+      else champs[champ] = entree.value.trim();
+    }
+    return champs;
+  }
+
+  function ecrireFormulaire(formulaire, enregistrement) {
+    for (const entree of formulaire.querySelectorAll("[data-champ]")) {
+      const valeur = enregistrement[entree.dataset.champ];
+      if (valeur === null || valeur === undefined) entree.value = "";
+      else entree.value = entree.dataset.format === "fourchette" ? saisieFourchette(valeur) : String(valeur);
+    }
+  }
+
+  function boutonValider(formulaire) {
+    return formulaire.querySelector('button[type="submit"]');
+  }
+
+  function montrerErreur(formulaire, message) {
+    const zone = formulaire.querySelector(".erreur");
+    zone.textContent = message || "";
+    zone.hidden = !message;
+  }
+
+  function quitterEdition(formulaire) {
+    formulaire.reset();
+    delete formulaire.dataset.id;
+    boutonValider(formulaire).textContent = texte(boutonValider(formulaire).dataset.texte);
+    formulaire.querySelector(".annuler").hidden = true;
+    montrerErreur(formulaire, null);
+  }
+
+  function entrerEdition(formulaire, enregistrement) {
+    quitterEdition(formulaire);
+    ecrireFormulaire(formulaire, enregistrement);
+    formulaire.dataset.id = enregistrement.id;
+    boutonValider(formulaire).textContent = T.commun.enregistrer;
+    formulaire.querySelector(".annuler").hidden = false;
+    formulaire.scrollIntoView({ block: "nearest" });
+    formulaire.querySelector("[data-champ]").focus();
+  }
+
+  function brancherFormulaire(formulaire) {
+    const objet = formulaire.dataset.objet;
+    formulaires[objet] = formulaire;
+
+    formulaire.addEventListener("submit", (evenement) => {
+      evenement.preventDefault();
+      try {
+        const champs = lireFormulaire(formulaire);
+        if (formulaire.dataset.id) ferme.modifier(objet, formulaire.dataset.id, champs);
+        else ferme.ajouter(objet, champs);
+      } catch (e) {
+        if (!T.erreurs[e.code]) console.error(e);
+        montrerErreur(formulaire, T.erreurs[e.code] || T.erreurs.inconnue);
+        return;
+      }
+      quitterEdition(formulaire);
+      rafraichir();
+    });
+
+    formulaire.querySelector(".annuler").addEventListener("click", () => quitterEdition(formulaire));
+
+    document.getElementById(`liste-${objet}`).addEventListener("click", (evenement) => {
+      const bouton = evenement.target.closest("button[data-action]");
+      if (!bouton) return;
+      const id = bouton.closest("li").dataset.id;
+      if (bouton.dataset.action === "modifier") {
+        entrerEdition(formulaire, ferme.obtenir(objet, id));
+      } else if (bouton.dataset.action === "supprimer") {
+        ferme.supprimer(objet, id);
+        if (formulaire.dataset.id === id) quitterEdition(formulaire);
+        rafraichir();
+      }
+    });
+  }
+
+  // ---- Sauvegarde : export, import, rappel (EX-07, EX-08)
+
+  function telecharger(nom, texte) {
+    const url = URL.createObjectURL(new Blob([texte], { type: "application/json" }));
+    const lien = element("a", { href: url, download: nom });
+    document.body.append(lien);
+    lien.click();
+    lien.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  function exporter() {
+    const fichier = ferme.exporter();
+    telecharger(`plantoeuf-${fichier.exporteLe.slice(0, 10)}.json`, JSON.stringify(fichier, null, 2));
+    document.getElementById("rappel-export").hidden = true;
+  }
+
+  function messageImport(texte, estErreur) {
+    const zone = document.getElementById("import-message");
+    zone.textContent = texte;
+    zone.classList.toggle("erreur", estErreur);
+    zone.hidden = false;
+  }
+
+  function erreurImport() {
+    const e = new Error("Fichier illisible");
+    e.code = "import_invalide";
+    return e;
+  }
+
+  async function importer(evenement) {
+    const champ = evenement.target;
+    const choisi = champ.files[0];
+    champ.value = "";
+    if (!choisi) return;
+    try {
+      let contenu;
+      try {
+        contenu = JSON.parse(await choisi.text());
+      } catch (e) {
+        throw erreurImport();
+      }
+      const fermeOccupee = Store.OBJETS.some((objet) => ferme.lister(objet, { avecSupprimes: true }).length > 0);
+      if (fermeOccupee && !window.confirm(T.sauvegarde.confirmerImport)) return;
+      ferme.importer(contenu);
+    } catch (e) {
+      if (!T.erreurs[e.code]) console.error(e);
+      messageImport(T.erreurs[e.code] || T.erreurs.inconnue, true);
+      return;
+    }
+    Object.values(formulaires).forEach(quitterEdition);
+    rafraichir();
+    messageImport(remplir(T.sauvegarde.importReussi, { plantations: ferme.lister("plantations").length }), false);
+  }
+
+  // ---- Rafraîchissement : tout l'affichage se recalcule depuis les données enregistrées.
+
+  function rafraichir() {
+    const espaces = ferme.lister("espaces").sort(parNom);
+    const cultures = ferme.lister("cultures").sort(parNom);
+    const varietes = ferme.lister("varietes");
+    const plantations = ferme.lister("plantations");
+    const tousEspaces = parId("espaces");
+    const toutesCultures = parId("cultures");
+    const toutesVarietes = parId("varietes");
+
+    const libelleVariete = (v) => `${nomDe(toutesCultures.get(v.cultureId))} — ${v.nom}`;
+    varietes.sort((a, b) => libelleVariete(a).localeCompare(libelleVariete(b), "fr"));
+    plantations.sort((a, b) => a.date.localeCompare(b.date) ||
+      resumePlantation(a, toutesVarietes, toutesCultures, tousEspaces).localeCompare(resumePlantation(b, toutesVarietes, toutesCultures, tousEspaces), "fr"));
+
+    const surOccupations = Calc.surOccupations({ espaces, cultures, varietes, plantations });
+    afficherListe("espaces", espaces, (e) => resumeEspace(e, surOccupations[e.id]));
+    afficherListe("cultures", cultures, resumeCulture);
+    afficherListe("varietes", varietes, (v) => resumeVariete(v, toutesCultures));
+    afficherListe("plantations", plantations, (p) => resumePlantation(p, toutesVarietes, toutesCultures, tousEspaces));
+
+    remplirChoix(document.getElementById("variete-cultureId"), cultures.map((c) => ({ valeur: c.id, libelle: c.nom })));
+    remplirChoix(document.getElementById("plantation-varieteId"), varietes.map((v) => ({ valeur: v.id, libelle: libelleVariete(v) })));
+    remplirChoix(document.getElementById("plantation-espaceId"), espaces.map((e) => ({ valeur: e.id, libelle: e.nom })));
+
+    afficherTableau(Calc.tableau({ cultures, varietes, plantations }));
+
+    // EX-10 : l'exemple est proposé tant que la ferme est vide, effaçable tant qu'il en reste quelque chose.
+    const fermeVide = Store.OBJETS.every((objet) => ferme.lister(objet).length === 0);
+    document.getElementById("proposition-exemple").hidden = !fermeVide;
+    document.getElementById("bandeau-exemple").hidden = !Exemple.estAffichee(ferme);
+  }
+
+  // ---- Démarrage
+
+  document.title = T.titre;
   document.querySelectorAll("[data-texte]").forEach((el) => {
     el.textContent = texte(el.dataset.texte);
   });
-
-  const choixType = document.getElementById("espace-type");
-  Object.entries(Textes.typesEspace).forEach(([valeur, libelle]) => {
-    const option = element("option", libelle);
-    option.value = valeur;
-    choixType.append(option);
+  document.querySelectorAll("select[data-options]").forEach((select) => {
+    for (const [valeur, libelle] of Object.entries(T[select.dataset.options])) {
+      select.append(element("option", { value: valeur }, libelle));
+    }
+  });
+  document.querySelectorAll("form[data-objet]").forEach(brancherFormulaire);
+  document.getElementById("exporter").addEventListener("click", exporter);
+  document.getElementById("rappel-exporter").addEventListener("click", exporter);
+  document.getElementById("importer").addEventListener("change", importer);
+  document.getElementById("proposition-texte").textContent = remplir(T.exemple.proposition, { plantations: Exemple.NOMBRE_DE_PLANTATIONS });
+  document.getElementById("charger-exemple").addEventListener("click", () => {
+    Exemple.charger(ferme, new Date().getFullYear());
+    rafraichir();
+  });
+  document.getElementById("effacer-exemple").addEventListener("click", () => {
+    Exemple.effacer(ferme);
+    Object.values(formulaires).forEach(quitterEdition);
+    rafraichir();
   });
 
-  const formulaire = document.getElementById("form-espace");
-  formulaire.addEventListener("submit", (evenement) => {
-    evenement.preventDefault();
-    ferme.ajouterEspace({
-      nom: formulaire.elements.nom.value.trim(),
-      surface: formulaire.elements.surface.valueAsNumber,
-      type: formulaire.elements.type.value,
-    });
-    formulaire.reset();
-    afficherEspaces();
+  // EX-08 : le rappel d'export se décide à l'ouverture.
+  document.getElementById("rappel-texte").textContent = remplir(T.sauvegarde.rappel, { jours: Store.DELAI_RAPPEL_JOURS });
+  document.getElementById("rappel-export").hidden = !ferme.rappelExport();
+
+  // EX-05 : une modification faite dans un autre onglet recalcule aussi cette page. Relire la ferme
+  // évite en plus qu'une saisie ici n'écrase ce qui a été enregistré là-bas.
+  window.addEventListener("storage", (evenement) => {
+    if (evenement.key !== null && evenement.key !== Store.CLE) return;
+    ferme = Store.ouvrir(window.localStorage);
+    rafraichir();
   });
 
-  afficherEspaces();
+  rafraichir();
 })();
 </script>
 </body>
