@@ -26,8 +26,9 @@
     return el;
   }
 
-  function afficherFourchette(f) {
-    return [f.basse, f.mediane, f.haute].map((v) => nombre.format(v)).join(" / ");
+  // format : par défaut deux décimales au plus ; les œufs se comptent en entiers.
+  function afficherFourchette(f, format = nombre) {
+    return [f.basse, f.mediane, f.haute].map((v) => format.format(v)).join(" / ");
   }
 
   // Une fourchette dans un champ de saisie : un seul nombre si les trois sont égaux.

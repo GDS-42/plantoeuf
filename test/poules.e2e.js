@@ -172,3 +172,12 @@ test("[T30] S8 : les œufs ont leur ligne dans la matrice, et le tableau ne comp
   await expect(offre.locator('td[data-semaine="2026-05-04"]')).toHaveAttribute("data-etat", "depasse");
   await expect(offre.locator('td[data-semaine="2026-05-11"]')).toHaveAttribute("data-etat", "manque");
 });
+
+// ---- T32 : retouches relevées par l'évaluateur de la tranche
+
+test("[T32] la liste des lots compte les œufs en nombres entiers, et l'aide des débouchés parle aussi des œufs", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirLot(page, { ponte: "0,6 / 0,72 / 0,8", pertes: "8" });
+  await expect(ligneLot(page, "Lot 1")).toContainText("386 / 464 / 515 œufs par semaine de ponte");
+  await expect(page.locator("#section-debouches .aide")).toContainText(/œuf/);
+});

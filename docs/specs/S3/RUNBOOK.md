@@ -85,3 +85,12 @@ Le format exporté passe en version 3 : un fichier de N1 (version 1) ou de N2 (v
 - T31 · Plus de bandeau « Maraîchage » au-dessus des cultures (P1-S1 à 1280 × 720) ; le bandeau « Atelier poules » reste. Dans la matrice, les œufs s'affichent en entiers et la première colonne devient « Culture ou œufs » quand ils y figurent.
 
 ## ✎ Bilan de fin de tranche
+
+**13/10/2026 — tranche S3 livrée en 7 sessions sur 11, avec un écart en attente de l'humain.** T26 à T31 sont passées ; T32 ne l'est pas : son critère est un rapport sans écart, et l'évaluateur Fable relève un écart, connu et consigné, sur EX-29. `./verify.sh S3` → exit 0 (94 tests unitaires, 70 de bout en bout).
+
+- **Ce que la tranche apporte** : les lots de poules se saisissent (panneau « Lots de poules ») ; l'outil estime les œufs pondus et le coût de l'aliment semaine par semaine ; le tableau économique montre l'atelier poules sous les cultures (œufs, chiffre d'affaires, aliment, marge de l'atelier), et la marge de la ferme déduit séances et aliment ; les œufs se vendent comme une culture dès qu'ils ont un débouché (matrice, ventes plafonnées, points de vente) ; le format exporté passe en version 3.
+- **Décisions de l'humain** (13/10/2026) : version 3 du format ; les lignes de version des tests `[T08]` et `[T18]` comparent à la version courante ; l'agent avance seul jusqu'à la livraison.
+- **Reprises** : T26 (tests qui fixaient « version 3 » en dur, relevés par le relecteur). Relectures Fable conformes pour T28, T29, T30. Retouches après l'évaluation : œufs en entiers dans la liste des lots, aide des débouchés.
+- **Écart consigné (seul écart de l'évaluateur)** : EX-29 demande des débouchés pour les œufs dans la ferme d'exemple ; le test `[T24]` de N2 l'interdit. Voie prudente : l'exemple vend ses œufs sans débouché. **À décider par l'humain** : autoriser dans `[T24]` les débouchés d'œufs (une ligne : accepter `produitId === Calc.OEUFS`), puis ajouter les trois débouchés d'œufs préparés à l'exemple et inverser les deux assertions du test `[T31]` qui figent leur absence ; T31 et T32 passeront alors. L'évaluateur juge la voie suivie conforme aux conditions d'arrêt.
+- **Design** : deux variantes maquettées sur le canevas Claude Design ; la A (bloc d'atelier sous les cultures, sur fond chaud) est retenue. Son bandeau « Maraîchage » a été retiré : il poussait la courgette sous le pli à 1280 × 720 (P1-S1).
+- **À surveiller** : le test `[T12]` P1-S1 à 1280 × 720 reste le plus sensible à toute ligne ajoutée au-dessus des cultures ; Firefox n'est pas testé (Chromium seulement).

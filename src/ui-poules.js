@@ -13,7 +13,7 @@
       remplir(T.resume.ponteLot, { debut: afficherDate(lot.debutPonte), fin: afficherDate(lot.reforme) }),
       remplir(T.resume.ponteParJour, { valeur: afficherFourchette(lot.ponte) }),
       // EX-26 : les œufs d'une semaine de ponte et le coût d'une semaine d'aliment.
-      remplir(T.resume.oeufsParSemaine, { valeur: afficherFourchette(Calc.oeufsParSemaine(lot)) }),
+      remplir(T.resume.oeufsParSemaine, { valeur: afficherFourchette(Calc.oeufsParSemaine(lot), formats.entiers) }),
       remplir(T.resume.alimentParSemaine, { valeur: afficherFourchette(Calc.coutAlimentParSemaine(lot)) })].join(" · ");
   }
 

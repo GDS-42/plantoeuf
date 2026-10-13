@@ -91,7 +91,7 @@
       produit: "Produit vendu (culture ou œufs)",
       prix: "Prix de vente par unité, en € (estimation)",
       volumeParSeance: "Volume vendable par séance (estimation)",
-      aide: "Ce que ce point de vente peut prendre à chaque séance, dans l'unité de la culture. Une culture sans débouché se vend toute, au prix de la culture.",
+      aide: "Ce que ce point de vente peut prendre à chaque séance, dans l'unité du produit (kg, botte, pièce ou œuf). Un produit sans débouché se vend tout, à son prix estimé.",
       ajouter: "Ajouter le débouché",
       aucun: "Aucun débouché pour l'instant.",
     },
