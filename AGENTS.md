@@ -12,7 +12,7 @@ Cible à terme : application web installable et synchronisée (ADR-001).
 ## Commandes
 
 - init : `./init.sh`
-- tests unitaires : `node --test test/`
+- tests unitaires : `node --test test/*.test.js`
 - bout en bout : `npx playwright test`
 - vérifier une tâche : `./verify.sh <ID>` (ex. `./verify.sh T04`)
 - vérifier une tranche : `./verify.sh <N1|N2|…>`

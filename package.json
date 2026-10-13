@@ -6,7 +6,7 @@
   "scripts": {
     "init": "./init.sh",
     "build": "./build.sh",
-    "test": "node --test test/",
+    "test": "node --test test/*.test.js",
     "e2e": "playwright test",
     "verify": "./verify.sh"
   },
