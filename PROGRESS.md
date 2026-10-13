@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : S3 · Sessions consommées : 5 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : S3 · Sessions consommées : 6 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -3663,4 +3663,91 @@ Running 1 test using 1 worker
 
   1 passed (1.5s)
 == T30 : vérification verte ==
+```
+
+## 13/10/2026 · T31 — Ferme d'exemple : un lot de poules réunionnais · **écart consigné avec EX-29**
+
+- Session 6 / 11 du seuil d'alerte de S3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- **Condition d'arrêt rencontrée** (RUNBOOK S3 : « un test de N1, de P1 ou de N2 ne peut redevenir vert qu'en le modifiant ») : EX-29 demande que la ferme d'exemple inclue « un lot de poules et des débouchés pour ses œufs », mais le test `[T24]` de N2 vérifie que chaque débouché de l'exemple vend une culture (`cultures.has(debouche.produitId)`) ; un débouché d'œufs le fait rougir. L'humain a demandé d'avancer sans poser de question : voie la plus prudente, qui ne modifie ni le test ni la spec — l'exemple a son lot, et ses œufs se vendent **sans débouché**, au prix de l'œuf du lot. **Proposé à l'humain** : dans `[T24]`, accepter aussi `produitId === Calc.OEUFS` (une ligne), puis ajouter à l'exemple trois débouchés d'œufs (marché 0,45 à 0,55 € l'œuf, AMAP 0,50 à 0,55 €, épicerie 0,35 à 0,45 €), déjà préparés.
+- Deuxième contrainte rencontrée : avec un lot dans l'exemple, le bandeau « Maraîchage » en tête du tableau poussait la courgette sous le pli à 1280 × 720 (test `[T12]` P1-S1 rouge). Le bandeau du haut est retiré ; seul le bandeau « Atelier poules » sépare les deux ateliers.
+- Trouvé en relisant une capture : dans la matrice, les œufs avaient une décimale (« 463,7 ») et la première colonne s'intitulait « Culture ». Test rouge, puis œufs en entiers et « Culture ou œufs ».
+- Résultat : **vert**. `./verify.sh T31` → exit 0 (2 tests unitaires, 3 de bout en bout) ; `./verify.sh S3` → exit 0 (94 tests unitaires, 69 de bout en bout), dont tous les tests de N1, P1 et N2 qui chargent l'exemple.
+- Fichiers : `src/exemple.js` (lot « Lot de printemps », 100 poules ; `effacer` couvre les lots), `src/ui-tableau.js` (sans bandeau au-dessus des cultures), `src/ui-ventes.js` (œufs en entiers, « Culture ou œufs »), `src/i18n.js`, `test/poules.test.js`, `test/exemple-poules.e2e.js`.
+- Rouge d'abord : 2 tests unitaires et 1 de bout en bout rouges (aucun lot dans l'exemple) ; le test d'effacement passait déjà, faute de lot à effacer.
+- Commit : « T31 — Ferme d'exemple : un lot de poules réunionnais ».
+
+Preuve (`./verify.sh T31`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 131839 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 66.583663
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 67.682111
+  type: 'test'
+  ...
+# Subtest: [T31] la ferme d'exemple a un lot de poules dans l'année choisie ; ses œufs se vendent sans débouché
+ok 3 - [T31] la ferme d'exemple a un lot de poules dans l'année choisie ; ses œufs se vendent sans débouché
+  ---
+  duration_ms: 27.612635
+  type: 'test'
+  ...
+# Subtest: [T31] effacer l'exemple efface aussi son lot de poules, et seulement lui
+ok 4 - [T31] effacer l'exemple efface aussi son lot de poules, et seulement lui
+  ---
+  duration_ms: 6.499357
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 4 - test/squelette.test.js
+  ---
+  duration_ms: 59.785635
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 5 - test/store.test.js
+  ---
+  duration_ms: 70.665348
+  type: 'test'
+  ...
+1..0
+# Subtest: test/ventes.test.js
+ok 6 - test/ventes.test.js
+  ---
+  duration_ms: 70.921546
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 191.949582
+== Tests de bout en bout (Playwright) ==
+
+Running 3 tests using 1 worker
+
+  ✓  1 test/exemple-poules.e2e.js:4:1 › [T31] la ferme d'exemple montre son lot de poules, l'atelier dans le tableau et les œufs dans la matrice (434ms)
+  ✓  2 test/exemple-poules.e2e.js:15:1 › [T31] effacer la ferme d'exemple efface aussi son lot de poules (293ms)
+  ✓  3 test/exemple-poules.e2e.js:23:1 › [T31] dans la matrice, les œufs se comptent en nombres entiers et la première colonne les nomme (416ms)
+
+  3 passed (2.0s)
+== T31 : vérification verte ==
 ```

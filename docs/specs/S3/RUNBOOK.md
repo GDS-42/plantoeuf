@@ -67,6 +67,11 @@ Le format exporté passe en version 3 : un fichier de N1 (version 1) ou de N2 (v
 
 ## ✎ Surprises et découvertes
 
+- T26 · Les premiers tests de T26 fixaient « version 3 » en dur, contre la décision même qu'ils appliquaient : relevé par le relecteur, corrigé en une reprise.
+- T27 · Avec un 9e raccourci, la barre de raccourcis passe sur trois lignes et cachait le titre du panneau atteint ; la marge de défilement suit désormais la hauteur réelle de la barre.
+- T31 · Le test `[T24]` de N2 interdit un débouché qui ne vend pas une culture : il bloque les débouchés d'œufs dans la ferme d'exemple demandés par EX-29 (voie prudente, proposition à l'humain).
+- T31 · Le test `[T12]` P1-S1 à 1280 × 720 reste le plus sensible à toute ligne ajoutée au-dessus des cultures dans le tableau.
+
 ## ✎ Décisions
 
 - T26 · Le store vérifie que les dates d'un lot se suivent (arrivée ≤ début de ponte ≤ réforme, le même jour permis) à l'ajout, à la modification et à l'import ; code d'erreur `dates_desordonnees`. Les tests comparent la version du format à `Store.VERSION` : un prochain objet ne touchera plus aucun test.
@@ -76,5 +81,7 @@ Le format exporté passe en version 3 : un fichier de N1 (version 1) ou de N2 (v
 - T29 · Maquette A mise en œuvre : avec au moins un lot, un bandeau « Maraîchage · n cultures » (s'il y a des cultures) puis, sous les cultures, un bandeau « Atelier poules · n lots, n poules » et le bloc « Œufs » (œufs, chiffre d'affaires, coût de l'aliment, marge de l'atelier), sur un fond chaud qui le distingue. Le pied ajoute « Coût de l'aliment estimé » ; la marge de la ferme déduit séances et aliment, du pire au meilleur. Œufs affichés en nombres entiers.
 - T30 · Les œufs de tous les lots forment un produit `oeufs`, placé après les cultures dans la matrice. Avec au moins un débouché d'œufs actif, le tableau ne compte que les œufs vendus (règles de N2 : demande, meilleur prix d'abord, mois du jeudi) et l'aliment reste compté chaque semaine ; sans débouché, toute la ponte se vend au prix de l'œuf de son lot. Un débouché d'œufs sans lot montre une demande que rien ne couvre.
 - T30 · Avec un lot et sans débouché d'œufs, la matrice montre une ligne « Œufs » en état « sans débouché », comme une culture ; l'info-bulle dit désormais « toute la production se vend à son prix estimé ». Avec un débouché, les œufs des semaines sans séance ne comptent pas dans le tableau (seul le vendu compte, comme une culture de N2).
+- T31 · Lot de la ferme d'exemple : « Lot de printemps », 100 poulettes prêtes à pondre arrivées le 2 mars, ponte du 6 avril au 25 octobre, 0,6 à 0,8 œuf par poule et par jour, 8 % de pertes, 115 à 135 g d'aliment à 0,70 à 0,95 € le kg (aliment importé), œuf à 0,40 à 0,50 €. Repère du pré-cahier des charges : environ 125 g par poule et par jour. Ses œufs se vendent sans débouché tant que le test `[T24]` n'admet pas les débouchés d'œufs (voir PROGRESS.md).
+- T31 · Plus de bandeau « Maraîchage » au-dessus des cultures (P1-S1 à 1280 × 720) ; le bandeau « Atelier poules » reste. Dans la matrice, les œufs s'affichent en entiers et la première colonne devient « Culture ou œufs » quand ils y figurent.
 
 ## ✎ Bilan de fin de tranche

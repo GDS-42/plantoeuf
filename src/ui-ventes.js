@@ -15,10 +15,11 @@
       remplir(T.offre.semaine, { numero: Calc.numeroDeSemaine(lundi) }), element("br"), jourCourt.format(new Date(lundi + "T00:00:00Z")));
   }
 
-  function caseOffre(semaine, lundi, unite) {
-    const td = caseFourchette(semaine.offre, (v) => formats.volumes.format(v), { "data-semaine": lundi, "data-etat": semaine.etat, "data-sur": String(semaine.sur) });
+  // format : les volumes d'une culture (une décimale) ou les œufs (en entiers).
+  function caseOffre(semaine, lundi, unite, format) {
+    const td = caseFourchette(semaine.offre, (v) => format.format(v), { "data-semaine": lundi, "data-etat": semaine.etat, "data-sur": String(semaine.sur) });
     td.classList.add(`etat-${semaine.etat}`);
-    const ecart = semaine.ecart === null ? "" : formats.volumes.format(Math.abs(semaine.ecart));
+    const ecart = semaine.ecart === null ? "" : format.format(Math.abs(semaine.ecart));
     let titre = remplir(T.offre.etats[semaine.etat], { ecart, unite });
     if (semaine.sur) titre += ` (${T.offre.sur})`;
     td.setAttribute("title", titre);
@@ -29,11 +30,11 @@
     return td;
   }
 
-  function caseDemande(semaine, lundi) {
+  function caseDemande(semaine, lundi, format) {
     if (semaine.demande === null) {
       return element("td", { "data-semaine": lundi, class: "nul", title: T.offre.sansDebouche }, element("span", { class: "mediane" }, T.tableau.nul));
     }
-    return caseFourchette(semaine.demande, (v) => formats.volumes.format(v), { "data-semaine": lundi });
+    return caseFourchette(semaine.demande, (v) => format.format(v), { "data-semaine": lundi });
   }
 
   function afficherOffreDemande(od) {
@@ -44,21 +45,22 @@
     table.hidden = vide;
     if (vide) return;
     table.tHead.replaceChildren(element("tr", {},
-      element("th", { scope: "col" }, T.offre.culture),
+      element("th", { scope: "col" }, od.lignes.some((l) => l.produitId === Calc.OEUFS) ? T.offre.cultureOuOeufs : T.offre.culture),
       element("th", { scope: "col" }, T.offre.estimation),
       ...od.semaines.map(enteteSemaine)));
     table.tBodies[0].replaceChildren(...od.lignes.flatMap((ligne) => {
       const oeufs = ligne.produitId === Calc.OEUFS;
       const unite = oeufs ? T.poules.uniteOeufs : T.unitesVente[ligne.unite];
       const nom = oeufs ? T.poules.oeufs : ligne.nom;
+      const format = oeufs ? formats.entiers : formats.volumes;
       return [
         element("tr", { "data-produit": ligne.produitId, "data-mesure": "offre" },
           element("th", { rowspan: "2", scope: "rowgroup" }, nom),
           element("th", { scope: "row" }, remplir(T.offre.offre, { unite })),
-          ...od.semaines.map((lundi) => caseOffre(ligne.semaines[lundi], lundi, unite))),
+          ...od.semaines.map((lundi) => caseOffre(ligne.semaines[lundi], lundi, unite, format))),
         element("tr", { "data-produit": ligne.produitId, "data-mesure": "demande" },
           element("th", { scope: "row" }, remplir(T.offre.demande, { unite })),
-          ...od.semaines.map((lundi) => caseDemande(ligne.semaines[lundi], lundi))),
+          ...od.semaines.map((lundi) => caseDemande(ligne.semaines[lundi], lundi, format))),
       ];
     }));
   }

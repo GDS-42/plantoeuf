@@ -69,7 +69,8 @@
           [element("th", { scope: "row" }, T.tableau.marge)], casesDe(ligne.mois, "marge"), ligne.total.marge, enEuros),
       ];
     });
-    // S3 (EX-27) : avec des poules, un bandeau par atelier, et le bloc de l'atelier poules sous les cultures.
+    // S3 (EX-27) : avec des poules, le bloc de l'atelier poules sous les cultures, après son bandeau. Pas de bandeau
+    // au-dessus des cultures : il les pousserait sous le pli à 1280 × 720 (P1-S1).
     const { poules } = tableau;
     const bandeau = (atelier, texte) => element("tr", { class: "bandeau-atelier", "data-atelier": atelier },
       element("th", { colspan: String(tableau.mois.length + 3), scope: "colgroup" }, element("span", {}, texte)));
@@ -86,9 +87,7 @@
       ligneDuTableau({ "data-culture": "oeufs", "data-mesure": "marge" },
         [element("th", { scope: "row" }, T.tableau.margeAtelier)], casesDe(poules.mois, "marge"), poules.total.marge, enEuros),
     ] : [];
-    const bandeauCultures = poules && tableau.lignes.length
-      ? [bandeau("maraichage", remplir(T.tableau.atelierMaraichage, { cultures: nombreDe(T.tableau.cultures, tableau.lignes.length) }))] : [];
-    table.tBodies[0].replaceChildren(...bandeauCultures, ...lignesCultures, ...lignesPoules);
+    table.tBodies[0].replaceChildren(...lignesCultures, ...lignesPoules);
 
     // Pied : chiffre d'affaires, coût des séances s'il y en a (EX-23), marge de la ferme.
     const avecCouts = tableau.total.total.couts.haute > 0;

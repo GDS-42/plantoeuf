@@ -1,6 +1,7 @@
 // Ferme d'exemple (La Réunion) : 5 espaces, 7 cultures, 10 plantations sur la saison fraîche,
 // d'avril à octobre, la plus favorable au maraîchage (sèche, sans cyclone), vendues sur un marché,
-// en paniers et à une épicerie de l'Ouest.
+// en paniers et à une épicerie de l'Ouest ; un lot de 100 poules pondeuses, dont les œufs se vendent
+// sans débouché, au prix de l'œuf du lot (voir PROGRESS.md, T31).
 // C'est le seul fichier où figurent des valeurs agronomiques et des prix : ce sont des ordres
 // de grandeur pour montrer l'outil, pas des références.
 (function (racine, fabrique) {
@@ -90,10 +91,19 @@
     { point: "epicerie", culture: "piment", prix: f(8, 10, 12), volumeParSeance: f(1, 1.5, 2) },
   ];
 
+  // Un lot de poulettes prêtes à pondre (environ 18 semaines), arrivées début mars, réformées fin octobre.
+  // Repères : environ 125 g d'aliment par poule et par jour ; aliment importé, plus cher qu'en métropole.
+  const LOTS = [
+    {
+      nom: "Lot de printemps", effectif: 100, arrivee: "03-02", debutPonte: "04-06", reforme: "10-25",
+      ponte: f(0.6, 0.72, 0.8), pertes: 8, aliment: f(115, 125, 135), prixAliment: f(0.7, 0.8, 0.95), prixOeuf: f(0.4, 0.45, 0.5),
+    },
+  ];
+
   // Enregistre la ferme d'exemple dans `ferme` (store ouvert) pour l'année `annee`, et retient
   // les identifiants créés pour pouvoir l'effacer d'un geste.
   function charger(ferme, annee) {
-    const ids = { espaces: [], cultures: [], varietes: [], plantations: [], pointsVente: [], seances: [], debouches: [] };
+    const ids = { espaces: [], cultures: [], varietes: [], plantations: [], pointsVente: [], seances: [], debouches: [], lots: [] };
     const cree = (objet, champs) => {
       const enregistrement = ferme.ajouter(objet, champs);
       ids[objet].push(enregistrement.id);
@@ -123,6 +133,9 @@
     for (const { point, culture, ...debouche } of DEBOUCHES) {
       cree("debouches", { ...debouche, pointVenteId: points[point], produitId: cultures[culture] });
     }
+    for (const { arrivee, debutPonte, reforme, ...lot } of LOTS) {
+      cree("lots", { ...lot, arrivee: `${annee}-${arrivee}`, debutPonte: `${annee}-${debutPonte}`, reforme: `${annee}-${reforme}` });
+    }
     ferme.noterExemple(ids);
     return ids;
   }
@@ -141,7 +154,7 @@
   function effacer(ferme) {
     const ids = ferme.exemple();
     if (!ids) return;
-    for (const objet of ["debouches", "seances", "pointsVente", "plantations", "varietes", "cultures", "espaces"]) {
+    for (const objet of ["lots", "debouches", "seances", "pointsVente", "plantations", "varietes", "cultures", "espaces"]) {
       for (const id of ids[objet] || []) {
         const enregistrement = ferme.obtenir(objet, id);
         if (enregistrement && !enregistrement.supprimeLe) ferme.supprimer(objet, id);

@@ -298,3 +298,42 @@ test("[T30] 200 plantations, 10 points de vente, 20 séances, 100 débouchés et
   assert.equal(tableau.poules.lots, 10);
   assert.ok(ms < 1000, `${ms} ms`);
 });
+
+// ---- T31 : la ferme d'exemple élève un lot de poules (EX-29)
+
+const Exemple = require("../src/exemple.js");
+
+function donneesDe(ferme) {
+  const resultat = {};
+  for (const objet of Store.OBJETS) resultat[objet] = ferme.lister(objet);
+  return resultat;
+}
+
+test("[T31] la ferme d'exemple a un lot de poules dans l'année choisie ; ses œufs se vendent sans débouché", () => {
+  const ferme = Store.ouvrir(stockageEnMemoire());
+  Exemple.charger(ferme, 2027);
+  const d = donneesDe(ferme);
+  assert.equal(d.lots.length, 1);
+  for (const champ of ["arrivee", "debutPonte", "reforme"]) assert.match(d.lots[0][champ], /^2027-/);
+  // Le test [T24] de N2 exige que chaque débouché de l'exemple vende une culture : pas de débouché d'œufs (PROGRESS.md, T31).
+  assert.equal(d.debouches.some((x) => x.produitId === Calc.OEUFS), false);
+  const { poules, lignes } = Calc.tableau(d);
+  assert.equal(lignes.length, d.cultures.length);
+  assert.equal(poules.aDebouche, false);
+  assert.ok(poules.total.ca.mediane > 0 && poules.total.marge.mediane > 0);
+  // Les œufs ont leur ligne dans la matrice, sans demande.
+  const ligne = Calc.offreDemande(d).lignes.find((l) => l.produitId === Calc.OEUFS);
+  assert.ok(Object.values(ligne.semaines).every((s) => s.etat === "sans_debouche"));
+});
+
+test("[T31] effacer l'exemple efface aussi son lot de poules, et seulement lui", () => {
+  const stockage = stockageEnMemoire();
+  const ferme = Store.ouvrir(stockage);
+  Exemple.charger(ferme, 2027);
+  const mien = ferme.ajouter("lots", { ...CHAMPS_LOT, nom: "mon lot" });
+  Exemple.effacer(ferme);
+  const reouverte = Store.ouvrir(stockage);
+  assert.deepEqual(reouverte.lister("lots").map((l) => l.id), [mien.id]);
+  assert.equal(reouverte.lister("lots", { avecSupprimes: true }).length, 2);
+  assert.equal(Exemple.estAffichee(reouverte), false);
+});
