@@ -58,3 +58,26 @@ test("[T34] avec des poules et sans séance, les coûts sont l'aliment seul ; de
   assert.deepEqual(cles.couts, { total: f(90, 100, 120), seances: null, aliment: f(90, 100, 120) });
   assert.deepEqual(cles.oeufs, { volume: f(500, 600, 700), vendus: true, effectif: 140, lots: 2 });
 });
+
+test("[T34] EX-33 : le meilleur mois et les mois de marge médiane négative viennent du calcul, pas du rendu", () => {
+  const mois = ["2026-03", "2026-04", "2026-05"];
+  const tableau = {
+    mois, lignes: [], poules: null,
+    total: {
+      mois: {
+        "2026-03": { ca: f(0), marge: f(-40, -25, 5) },
+        "2026-04": { ca: f(500, 800, 900), marge: f(100, 300, 400) },
+        "2026-05": { ca: f(600, 700, 1200), marge: f(-10, -5, 50) },
+      },
+      total: { ca: f(1100, 1500, 2100), couts: f(0), marge: f(50, 270, 455) },
+    },
+  };
+  const cles = Calc.chiffresCles(tableau);
+  assert.equal(cles.meilleurMois, "2026-04");
+  assert.deepEqual(cles.moisMargeNegative, ["2026-03", "2026-05"]);
+
+  // Sans aucune vente, pas de meilleur mois.
+  const vide = Calc.chiffresCles({ mois: ["2026-03"], lignes: [], poules: null, total: { mois: { "2026-03": { ca: f(0), marge: f(0) } }, total: { ca: f(0), couts: f(0), marge: f(0) } } });
+  assert.equal(vide.meilleurMois, null);
+  assert.deepEqual(vide.moisMargeNegative, []);
+});

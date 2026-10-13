@@ -325,23 +325,24 @@
 
   function afficherGraphique(tableau) {
     mois = tableau.mois.map((m) => ({ mois: m, ca: tableau.total.mois[m].ca, marge: tableau.total.mois[m].marge }));
-    // Le résumé : le meilleur mois, et les mois où la marge est négative.
-    const meilleur = mois.reduce((a, b) => (b.ca.mediane > a.ca.mediane ? b : a), mois[0]);
-    const negatifs = mois.filter((m) => m.marge.mediane < 0).map((m) => nomMois.format(dateDe(m.mois)));
+    // Le résumé : le meilleur mois, et les mois où la marge médiane est négative (repérés par Calc.chiffresCles).
+    const { meilleurMois, moisMargeNegative } = Calc.chiffresCles(tableau);
     const resume = [];
-    if (meilleur && meilleur.ca.mediane > 0) {
-      resume.push(remplir(V.graphique.meilleurMois, { mois: nomMois.format(dateDe(meilleur.mois)),
-        mediane: euros(meilleur.ca.mediane), basse: euros(meilleur.ca.basse), haute: euros(meilleur.ca.haute) }));
+    if (meilleurMois) {
+      const ca = tableau.total.mois[meilleurMois].ca;
+      resume.push(remplir(V.graphique.meilleurMois, { mois: nomMois.format(dateDe(meilleurMois)),
+        mediane: euros(ca.mediane), basse: euros(ca.basse), haute: euros(ca.haute) }));
     }
-    if (negatifs.length) resume.push(remplir(V.graphique.margeNegative, { mois: liste(negatifs) }));
+    if (moisMargeNegative.length) resume.push(remplir(V.graphique.margeNegative, { mois: liste(moisMargeNegative.map((m) => nomMois.format(dateDe(m)))) }));
     document.getElementById("graphique-resume").textContent = resume.join(" ");
     largeurDessinee = 0;
     dessiner();
   }
 
-  // « mars », « mars et avril », « mars, avril et mai ».
+  // « mars », « mars et avril », « mars, avril et mai » : la conjonction vient de la langue de l'outil.
+  const conjonction = new Intl.ListFormat("fr-FR", { style: "long", type: "conjunction" });
   function liste(noms) {
-    return noms.length < 2 ? noms.join("") : `${noms.slice(0, -1).join(", ")} et ${noms[noms.length - 1]}`;
+    return conjonction.format(noms);
   }
 
   // Redessiner quand la carte change de largeur (fenêtre, page qui redevient visible).

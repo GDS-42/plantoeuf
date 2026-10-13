@@ -281,7 +281,7 @@
       graphique: {
         titre: "Chiffre d'affaires et marge, mois par mois",
         meilleurMois: "Meilleur mois : {mois}, {mediane} de chiffre d'affaires (entre {basse} et {haute}).",
-        margeNegative: "Marge négative en {mois} : les coûts du mois dépassent ses ventes.",
+        margeNegative: "Marge médiane négative en {mois} : les coûts du mois dépassent probablement ses ventes.",
         legendeCa: "Chiffre d'affaires",
         legendeMarge: "Marge",
         lecture: "Barre et point : la médiane. Halo et bande claire : de la valeur basse à la valeur haute.",

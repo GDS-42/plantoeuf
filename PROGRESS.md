@@ -4535,3 +4535,46 @@ dist/index.html : 263161 octets
   13 passed (11.6s)
 == T34 : vérification verte ==
 ```
+
+## 13/10/2026 · T36 — Ferme : lignes lisibles, calendrier de culture, poules, sauvegarde
+
+- Modèle : Opus 5.5, effort élevé (agent dans une copie de travail séparée) · Reprises : 0 · Relecture : non requise ; revue de l'orchestrateur sur captures. Entrée ajoutée après coup, à la demande de l'évaluateur (relecture de T37).
+- Fait : lignes des espaces (type, surface, cultures en place, sur-occupation en alerte), cultures (famille, unité, rendement, prix, récolte, pertes), variétés (seulement ce qui diffère), plantations (espace, surface, mise en place, récolte, production estimée en fourchette), lots (période, ponte, œufs et aliment par semaine en fourchette) ; **calendrier de culture** (une ligne par espace, une barre par plantation, croissance et récolte distinguées, sous-lignes en cas de chevauchement, sur-occupation marquée, repère du jour, infobulle, clic ou Entrée → tiroir de modification) ; repère de présence et de ponte des lots ; page Sauvegarde en deux cartes (export, import avec glisser-déposer) ; tiroir des plantations qui dit quoi faire s'il manque un espace ou une variété, avec aperçu de la récolte.
+- Tests migrés (assertions de valeur gardées) : saisie, espaces, recolte, modele, poules, exemple-poules, exemple, export ; formats adaptés (« 2 / 2,5 / 3 » → « 2,5 €/kg 2 à 3 », « 386 / 464 / 515 » → « 464 386 à 515 ») ; sélecteurs P1 remplacés (`.compte-raccourci`, `#raccourcis`, `#section-debouches .aide`).
+- Fusion : un conflit dans `src/i18n.js` (espaces de noms voisins), résolu en gardant les trois ; un test de `poules.e2e.js` adapté au choix de mesure de T34 (bouton « Volume ») ; suite complète ensuite : 128/128 puis 132/132 avec T37. Commit de fusion `353e6c1`.
+
+Preuve (`./verify.sh T36` sur la branche fusionnée, extrait) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 320887 octets
+== Tests unitaires (node --test) ==
+# pass 8
+# fail 0
+== Tests de bout en bout (Playwright) ==
+  ✓   1 test/p2-ferme.e2e.js:52:1 › [T36] Lignes : un espace montre son type, sa surface et ce qui y pousse (763ms)
+  ✓   2 test/p2-ferme.e2e.js:71:1 › [T36] Lignes : une culture montre sa famille, son unité de vente, son rendement, son prix, sa récolte et ses pertes (533ms)
+  ✓   3 test/p2-ferme.e2e.js:91:1 › [T36] Lignes : une variété ne montre que ce qui diffère de sa culture, sinon le dit (533ms)
+  ✓   4 test/p2-ferme.e2e.js:108:1 › [T36] Lignes : une plantation montre sa culture, sa variété, son espace, sa surface, sa mise en place et sa récolte (498ms)
+  ✓   5 test/p2-ferme.e2e.js:121:1 › [T36] Lignes : un lot de poules montre son effectif, ses dates, sa ponte, ses œufs et son aliment par semaine en fourchette (517ms)
+  ✓   6 test/p2-ferme.e2e.js:138:1 › [T36] EX-35 : sans plantation, pas de calendrier ; avec la ferme d'exemple, un calendrier titré et légendé (552ms)
+  ✓   7 test/p2-ferme.e2e.js:152:1 › [T36] EX-35 : une ligne par espace, nom et surface à gauche, et une barre par plantation dans la ligne de son espace (566ms)
+  ✓   8 test/p2-ferme.e2e.js:170:1 › [T36] EX-35 : chaque barre va de la mise en place à la fin de la récolte, la récolte distinguée, aux bonnes dates (596ms)
+  ✓   9 test/p2-ferme.e2e.js:189:1 › [T36] EX-35 : des plantations qui se chevauchent sur un même espace occupent des sous-lignes et ne se recouvrent pas (553ms)
+  ✓  10 test/p2-ferme.e2e.js:206:1 › [T36] EX-35 : agrandir une plantation marque la sur-occupation sur la ligne de son espace, aux dates du chevauchement (1.1s)
+  ✓  11 test/p2-ferme.e2e.js:229:1 › [T36] EX-35 : un clic ou la touche Entrée sur une barre ouvre la modification de sa plantation (914ms)
+  ✓  12 test/p2-ferme.e2e.js:256:1 › [T36] EX-35 : au survol ou au focus d'une barre, une infobulle donne la variété, l'espace, la surface et les dates (580ms)
+  ✓  13 test/p2-ferme.e2e.js:278:1 › [T36] EX-35 : un repère « aujourd'hui » quand la date tombe dans la saison, aucun sinon (763ms)
+  ✓  14 test/p2-ferme.e2e.js:295:1 › [T36] EX-35 : à 1366 px le calendrier tient sans défilement ; au téléphone il défile dans sa boîte, les espaces restant à gauche (493ms)
+  ✓  15 test/p2-ferme.e2e.js:320:1 › [T36] EX-36 : sans espace ni variété, le tiroir des plantations dit quoi faire d'abord, avec un lien vers la page concernée (2.0s)
+  ✓  16 test/p2-ferme.e2e.js:348:1 › [T36] Tiroir des plantations : la récolte prévue suit la variété, la date et la surface saisies (660ms)
+  ✓  17 test/p2-ferme.e2e.js:366:1 › [T36] EX-36 : les listes vides de la ferme disent ce qu'elles contiendront et proposent de les remplir (459ms)
+  ✓  18 test/p2-ferme.e2e.js:379:1 › [T36] Poules : un repère montre, pour chaque lot, la présence des poules et la période de ponte (569ms)
+  ✓  19 test/p2-ferme.e2e.js:455:3 › [T36] EX-37 : pages de la ferme lisibles en thème clair — tailles et contrastes, infobulle et alertes comprises (1.8s)
+  ✓  20 test/p2-ferme.e2e.js:455:3 › [T36] EX-37 : pages de la ferme lisibles en thème sombre — tailles et contrastes, infobulle et alertes comprises (1.7s)
+  ✓  21 test/p2-ferme.e2e.js:481:1 › [T36] EX-37 : aucune page de la ferme ne défile en largeur, de 360 à 1920 px (2.2s)
+  ✓  22 test/p2-ferme.e2e.js:494:1 › [T36] EX-36 : le tiroir des plantations lisible quand il dit quoi faire d'abord (290ms)
+  ✓  23 test/p2-ferme.e2e.js:503:1 › [T36] Sauvegarde : export en bouton principal, import par un sélecteur de fichier, explication et message de résultat (627ms)
+  23 passed (20.3s)
+== T36 : vérification verte ==
+```

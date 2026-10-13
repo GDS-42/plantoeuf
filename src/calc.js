@@ -279,7 +279,11 @@
     const atelier = aliment && aliment.haute > 0 ? aliment : null;
     const total = [seances, atelier].filter(Boolean).reduce(somme, fourchetteNulle());
     const oeufs = t.poules ? { volume: t.poules.total.volume, vendus: t.poules.aDebouche, effectif: t.poules.effectif, lots: t.poules.lots } : null;
-    return { ca, parts: { cultures, oeufs: t.poules ? t.poules.total.ca : null }, couts: { total, seances, aliment: atelier }, marge, oeufs };
+    // Le mois au chiffre d'affaires médian le plus haut (null sans aucune vente), et les mois de marge médiane négative.
+    const caMedian = (m) => t.total.mois[m].ca.mediane;
+    const meilleurMois = t.mois.reduce((meilleur, m) => (caMedian(m) > (meilleur ? caMedian(meilleur) : 0) ? m : meilleur), null);
+    const moisMargeNegative = t.mois.filter((m) => t.total.mois[m].marge.mediane < 0);
+    return { ca, parts: { cultures, oeufs: t.poules ? t.poules.total.ca : null }, couts: { total, seances, aliment: atelier }, marge, oeufs, meilleurMois, moisMargeNegative };
   }
 
   // ---- Sur-occupation des espaces (EX-06)
