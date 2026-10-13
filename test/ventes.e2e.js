@@ -166,10 +166,16 @@ test("[T21] EX-09 : offre et demande s'affichent en fourchette, signalées comme
   await saisirMarche(page);
   await aller(page, "synthese");
   await page.locator("#onglet-offre").click();
-  const demande = page.locator('#matrice tbody tr[data-mesure="demande"]').first();
-  await expect(demande.locator("th")).toContainText(/estim/i);
-  const cellule = demande.locator('td[data-semaine="2026-04-27"]');
-  const valeur = async (niveau) => Number(await cellule.locator(`.${niveau}`).getAttribute("data-valeur"));
+  // P2 : sous chaque produit, une rangée visible donne les fourchettes de l'offre et de la demande, semaine par semaine.
+  const fourchettes = page.locator('#matrice tbody tr[data-mesure="fourchettes"]').first();
+  await expect(fourchettes.locator("th")).toBeVisible();
+  await expect(fourchettes.locator("th")).toContainText(/estim/i);
+  const demande = fourchettes.locator('td[data-semaine="2026-04-27"] [data-mesure="demande"]');
+  const valeur = async (niveau) => {
+    const borne = demande.locator(`.od-borne-${niveau}`);
+    await expect(borne).toBeVisible();
+    return Number(await borne.getAttribute("data-valeur"));
+  };
   expect([await valeur("basse"), await valeur("mediane"), await valeur("haute")]).toEqual([15, 20, 25]);
   await expect(page.locator("#section-offre .legende")).toContainText(/fourchette/i);
 });

@@ -480,8 +480,21 @@
     return resultat;
   }
 
+  // Le mois d'une semaine (désignée par son lundi) est celui de son jeudi.
   function moisDuJeudi(lundi) {
     return ajouterJours(lundi, 3).slice(0, 7);
+  }
+
+  // P2 (T35) : parmi des semaines qui se suivent, celles dont le mois diffère de celui de la précédente.
+  function debutsDeMois(semaines) {
+    return semaines.filter((lundi, i) => i > 0 && moisDuJeudi(lundi) !== moisDuJeudi(semaines[i - 1]));
+  }
+
+  // P2 (T35) : nombre de débouchés actifs de chaque point de vente (Map pointVenteId → nombre).
+  function nombreDeDebouches({ debouches = [] }) {
+    const nombres = new Map();
+    for (const d of debouches.filter((d) => !d.supprimeLe)) nombres.set(d.pointVenteId, (nombres.get(d.pointVenteId) || 0) + 1);
+    return nombres;
   }
 
   // ---- Points de vente (EX-22)
@@ -671,6 +684,9 @@
     seancesDeLaFerme,
     offreDemande,
     bilanOffreDemande,
+    moisDuJeudi,
+    debutsDeMois,
+    nombreDeDebouches,
     ventes,
     pointsDeVente,
     oeufsParSemaine,

@@ -47,3 +47,27 @@ test("[T35] bilan de la saison : semaines en excédent, en manque (dont sûres),
 test("[T35] bilan de la saison : rien à confronter, aucun produit", () => {
   assert.deepEqual(Calc.bilanOffreDemande({ semaines: [], lignes: [] }), []);
 });
+
+test("[T35] le mois d'une semaine est celui de son jeudi ; une semaine qui change de mois ouvre un nouveau mois", () => {
+  assert.equal(Calc.moisDuJeudi("2026-04-27"), "2026-04");
+  assert.equal(Calc.moisDuJeudi("2026-06-29"), "2026-07");
+  assert.equal(Calc.moisDuJeudi("2025-12-29"), "2026-01");
+  const semaines = ["2026-04-20", "2026-04-27", "2026-05-04", "2026-05-25", "2026-06-01", "2026-06-29"];
+  assert.deepEqual(Calc.debutsDeMois(semaines), ["2026-05-04", "2026-06-01", "2026-06-29"]);
+  assert.deepEqual(Calc.debutsDeMois([]), []);
+});
+
+test("[T35] nombre de débouchés de chaque point de vente : les débouchés supprimés ne comptent pas", () => {
+  const supprime = "2026-10-13T08:00:00.000Z";
+  const debouches = [
+    { id: "d1", pointVenteId: "pv1", produitId: "c1" },
+    { id: "d2", pointVenteId: "pv1", produitId: "c2" },
+    { id: "d3", pointVenteId: "pv2", produitId: "c1" },
+    { id: "d4", pointVenteId: "pv2", produitId: "c2", supprimeLe: supprime },
+  ];
+  const nombres = Calc.nombreDeDebouches({ debouches });
+  assert.equal(nombres.get("pv1"), 2);
+  assert.equal(nombres.get("pv2"), 1);
+  assert.equal(nombres.has("pv3"), false);
+  assert.equal(Calc.nombreDeDebouches({}).size, 0);
+});

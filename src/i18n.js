@@ -198,7 +198,6 @@
       aucun: "Ici, chaque semaine, votre production face à ce que vos points de vente peuvent en prendre. Ajoutez des plantations, puis vos points de vente, leurs séances et leurs débouchés.",
       culture: "Culture",
       cultureOuOeufs: "Culture ou œufs",
-      demande: "Demande estimée ({unite})",
       etats: {
         depasse: "la production dépasse la demande de {ecart} {unite}",
         manque: "la production manque de {ecart} {unite}",
@@ -378,7 +377,18 @@
           sans_debouche: "Sans débouché : tout se vend à son prix",
           sur: "Écart sûr : les fourchettes ne se recouvrent pas",
           intensite: "Plus la teinte est foncée, plus l'écart est grand par rapport à la production ou à la demande de la semaine.",
+          production: "Production estimée",
+          demande: "Demande des points de vente",
+          bandes: "Sous chaque produit, ses fourchettes semaine par semaine : une bande de la valeur basse à la haute, un trait à la médiane. Quand les deux bandes se recouvrent, l'écart n'est pas sûr.",
         },
+        // Rangée des fourchettes sous chaque produit.
+        bandes: {
+          titre: "Estimations",
+          unite: "en {unite}",
+          description: "{semaine} : production {offre}, demande {demande}",
+          descriptionSans: "{semaine} : production {offre}, sans débouché",
+        },
+        tiret: "–",
         egal: "=",
         etats: {
           depasse: "Excédent",
