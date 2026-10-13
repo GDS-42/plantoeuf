@@ -354,6 +354,23 @@
       tiroir.addEventListener("close", () => {
         if (!tiroir.open) quitterEdition(formulaire);
       });
+      // Le focus clavier reste dans le tiroir ouvert : Tab après le dernier élément revient au premier,
+      // Maj+Tab avant le premier va au dernier.
+      tiroir.addEventListener("keydown", (evenement) => {
+        if (evenement.key !== "Tab") return;
+        const atteignables = [...tiroir.querySelectorAll("button, input, select, textarea, a[href], [tabindex]:not([tabindex='-1'])")]
+          .filter((el) => !el.disabled && el.checkVisibility());
+        if (!atteignables.length) return;
+        const premier = atteignables[0];
+        const dernier = atteignables[atteignables.length - 1];
+        if (evenement.shiftKey && document.activeElement === premier) {
+          evenement.preventDefault();
+          dernier.focus();
+        } else if (!evenement.shiftKey && document.activeElement === dernier) {
+          evenement.preventDefault();
+          premier.focus();
+        }
+      });
       tiroir.addEventListener("click", (evenement) => {
         // Un lien « Ajouter un espace… » du tiroir (EX-36) referme d'abord ce tiroir ; la page et le
         // tiroir de l'autre objet s'ouvrent ensuite (gestionnaire [data-ouvrir] du document).

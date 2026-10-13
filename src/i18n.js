@@ -545,28 +545,6 @@
     // Morceaux des lignes de liste.
     resume: {
       surface: "{valeur} m²",
-      rendement: "rendement estimé {valeur} {unite}/m²",
-      prix: "prix estimé {valeur} €/{unite}",
-      joursAvantRecolte: "{valeur} j avant la récolte",
-      semainesRecolte: "{valeur} semaines de récolte",
-      pertes: "{valeur} % de pertes",
-      date: "en terre le {valeur}",
-      recolte: "récolte du {debut} au {fin}",
-      distance: "{valeur} km",
-      coutKm: "trajet estimé {valeur} €/km",
-      jour: "le {jour}",
-      periode: "du {debut} au {fin}",
-      frais: "frais estimés {valeur} €",
-      seancesDatees: "{nombre} séances, chacune {cout} € trajet compris (estimation)",
-      debouche: "{produit} à {pointVente}",
-      prixDebouche: "prix estimé {valeur} €/{unite}",
-      volumeParSeance: "{valeur} {unite} par séance (estimation)",
-      effectif: "{valeur} poules",
-      arrivee: "arrivée le {valeur}",
-      ponteLot: "ponte du {debut} au {fin}",
-      ponteParJour: "{valeur} œuf par poule et par jour (estimation)",
-      oeufsParSemaine: "{valeur} œufs par semaine de ponte",
-      alimentParSemaine: "aliment {valeur} € par semaine (estimations)",
     },
     // Les clés sont les valeurs enregistrées ; les textes sont ce qui s'affiche.
     typesEspace: {
