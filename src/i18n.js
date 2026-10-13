@@ -72,6 +72,12 @@
       aucun: "Aucune récolte prévue : ajoutez des plantations pour voir le tableau.",
       euros: "{valeur} €",
     },
+    exemple: {
+      proposition: "Première visite ? Découvrez l'outil avec une ferme d'exemple de La Réunion : {plantations} plantations sur la saison fraîche. Vous pourrez l'effacer d'un clic.",
+      charger: "Charger la ferme d'exemple",
+      chargee: "Vous regardez la ferme d'exemple de La Réunion. Ses chiffres sont des ordres de grandeur, pas des références. Effacez-la pour commencer votre ferme ; ce que vous avez ajouté reste.",
+      effacer: "Effacer la ferme d'exemple",
+    },
     sauvegarde: {
       titre: "Sauvegarde",
       explication: "Vos données restent dans ce navigateur, qui peut les effacer. Exportez-les régulièrement dans un fichier : c'est votre sauvegarde, à réimporter ici ou sur un autre ordinateur.",

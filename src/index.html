@@ -29,6 +29,7 @@
   #tableau td .mediane { display: block; font-weight: 600; }
   #tableau td .bornes { display: block; font-size: 0.75rem; color: #5a6652; }
   #tableau td.nul { color: #a3ad9b; }
+  .bandeau.exemple { background: #e3eefa; color: #1d3a5c; }
   .bandeau { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin: 1rem 0; padding: 0.6rem 0.9rem; border-radius: 0.4rem; background: #fff0d4; color: #5c3300; }
   #import-message { font-weight: 600; color: #2f5a1c; }
   #import-message.erreur { color: #a12a1a; }
@@ -49,6 +50,16 @@
     <a href="#section-sauvegarde" data-texte="sauvegarde.titre"></a>
   </nav>
 </header>
+
+<div id="proposition-exemple" class="bandeau exemple" hidden>
+  <span id="proposition-texte"></span>
+  <button id="charger-exemple" type="button" data-texte="exemple.charger"></button>
+</div>
+
+<div id="bandeau-exemple" class="bandeau exemple" hidden>
+  <span data-texte="exemple.chargee"></span>
+  <button id="effacer-exemple" type="button" data-texte="exemple.effacer"></button>
+</div>
 
 <div id="rappel-export" class="bandeau" role="alert" hidden>
   <span id="rappel-texte"></span>
@@ -197,6 +208,7 @@
 <script src="i18n.js"></script>
 <script src="store.js"></script>
 <script src="calc.js"></script>
+<script src="exemple.js"></script>
 <script>
 (function () {
   "use strict";
@@ -539,6 +551,11 @@
     remplirChoix(document.getElementById("plantation-espaceId"), espaces.map((e) => ({ valeur: e.id, libelle: e.nom })));
 
     afficherTableau(Calc.tableau({ cultures, varietes, plantations }));
+
+    // EX-10 : l'exemple est proposé tant que la ferme est vide, effaçable tant qu'il en reste quelque chose.
+    const fermeVide = Store.OBJETS.every((objet) => ferme.lister(objet).length === 0);
+    document.getElementById("proposition-exemple").hidden = !fermeVide;
+    document.getElementById("bandeau-exemple").hidden = !Exemple.estAffichee(ferme);
   }
 
   // ---- Démarrage
@@ -556,6 +573,16 @@
   document.getElementById("exporter").addEventListener("click", exporter);
   document.getElementById("rappel-exporter").addEventListener("click", exporter);
   document.getElementById("importer").addEventListener("change", importer);
+  document.getElementById("proposition-texte").textContent = remplir(T.exemple.proposition, { plantations: Exemple.NOMBRE_DE_PLANTATIONS });
+  document.getElementById("charger-exemple").addEventListener("click", () => {
+    Exemple.charger(ferme, new Date().getFullYear());
+    rafraichir();
+  });
+  document.getElementById("effacer-exemple").addEventListener("click", () => {
+    Exemple.effacer(ferme);
+    Object.values(formulaires).forEach(quitterEdition);
+    rafraichir();
+  });
 
   // EX-08 : le rappel d'export se décide à l'ouverture.
   document.getElementById("rappel-texte").textContent = remplir(T.sauvegarde.rappel, { jours: Store.DELAI_RAPPEL_JOURS });

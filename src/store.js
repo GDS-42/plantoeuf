@@ -90,8 +90,9 @@
     const enregistre = brut ? JSON.parse(brut) : {};
     const donnees = { version: VERSION };
     for (const objet of OBJETS) donnees[objet] = Array.isArray(enregistre[objet]) ? enregistre[objet] : [];
-    // État propre à ce navigateur, jamais exporté : dernier export, première modification non exportée.
-    donnees.etat = { dernierExport: null, nonExporteDepuis: null, ...enregistre.etat };
+    // État propre à ce navigateur, jamais exporté : dernier export, première modification non exportée,
+    // identifiants de la ferme d'exemple chargée (EX-10).
+    donnees.etat = { dernierExport: null, nonExporteDepuis: null, exemple: null, ...enregistre.etat };
     return donnees;
   }
 
@@ -213,7 +214,18 @@
       const migre = verifierImport(fichier);
       for (const objet of OBJETS) donnees[objet] = migre[objet];
       donnees.etat.nonExporteDepuis = null;
+      donnees.etat.exemple = null;
       enregistrer();
+    }
+
+    // EX-10 : identifiants créés par la ferme d'exemple, par objet (null si aucune).
+    function noterExemple(ids) {
+      donnees.etat.exemple = ids ? copie(ids) : null;
+      enregistrer();
+    }
+
+    function exemple() {
+      return donnees.etat.exemple ? copie(donnees.etat.exemple) : null;
     }
 
     // EX-08 : vrai si des données ont changé sans être exportées et que le dernier export
@@ -234,6 +246,8 @@
       exporter,
       importer,
       rappelExport,
+      noterExemple,
+      exemple,
       espaces: () => lister("espaces"),
       ajouterEspace: (champs) => ajouter("espaces", champs),
     };

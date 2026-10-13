@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N1 · Sessions consommées : 8 / 15 (seuil d'alerte)
+Tranche en cours : N1 · Sessions consommées : 9 / 15 (seuil d'alerte)
 
 ---
 
@@ -669,4 +669,87 @@ Running 4 tests using 1 worker
 
   4 passed (2.8s)
 == T08 : vérification verte ==
+```
+
+## 13/10/2026 · T09 — Ferme d'exemple (La Réunion)
+
+- Session 9 du seuil d'alerte.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Résultat : **vert**. `./verify.sh T09` → exit 0 (4 tests unitaires, 3 de bout en bout) ; `./verify.sh N1` → exit 0 (48 tests unitaires, 25 de bout en bout).
+- Fichiers : `src/exemple.js`, `src/index.html`, `src/i18n.js`, `test/exemple.e2e.js`, et hors liste `fichiers` : `src/store.js` (deux méthodes pour retenir les identifiants de l'exemple), `test/exemple.test.js` (contrôle de la ferme d'exemple sans navigateur).
+- Rouge d'abord : `test/exemple.test.js` rouge (`Cannot find module '../src/exemple.js'`), 3 tests de bout en bout rouges (proposition absente).
+- Ferme d'exemple : 5 espaces (4 planches de 30 m², un tunnel de 60 m²), 7 cultures, 7 variétés dont 2 qui surchargent leur culture, 10 plantations d'avril à octobre, sans sur-occupation ; tableau de mai à septembre.
+- Commit : « T09 — Ferme d'exemple de La Réunion, effaçable d'un geste ».
+
+Preuve (`./verify.sh T09`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 59755 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 66.424304
+  type: 'test'
+  ...
+# Subtest: [T09] la ferme d'exemple compte 10 plantations, toutes calculables, sans sur-occupation
+ok 2 - [T09] la ferme d'exemple compte 10 plantations, toutes calculables, sans sur-occupation
+  ---
+  duration_ms: 19.853971
+  type: 'test'
+  ...
+# Subtest: [T09] la ferme d'exemple montre une variété qui surcharge sa culture
+ok 3 - [T09] la ferme d'exemple montre une variété qui surcharge sa culture
+  ---
+  duration_ms: 1.031152
+  type: 'test'
+  ...
+# Subtest: [T09] effacer l'exemple supprime logiquement ce qu'il a créé, et seulement cela
+ok 4 - [T09] effacer l'exemple supprime logiquement ce qu'il a créé, et seulement cela
+  ---
+  duration_ms: 2.907031
+  type: 'test'
+  ...
+# Subtest: [T09] l'exemple chargé est reconnu après réouverture, et oublié après un import
+ok 5 - [T09] l'exemple chargé est reconnu après réouverture, et oublié après un import
+  ---
+  duration_ms: 1.232628
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 64.646151
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 78.129503
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 153.985341
+== Tests de bout en bout (Playwright) ==
+
+Running 3 tests using 1 worker
+
+  ✓  1 test/exemple.e2e.js:6:1 › [T09] à la première ouverture, la ferme d'exemple est proposée et se charge d'un clic : 10 plantations et le tableau (277ms)
+  ✓  2 test/exemple.e2e.js:19:1 › [T09] la ferme d'exemple s'efface d'un geste, sans toucher à ce que l'utilisateur a ajouté (344ms)
+  ✓  3 test/exemple.e2e.js:37:1 › [T09] une ferme commencée ne propose plus l'exemple, même après réouverture ; une ferme vidée le propose de nouveau (343ms)
+
+  3 passed (1.6s)
+== T09 : vérification verte ==
 ```
