@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : P2 · Sessions consommées : 1 / 10 (seuil d'alerte) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : P2 · Sessions consommées : 6 / 10 (seuil d'alerte) · T38 (validation humaine sur captures) en attente · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4577,4 +4577,35 @@ dist/index.html : 320887 octets
   ✓  23 test/p2-ferme.e2e.js:503:1 › [T36] Sauvegarde : export en bouton principal, import par un sélecteur de fichier, explication et message de résultat (627ms)
   23 passed (20.3s)
 == T36 : vérification verte ==
+```
+
+## 13/10/2026 · T37 — Vérification de la tranche P2, relecture par l'évaluateur
+
+- Modèle : Opus 5.5, effort élevé · Reprises : 1 (après relecture) · Relecture : **Fable, ÉCART puis CONFORME**.
+- Ajouts : `test/p2-lisibilite.e2e.js` (aucune page ne défile en largeur de 360 à 1920 px ; tailles et contrastes de chaque page, des onglets et du tiroir en thème clair et sombre ; focus contenu dans un tiroir) ; le tiroir garde le focus clavier (défaut révélé par ce test) ; contenu centré sur grand écran, bandeaux alignés ; espaces insécables écrites `\u00a0` dans les sources ; textes `resume.*` inutiles retirés.
+- Relecture Fable (ÉCART), cinq points, tous résolus : (1) matrice « Offre et demande » : les fourchettes de l'offre et de la demande n'étaient lisibles qu'au survol → rangée visible de bandes basse–haute par semaine sous chaque produit, unité en en-tête, cases sans débouché avec leurs bornes (reprise de T35 par son agent) ; (2) test T21 qui lisait du DOM masqué → porte sur le visible, mêmes valeurs attendues ; (3) « et » en dur → `Intl.ListFormat` ; (4) meilleur mois, mois de marge négative, mois d'une semaine et nombre de débouchés calculés dans le rendu → `Calc.chiffresCles`, `Calc.moisDuJeudi`, `Calc.debutsDeMois`, `Calc.nombreDeDebouches`, avec tests unitaires ; (5) entrée T36 manquante → ajoutée. Contre-relecture : **CONFORME**.
+- Rappel de l'exception humaine maintenue : l'écart des médianes d'une case de la matrice reste un seul nombre (N2, points tranchés).
+
+Preuve (`./verify.sh P2`, toute la suite, extrait) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 328621 octets
+== Tests unitaires (node --test) ==
+# tests 102
+# pass 102
+# fail 0
+== Tests de bout en bout (Playwright) ==
+  134 passed (1.5m)
+== P2 : vérification verte ==
+  ✓   26 test/p2-lisibilite.e2e.js:70:1 › [T37] EX-37 : aucune page ne défile en largeur, de 360 à 1920 px, ferme d'exemple chargée (4.6s)
+  ✓   32 test/p2-lisibilite.e2e.js:83:3 › [T37] EX-37 : thème clair, chaque page lisible (tailles et contrastes), ferme d'exemple chargée (1.6s)
+  ✓   33 test/p2-lisibilite.e2e.js:83:3 › [T37] EX-37 : thème sombre, chaque page lisible (tailles et contrastes), ferme d'exemple chargée (1.5s)
+  ✓   36 test/p2-lisibilite.e2e.js:101:1 › [T37] EX-37 : dans un tiroir ouvert, chaque élément atteint au clavier porte un contour visible (668ms)
+  ✓   60 test/p2-ventes.e2e.js:57:1 › [T35] EX-34 : une carte par point de vente, du meilleur résultat médian au moins bon, avec ses fourchettes (582ms)
+  ✓   66 test/p2-ventes.e2e.js:141:1 › [T35] EX-34 : dans le tableau, médiane en évidence, fourchette dessous, unité dans l'en-tête, négatif marqué, en-têtes et total figés (613ms)
+  ✓   71 test/p2-ventes.e2e.js:230:1 › [T35] EX-20 : les fourchettes de l'offre et de la demande se lisent sans survol, semaine par semaine, avec l'unité du produit (558ms)
+  ✓   73 test/p2-ventes.e2e.js:263:1 › [T35] sans débouché, une case montre la fourchette de la production, et l'unité est dans l'en-tête de la ligne (547ms)
+  ✓   75 test/p2-ventes.e2e.js:276:1 › [T35] la semaine choisie se lit en détail : offre, demande et écart en fourchettes, et les ventes par point de vente (561ms)
+  ✓   76 test/p2-ventes.e2e.js:314:1 › [T35] page Ventes : chaque ligne donne ses faits, fourchettes comprises (494ms)
 ```
