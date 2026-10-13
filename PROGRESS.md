@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : P1 · Sessions consommées : 0 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
+Tranche en cours : P1 · Sessions consommées : 1 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
 
 ---
 
@@ -1113,3 +1113,66 @@ Running 26 tests using 2 workers
 # Tranche P1 — Présentation
 
 Ordre retenu pour la suite, choisi par l'agent comme le plus sûr : **P1** (présentation : réorganiser le rendu sous la protection des tests de N1 avant d'y ajouter quoi que ce soit), puis **N2** (points de vente et séances, comme le prévoit le BRIEF), puis **S3** (atelier poules, dont les œufs passent par les points de vente). Chaque tranche a sa spec, son runbook et son seuil dans `docs/specs/<tranche>/`.
+
+## 13/10/2026 · T11 — Rendu découpé en modules
+
+- Session 1 / 9 du seuil d'alerte de P1.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME**. Il a comparé l'ancien et le nouveau rendu sur cinq états (page vierge, ferme d'exemple, modification en cours, plantation modifiée, cas construit) : HTML affiché, listes déroulantes et titre identiques, aucune erreur de console. Seul écart relevé, sans effet visible : les plantations passent à `Calc` dans l'ordre du stockage et non plus triées, ce qui peut changer le dernier bit d'une somme flottante (au plus 8 × 10⁻¹⁶ en relatif dans un cas construit).
+- Résultat : **vert**. `./verify.sh T11` → exit 0 ; `./verify.sh N1` → exit 0 (48 tests unitaires, 27 de bout en bout : les 26 de N1, inchangés, et `[T11]`).
+- Fichiers : `src/index.html` (le script inline devient un démarrage de 60 lignes), `src/ui-commun.js`, `src/ui-saisie.js`, `src/ui-tableau.js`, `src/ui-sauvegarde.js`, `verify.sh` (tranches P et S reconnues), `AGENTS.md` (règle de rendu, comme prévu par la spec), `test/presentation.e2e.js`.
+- Rouge d'abord : `[T11]` rouge (modules absents : `undefined` au lieu de `object`) ; `./verify.sh P1` → « identifiant inconnu : P1 ».
+- Commit : « T11 — Rendu découpé en modules ui-*.js, sans changement de comportement ».
+
+Preuve (`./verify.sh T11`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 62450 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 80.946486
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 71.635836
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 62.317961
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 87.776812
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 167.786088
+== Tests de bout en bout (Playwright) ==
+
+Running 1 test using 1 worker
+
+  ✓  1 test/presentation.e2e.js:14:1 › [T11] le rendu est découpé en modules, et l'outil s'utilise sans aucune erreur (422ms)
+
+  1 passed (1.0s)
+== T11 : vérification verte ==
+```

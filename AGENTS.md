@@ -24,7 +24,7 @@ Cible à terme : application web installable et synchronisée (ADR-001).
 - Toute estimation est une fourchette basse / médiane / haute ; jamais un chiffre seul.
   Saisir un seul nombre remplit les trois.
 - UUID, date de création, date de modification et suppression logique sur chaque enregistrement.
-- Logique de calcul dans `src/calc.js`, sans aucun accès au DOM ; rendu dans `src/index.html` seulement.
+- Logique de calcul dans `src/calc.js`, sans aucun accès au DOM ; rendu dans `src/index.html` et les modules `src/ui-*.js` seulement.
 - Aucune valeur agronomique ni prix codé en dur hors de la ferme d'exemple (`src/exemple.js`).
 - Textes d'interface dans `src/i18n.js`, français simple, pas de jargon comptable.
 - Production d'une plantation répartie uniformément par semaine sur sa fenêtre de récolte.

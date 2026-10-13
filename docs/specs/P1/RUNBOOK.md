@@ -68,4 +68,6 @@ La tranche ne touche ni au modèle de données ni au format exporté : une ferme
 
 ## ✎ Décisions
 
+- T11 · Quatre modules de rendu, chargés après `calc.js` et `store.js` et intégrés par `build.sh` : `UiCommun` (éléments, textes, formats), `UiSaisie.creer({ ferme, rafraichir })` (formulaires, listes), `UiTableau.afficher(tableau)`, `UiSauvegarde.creer({ ferme, apresImport })`. Ils reçoivent la ferme par une fonction, car l'événement `storage` la rouvre. Le démarrage reste dans `index.html`.
+
 ## ✎ Bilan de fin de tranche
