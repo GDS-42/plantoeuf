@@ -80,3 +80,11 @@ Le format exporté passe en version 2 (décision de l'humain du 13/10/2026) : un
 - T24 · La ferme d'exemple vend au marché de Saint-Paul (vendredi, 12 km, place 10 à 20 €), en paniers d'AMAP (mardi, 6 km) et à une épicerie de Saint-Gilles (jeudi, 9 km, prix de revendeur), de mai à fin octobre. Chaque culture a au moins un débouché ; l'exemple montre des semaines où la production dépasse et d'autres où elle manque, et un point de vente qui ne couvre pas ses trajets.
 
 ## ✎ Bilan de fin de tranche
+
+**13/10/2026 — tranche N2 terminée en 10 sessions sur 12.** Les huit tâches T18 à T25 sont passées ; `./verify.sh N2` → exit 0 (75 tests unitaires, 57 de bout en bout) ; l'évaluateur Fable conclut à la conformité, sans écart.
+
+- **Reprises** : T20 (une fonction ajoutée sans test, retirée puis réintroduite en T21 avec son test) ; T22 (contradiction de la spec sur la marge de la ferme : arrêt, question posée, l'humain tranche « du pire au meilleur », 2e relecture conforme) ; T18 reprise après décision de l'humain (format exporté en version 2, migration des fichiers de version 1).
+- **Décisions de l'humain** (13/10/2026) : différence de fourchettes du pire au meilleur ; format en version 2 ; écart de la matrice en un seul nombre. Non retenu : renommer `pointsVente` en `pointsDeVente`.
+- **Ce qui a marché** : relecteur et évaluateur séparés ont trouvé deux vrais problèmes (une fonction sans test ; une contradiction dans la spec écrite par l'agent) ; préparer la tâche suivante sur une copie pendant les relectures a évité d'attendre sans toucher au dépôt relu.
+- **À surveiller** : le test `[T12]` P1-S1 à 1280 × 720 dépend de la hauteur occupée au-dessus du tableau ; Firefox n'est pas testé (Chromium seulement) ; une ferme avec des séances et sans débouché voit ses coûts déduits (cas laissé tel quel, à confirmer avec les fermes pilotes).
+- **Suite** : tranche S3 (poules pondeuses, second atelier de la projection). La ligne de version du test `[T08]` comparera à la version courante de l'outil (accord de l'humain du 13/10/2026), pour que les prochains objets ne touchent plus ce test.

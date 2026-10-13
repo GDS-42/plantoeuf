@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N2 · Sessions consommées : 9 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : N2 · Sessions consommées : 10 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -2644,4 +2644,545 @@ Running 2 tests using 1 worker
 
   2 passed (1.4s)
 == T24 : vérification verte ==
+```
+
+## 13/10/2026 · T25 — Tranche N2 vérifiée de bout en bout et évaluée conforme
+
+- Session 10 / 12 du seuil d'alerte de N2.
+- Évaluateur : Fable, effort élevé, contexte frais, restreint à la conformité à `SPEC.md` (état actuel, décisions de l'humain comprises) et aux limites d'`AGENTS.md`, sur `git diff 23eabda HEAD` → **CONFORME, aucun écart**.
+  - Exigence par exigence : EX-18 à EX-24 conformes ; scénarios S4, S5, S6 recalculés par un script indépendant ; `dist/index.html` ouvert, ferme d'exemple chargée, trois vues capturées, aucune erreur de console ni requête réseau ; chaque `./verify.sh T18` … `T24` vert ; performance : `tableau` + `offreDemande` + `pointsDeVente` en 160 ms pour 200 plantations, 10 points de vente, 20 séances et 100 débouchés.
+  - Remarques non bloquantes : (1) une ferme avec des séances mais sans débouché voit leurs coûts déduits au pied, la spec ne tranche pas ce cas intermédiaire ; (2) la section non ✎ « Idempotence et retour arrière » du runbook a été modifiée pour reporter la décision de l'humain (version 2) ; (3) l'écart de la matrice s'affiche avec une décimale (13,75 → « +13,8 »), la valeur exacte restant dans la page ; (4) un 3e critère de tri (identifiant du débouché) au-delà de la spec, pour le déterminisme ; (5) la ligne « Coût des séances » n'apparaît que si un coût est non nul ; (6) l'état d'une case passe par la couleur, le signe de l'écart et une infobulle ; une culture avec débouché mais sans plantation ni séance montre des cases « équilibre » à 0 ; (7) le test de performance ne chronomètre pas `pointsDeVente` (mesuré à part : largement sous la seconde).
+- Résultat : **vert**. `./verify.sh N2` → exit 0 (75 tests unitaires, 57 de bout en bout).
+- Commit : « T25 — Tranche N2 vérifiée et évaluée conforme ».
+
+Preuve (`./verify.sh N2`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 114321 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+# Subtest: [T04] les dates se calculent au jour près, y compris d'une année sur l'autre
+ok 1 - [T04] les dates se calculent au jour près, y compris d'une année sur l'autre
+  ---
+  duration_ms: 2.32764
+  type: 'test'
+  ...
+# Subtest: [T04] EX-02 : une variété sans surcharge reprend les durées de la culture
+ok 2 - [T04] EX-02 : une variété sans surcharge reprend les durées de la culture
+  ---
+  duration_ms: 1.297778
+  type: 'test'
+  ...
+# Subtest: [T04] EX-02 : les durées surchargées par la variété priment sur celles de la culture
+ok 3 - [T04] EX-02 : les durées surchargées par la variété priment sur celles de la culture
+  ---
+  duration_ms: 0.26614
+  type: 'test'
+  ...
+# Subtest: [T04] EX-03 : production = surface × rendement × (1 − pertes), en fourchette
+ok 4 - [T04] EX-03 : production = surface × rendement × (1 − pertes), en fourchette
+  ---
+  duration_ms: 0.24576
+  type: 'test'
+  ...
+# Subtest: [T04] S1 : 33,75 kg par semaine du 30 avril au 24 juin
+ok 5 - [T04] S1 : 33,75 kg par semaine du 30 avril au 24 juin
+  ---
+  duration_ms: 0.946489
+  type: 'test'
+  ...
+# Subtest: [T04] S1 : 0 kg les autres semaines (production_nulle_hors_fenetre)
+ok 6 - [T04] S1 : 0 kg les autres semaines (production_nulle_hors_fenetre)
+  ---
+  duration_ms: 0.326603
+  type: 'test'
+  ...
+# Subtest: [T04] EX-03 : la répartition est uniforme, à la semaine, et rend toute la production sur la fenêtre
+ok 7 - [T04] EX-03 : la répartition est uniforme, à la semaine, et rend toute la production sur la fenêtre
+  ---
+  duration_ms: 1.448222
+  type: 'test'
+  ...
+# Subtest: [T04] granularité à la semaine : une semaine compte entière dans la période qui contient la plupart de ses jours
+ok 8 - [T04] granularité à la semaine : une semaine compte entière dans la période qui contient la plupart de ses jours
+  ---
+  duration_ms: 0.284698
+  type: 'test'
+  ...
+# Subtest: [T05] S2 : en mai, le CA de la courgette est une fourchette dont la médiane vaut le volume de mai × 2,50 €
+ok 9 - [T05] S2 : en mai, le CA de la courgette est une fourchette dont la médiane vaut le volume de mai × 2,50 €
+  ---
+  duration_ms: 1.463718
+  type: 'test'
+  ...
+# Subtest: [T05] EX-04 : par culture et par mois, volume, CA et marge en fourchette ; marge égale au CA en N1
+ok 10 - [T05] EX-04 : par culture et par mois, volume, CA et marge en fourchette ; marge égale au CA en N1
+  ---
+  duration_ms: 0.838298
+  type: 'test'
+  ...
+# Subtest: [T05] le CA se calcule plantation par plantation, au prix de sa variété
+ok 11 - [T05] le CA se calcule plantation par plantation, au prix de sa variété
+  ---
+  duration_ms: 0.594961
+  type: 'test'
+  ...
+# Subtest: [T05] une ligne par culture, rangée par nom, et le total de la ferme par mois
+ok 12 - [T05] une ligne par culture, rangée par nom, et le total de la ferme par mois
+  ---
+  duration_ms: 8.043871
+  type: 'test'
+  ...
+# Subtest: [T05] les plantations supprimées, ou dont la variété ou la culture est supprimée, ne comptent pas
+ok 13 - [T05] les plantations supprimées, ou dont la variété ou la culture est supprimée, ne comptent pas
+  ---
+  duration_ms: 0.895659
+  type: 'test'
+  ...
+# Subtest: [T05] une ferme sans plantation donne un tableau vide
+ok 14 - [T05] une ferme sans plantation donne un tableau vide
+  ---
+  duration_ms: 0.161262
+  type: 'test'
+  ...
+# Subtest: [T05] une ferme de 200 plantations se calcule en moins d'une seconde
+ok 15 - [T05] une ferme de 200 plantations se calcule en moins d'une seconde
+  ---
+  duration_ms: 30.757287
+  type: 'test'
+  ...
+# Subtest: [T07] S3 : deux plantations de 20 m² qui se chevauchent en juin sur 30 m² signalent juin
+ok 16 - [T07] S3 : deux plantations de 20 m² qui se chevauchent en juin sur 30 m² signalent juin
+  ---
+  duration_ms: 0.587473
+  type: 'test'
+  ...
+# Subtest: [T07] une plantation occupe son espace du semis ou de la plantation à la fin de sa récolte
+ok 17 - [T07] une plantation occupe son espace du semis ou de la plantation à la fin de sa récolte
+  ---
+  duration_ms: 0.358001
+  type: 'test'
+  ...
+# Subtest: [T07] occuper exactement la surface de l'espace n'est pas une sur-occupation
+ok 18 - [T07] occuper exactement la surface de l'espace n'est pas une sur-occupation
+  ---
+  duration_ms: 0.169454
+  type: 'test'
+  ...
+# Subtest: [T07] chaque période garde la surface occupée, et chaque mois la plus grande
+ok 19 - [T07] chaque période garde la surface occupée, et chaque mois la plus grande
+  ---
+  duration_ms: 0.27253
+  type: 'test'
+  ...
+# Subtest: [T07] une sur-occupation sur deux mois les signale tous les deux ; les espaces sont indépendants
+ok 20 - [T07] une sur-occupation sur deux mois les signale tous les deux ; les espaces sont indépendants
+  ---
+  duration_ms: 0.466633
+  type: 'test'
+  ...
+# Subtest: [T07] les plantations supprimées, ou dont la variété est supprimée, n'occupent rien
+ok 21 - [T07] les plantations supprimées, ou dont la variété est supprimée, n'occupent rien
+  ---
+  duration_ms: 0.227278
+  type: 'test'
+  ...
+# Subtest: [T09] la ferme d'exemple compte 10 plantations, toutes calculables, sans sur-occupation
+ok 22 - [T09] la ferme d'exemple compte 10 plantations, toutes calculables, sans sur-occupation
+  ---
+  duration_ms: 22.766403
+  type: 'test'
+  ...
+# Subtest: [T09] la ferme d'exemple montre une variété qui surcharge sa culture
+ok 23 - [T09] la ferme d'exemple montre une variété qui surcharge sa culture
+  ---
+  duration_ms: 2.278301
+  type: 'test'
+  ...
+# Subtest: [T09] effacer l'exemple supprime logiquement ce qu'il a créé, et seulement cela
+ok 24 - [T09] effacer l'exemple supprime logiquement ce qu'il a créé, et seulement cela
+  ---
+  duration_ms: 5.206552
+  type: 'test'
+  ...
+# Subtest: [T09] l'exemple chargé est reconnu après réouverture, et oublié après un import
+ok 25 - [T09] l'exemple chargé est reconnu après réouverture, et oublié après un import
+  ---
+  duration_ms: 2.382457
+  type: 'test'
+  ...
+# Subtest: [T01] un stockage vide donne une ferme sans espace
+ok 26 - [T01] un stockage vide donne une ferme sans espace
+  ---
+  duration_ms: 1.819911
+  type: 'test'
+  ...
+# Subtest: [T01] un espace enregistré est retrouvé après réouverture
+ok 27 - [T01] un espace enregistré est retrouvé après réouverture
+  ---
+  duration_ms: 4.698227
+  type: 'test'
+  ...
+# Subtest: [T01] calc.js se charge sans navigateur et n'accède pas au DOM
+ok 28 - [T01] calc.js se charge sans navigateur et n'accède pas au DOM
+  ---
+  duration_ms: 1.438478
+  type: 'test'
+  ...
+# Subtest: [T02] un enregistrement reçoit un UUID, ses dates de création et de modification, et supprimeLe nul
+ok 29 - [T02] un enregistrement reçoit un UUID, ses dates de création et de modification, et supprimeLe nul
+  ---
+  duration_ms: 5.861516
+  type: 'test'
+  ...
+# Subtest: [T02] chaque enregistrement a un identifiant distinct
+ok 30 - [T02] chaque enregistrement a un identifiant distinct
+  ---
+  duration_ms: 1.238262
+  type: 'test'
+  ...
+# Subtest: [T02] les quatre objets du noyau sont enregistrés et retrouvés après réouverture
+ok 31 - [T02] les quatre objets du noyau sont enregistrés et retrouvés après réouverture
+  ---
+  duration_ms: 1.748523
+  type: 'test'
+  ...
+# Subtest: [T02] un objet absent du modèle est refusé
+ok 32 - [T02] un objet absent du modèle est refusé
+  ---
+  duration_ms: 0.531409
+  type: 'test'
+  ...
+# Subtest: [T02] modifier change les champs et la date de modification, pas la date de création
+ok 33 - [T02] modifier change les champs et la date de modification, pas la date de création
+  ---
+  duration_ms: 0.283396
+  type: 'test'
+  ...
+# Subtest: [T02] l'identifiant et les dates ne se changent pas par la saisie
+ok 34 - [T02] l'identifiant et les dates ne se changent pas par la saisie
+  ---
+  duration_ms: 0.322117
+  type: 'test'
+  ...
+# Subtest: [T02] suppression_logique_seulement : supprimer date l'enregistrement sans l'effacer
+ok 35 - [T02] suppression_logique_seulement : supprimer date l'enregistrement sans l'effacer
+  ---
+  duration_ms: 0.460378
+  type: 'test'
+  ...
+# Subtest: [T02] supprimer à nouveau garde la première date de suppression
+ok 36 - [T02] supprimer à nouveau garde la première date de suppression
+  ---
+  duration_ms: 0.151783
+  type: 'test'
+  ...
+# Subtest: [T02] un enregistrement rendu par le store ne change pas les données enregistrées
+ok 37 - [T02] un enregistrement rendu par le store ne change pas les données enregistrées
+  ---
+  duration_ms: 0.472091
+  type: 'test'
+  ...
+# Subtest: [T02] un seul nombre remplit les trois valeurs de la fourchette
+ok 38 - [T02] un seul nombre remplit les trois valeurs de la fourchette
+  ---
+  duration_ms: 0.326213
+  type: 'test'
+  ...
+# Subtest: [T02] fourchette_ordonnee : basse ≤ médiane ≤ haute, sinon refus
+ok 39 - [T02] fourchette_ordonnee : basse ≤ médiane ≤ haute, sinon refus
+  ---
+  duration_ms: 0.266681
+  type: 'test'
+  ...
+# Subtest: [T02] fourchette_ordonnee : le store refuse d'enregistrer une fourchette désordonnée
+ok 40 - [T02] fourchette_ordonnee : le store refuse d'enregistrer une fourchette désordonnée
+  ---
+  duration_ms: 0.267154
+  type: 'test'
+  ...
+# Subtest: [T02] la saisie d'une fourchette accepte un nombre ou trois, avec la virgule décimale
+ok 41 - [T02] la saisie d'une fourchette accepte un nombre ou trois, avec la virgule décimale
+  ---
+  duration_ms: 0.442149
+  type: 'test'
+  ...
+# Subtest: [T08] EX-07 : export puis import restituent la ferme à l'identique, y compris les éléments supprimés
+ok 42 - [T08] EX-07 : export puis import restituent la ferme à l'identique, y compris les éléments supprimés
+  ---
+  duration_ms: 1.008468
+  type: 'test'
+  ...
+# Subtest: [T08] le fichier exporté porte l'application, un numéro de version et sa date
+ok 43 - [T08] le fichier exporté porte l'application, un numéro de version et sa date
+  ---
+  duration_ms: 0.339508
+  type: 'test'
+  ...
+# Subtest: [T08] l'import remplace toute la ferme actuelle
+ok 44 - [T08] l'import remplace toute la ferme actuelle
+  ---
+  duration_ms: 0.344255
+  type: 'test'
+  ...
+# Subtest: [T08] un fichier qui n'est pas un export plantoeuf, ou d'une version plus récente, est refusé sans rien changer
+ok 45 - [T08] un fichier qui n'est pas un export plantoeuf, ou d'une version plus récente, est refusé sans rien changer
+  ---
+  duration_ms: 0.544324
+  type: 'test'
+  ...
+# Subtest: [T08] EX-08 : rappel à l'ouverture quand rien n'a été exporté depuis 7 jours et que des données ont changé
+ok 46 - [T08] EX-08 : rappel à l'ouverture quand rien n'a été exporté depuis 7 jours et que des données ont changé
+  ---
+  duration_ms: 0.19983
+  type: 'test'
+  ...
+# Subtest: [T08] EX-08 : après un export, le rappel revient 7 jours après cet export si des données ont changé
+ok 47 - [T08] EX-08 : après un export, le rappel revient 7 jours après cet export si des données ont changé
+  ---
+  duration_ms: 0.119967
+  type: 'test'
+  ...
+# Subtest: [T08] EX-08 : ni une ferme vide ni une ferme tout juste importée ne déclenchent de rappel
+ok 48 - [T08] EX-08 : ni une ferme vide ni une ferme tout juste importée ne déclenchent de rappel
+  ---
+  duration_ms: 0.181858
+  type: 'test'
+  ...
+# Subtest: [T18] points de vente, séances et débouchés reçoivent un UUID et leurs dates, et sont retrouvés après réouverture
+ok 49 - [T18] points de vente, séances et débouchés reçoivent un UUID et leurs dates, et sont retrouvés après réouverture
+  ---
+  duration_ms: 6.846467
+  type: 'test'
+  ...
+# Subtest: [T18] leur suppression est logique
+ok 50 - [T18] leur suppression est logique
+  ---
+  duration_ms: 0.746166
+  type: 'test'
+  ...
+# Subtest: [T18] une fourchette désordonnée y est refusée
+ok 51 - [T18] une fourchette désordonnée y est refusée
+  ---
+  duration_ms: 0.950513
+  type: 'test'
+  ...
+# Subtest: [T18] export puis import restituent points de vente, séances et débouchés à l'identique, supprimés compris
+ok 52 - [T18] export puis import restituent points de vente, séances et débouchés à l'identique, supprimés compris
+  ---
+  duration_ms: 0.676474
+  type: 'test'
+  ...
+# Subtest: [T18] le format exporté passe en version 2 ; un fichier de version 1 qui porte déjà des listes de vente les garde
+ok 53 - [T18] le format exporté passe en version 2 ; un fichier de version 1 qui porte déjà des listes de vente les garde
+  ---
+  duration_ms: 0.507352
+  type: 'test'
+  ...
+# Subtest: [T18] un fichier exporté avant N2, sans ces listes, s'importe toujours
+ok 54 - [T18] un fichier exporté avant N2, sans ces listes, s'importe toujours
+  ---
+  duration_ms: 0.299951
+  type: 'test'
+  ...
+# Subtest: [T20] une séance du samedi du 2 mai au 27 juin 2026 donne 9 séances datées
+ok 55 - [T20] une séance du samedi du 2 mai au 27 juin 2026 donne 9 séances datées
+  ---
+  duration_ms: 0.31508
+  type: 'test'
+  ...
+# Subtest: [T20] les séances datées tombent le jour dit, dans la période, bornes comprises
+ok 56 - [T20] les séances datées tombent le jour dit, dans la période, bornes comprises
+  ---
+  duration_ms: 0.127321
+  type: 'test'
+  ...
+# Subtest: [T20] S6 : chaque séance coûte 15 + 2 × 12 × 0,40 = 24,60 €
+ok 57 - [T20] S6 : chaque séance coûte 15 + 2 × 12 × 0,40 = 24,60 €
+  ---
+  duration_ms: 0.45282
+  type: 'test'
+  ...
+# Subtest: [T20] S6 : les séances datées de la ferme, avec leur coût ; une séance ou un point de vente supprimé ne compte plus
+ok 58 - [T20] S6 : les séances datées de la ferme, avec leur coût ; une séance ou un point de vente supprimé ne compte plus
+  ---
+  duration_ms: 0.527092
+  type: 'test'
+  ...
+# Subtest: [T21] une semaine va du lundi au dimanche ; son numéro suit la norme ISO 8601
+ok 59 - [T21] une semaine va du lundi au dimanche ; son numéro suit la norme ISO 8601
+  ---
+  duration_ms: 0.18775
+  type: 'test'
+  ...
+# Subtest: [T21] S4 : la courgette dépasse de 13,75 kg la semaine du 27 avril, sûrement
+ok 60 - [T21] S4 : la courgette dépasse de 13,75 kg la semaine du 27 avril, sûrement
+  ---
+  duration_ms: 0.992138
+  type: 'test'
+  ...
+# Subtest: [T21] S4 : elle manque de 20 kg la semaine du 22 juin, sûrement ; les semaines vont du 27 avril au 22 juin
+ok 61 - [T21] S4 : elle manque de 20 kg la semaine du 22 juin, sûrement ; les semaines vont du 27 avril au 22 juin
+  ---
+  duration_ms: 0.445832
+  type: 'test'
+  ...
+# Subtest: [T21] quand les fourchettes se recouvrent, l'état suit la médiane mais n'est pas sûr
+ok 62 - [T21] quand les fourchettes se recouvrent, l'état suit la médiane mais n'est pas sûr
+  ---
+  duration_ms: 0.451475
+  type: 'test'
+  ...
+# Subtest: [T21] la demande additionne les séances de la semaine ; une culture sans débouché est signalée comme telle
+ok 63 - [T21] la demande additionne les séances de la semaine ; une culture sans débouché est signalée comme telle
+  ---
+  duration_ms: 7.897318
+  type: 'test'
+  ...
+# Subtest: [T21] séances, débouchés et points de vente supprimés ne font plus de demande
+ok 64 - [T21] séances, débouchés et points de vente supprimés ne font plus de demande
+  ---
+  duration_ms: 0.812511
+  type: 'test'
+  ...
+# Subtest: [T22] S4 : la demande plafonne les ventes : 160 kg et 400 € sur la saison au lieu de 675 €
+ok 65 - [T22] S4 : la demande plafonne les ventes : 160 kg et 400 € sur la saison au lieu de 675 €
+  ---
+  duration_ms: 1.400401
+  type: 'test'
+  ...
+# Subtest: [T22] S5 : la production va d'abord au point de vente qui paie le mieux
+ok 66 - [T22] S5 : la production va d'abord au point de vente qui paie le mieux
+  ---
+  duration_ms: 0.657122
+  type: 'test'
+  ...
+# Subtest: [T22] vendu_borne : le volume vendu ne dépasse ni l'offre ni la demande, à chaque niveau ; chaque case reste ordonnée
+ok 67 - [T22] vendu_borne : le volume vendu ne dépasse ni l'offre ni la demande, à chaque niveau ; chaque case reste ordonnée
+  ---
+  duration_ms: 1.335243
+  type: 'test'
+  ...
+# Subtest: [T22] sans_debouche_comme_n1 : une culture sans débouché se calcule exactement comme en N1
+ok 68 - [T22] sans_debouche_comme_n1 : une culture sans débouché se calcule exactement comme en N1
+  ---
+  duration_ms: 1.058499
+  type: 'test'
+  ...
+# Subtest: [T22] S6 et EX-23 : le coût des séances se déduit de la marge de la ferme, mois par mois
+ok 69 - [T22] S6 et EX-23 : le coût des séances se déduit de la marge de la ferme, mois par mois
+  ---
+  duration_ms: 0.738288
+  type: 'test'
+  ...
+# Subtest: [T22] 200 plantations, 10 points de vente, 20 séances et 100 débouchés se calculent en moins d'une seconde
+ok 70 - [T22] 200 plantations, 10 points de vente, 20 séances et 100 débouchés se calculent en moins d'une seconde
+  ---
+  duration_ms: 80.174317
+  type: 'test'
+  ...
+# Subtest: [T23] S6 : le marché de Saint-Paul compte 9 séances, coûte 221,40 € et rapporte 400 − 221,40 = 178,60 €
+ok 71 - [T23] S6 : le marché de Saint-Paul compte 9 séances, coûte 221,40 € et rapporte 400 − 221,40 = 178,60 €
+  ---
+  duration_ms: 0.801759
+  type: 'test'
+  ...
+# Subtest: [T23] la fourchette d'un point de vente va du cas le moins favorable pour lui au plus favorable, médiane comprise
+ok 72 - [T23] la fourchette d'un point de vente va du cas le moins favorable pour lui au plus favorable, médiane comprise
+  ---
+  duration_ms: 0.420689
+  type: 'test'
+  ...
+# Subtest: [T23] un point de vente sans débouché n'a que des coûts ; un point supprimé disparaît
+ok 73 - [T23] un point de vente sans débouché n'a que des coûts ; un point supprimé disparaît
+  ---
+  duration_ms: 0.321802
+  type: 'test'
+  ...
+# Subtest: [T24] la ferme d'exemple a des points de vente, leurs séances et leurs débouchés, tous calculables
+ok 74 - [T24] la ferme d'exemple a des points de vente, leurs séances et leurs débouchés, tous calculables
+  ---
+  duration_ms: 5.945783
+  type: 'test'
+  ...
+# Subtest: [T24] effacer l'exemple efface aussi ses points de vente, séances et débouchés, et seulement eux
+ok 75 - [T24] effacer l'exemple efface aussi ses points de vente, séances et débouchés, et seulement eux
+  ---
+  duration_ms: 3.220727
+  type: 'test'
+  ...
+1..75
+# tests 75
+# suites 0
+# pass 75
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 325.460312
+== Tests de bout en bout (Playwright) ==
+
+Running 57 tests using 2 workers
+
+  ✓   1 test/exemple-ventes.e2e.js:4:1 › [T24] la ferme d'exemple remplit les points de vente, les séances, les débouchés et les deux vues de vente (482ms)
+  ✓   3 test/exemple-ventes.e2e.js:23:1 › [T24] effacer la ferme d'exemple vide aussi les panneaux de vente, et l'exemple est proposé de nouveau (389ms)
+  ✓   2 test/espaces.e2e.js:18:1 › [T07] S3 : « planche 4 » porte un signal de sur-occupation pour juin, et les deux plantations restent enregistrées (1.0s)
+  ✓   4 test/exemple.e2e.js:6:1 › [T09] à la première ouverture, la ferme d'exemple est proposée et se charge d'un clic : 10 plantations et le tableau (323ms)
+  ✓   6 test/exemple.e2e.js:19:1 › [T09] la ferme d'exemple s'efface d'un geste, sans toucher à ce que l'utilisateur a ajouté (490ms)
+  ✓   5 test/espaces.e2e.js:33:1 › [T07] le signal disparaît dès que la sur-occupation est corrigée (951ms)
+  ✓   7 test/exemple.e2e.js:37:1 › [T09] une ferme commencée ne propose plus l'exemple, même après réouverture ; une ferme vidée le propose de nouveau (443ms)
+  ✓   9 test/modele.e2e.js:6:1 › [T02] dans le fichier ouvert, un espace enregistré porte un UUID, ses dates et supprimeLe nul (258ms)
+  ✓  10 test/presentation.e2e.js:14:1 › [T11] le rendu est découpé en modules, et l'outil s'utilise sans aucune erreur (739ms)
+  ✓   8 test/export.e2e.js:17:1 › [T08] EX-07 : Exporter produit un fichier JSON que Importer restaure à l'identique, y compris les supprimés (1.2s)
+  ✓  12 test/export.e2e.js:43:1 › [T08] l'import remplace la ferme ouverte après confirmation (777ms)
+  ✓  11 test/presentation.e2e.js:43:3 › [T12] P1-S1 à 1280 × 720 : le tableau reste visible pendant le défilement des panneaux de saisie (851ms)
+  ✓  13 test/export.e2e.js:55:1 › [T08] un fichier illisible est refusé avec un message, et la ferme reste intacte (271ms)
+  ✓  15 test/export.e2e.js:68:1 › [T08] EX-08 : le rappel d'export s'affiche à l'ouverture après 7 jours de modifications non exportées (447ms)
+  ✓  14 test/presentation.e2e.js:43:3 › [T12] P1-S1 à 1366 × 768 : le tableau reste visible pendant le défilement des panneaux de saisie (881ms)
+  ✓  16 test/recolte.e2e.js:9:1 › [T04] une plantation saisie affiche ses dates de première et de dernière récolte (513ms)
+  ✓  17 test/presentation.e2e.js:43:3 › [T12] P1-S1 à 1920 × 1080 : le tableau reste visible pendant le défilement des panneaux de saisie (808ms)
+  ✓  18 test/saisie.e2e.js:73:1 › [T03] espaces, cultures, variétés et plantations sont saisis, listés et retrouvés après réouverture (730ms)
+  ✓  19 test/presentation.e2e.js:68:1 › [T12] EX-16 : aucun défilement horizontal de la page de 1280 à 1920 px de large, ferme d'exemple chargée (742ms)
+  ✓  20 test/saisie.e2e.js:94:1 › [T03] une variété ne garde que les champs numériques surchargés, les autres viennent de la culture (570ms)
+  ✓  21 test/presentation.e2e.js:78:1 › [T12] sous 1100 px de large, une seule colonne, la projection en premier (304ms)
+  ✓  23 test/presentation.e2e.js:89:1 › [T13] EX-12 : chaque objet a son panneau titré, avec le nombre d'éléments actifs, et tous ses champs visibles (414ms)
+  ✓  24 test/presentation.e2e.js:103:1 › [T13] le nombre d'éléments d'un panneau suit les ajouts et les suppressions (275ms)
+  ✓  22 test/saisie.e2e.js:110:1 › [T03] une modification est enregistrée et retrouvée après réouverture (1.1s)
+  ✓  25 test/presentation.e2e.js:115:1 › [T13] EX-15 : le panneau et l'élément modifiés sont signalés jusqu'à l'enregistrement (442ms)
+  ✓  27 test/presentation.e2e.js:129:1 › [T13] EX-15 : … ou jusqu'à l'annulation (325ms)
+  ✓  26 test/saisie.e2e.js:142:1 › [T03] une suppression retire l'élément des listes, même après réouverture, sans l'effacer du stockage (808ms)
+  ✓  29 test/saisie.e2e.js:165:1 › [T03] une fourchette désordonnée est refusée avec un message, sans rien enregistrer (295ms)
+  ✓  28 test/presentation.e2e.js:138:1 › [T13] une barre de raccourcis mène à chaque panneau de saisie (558ms)
+  ✓  31 test/presentation.e2e.js:151:1 › [T14] P1-S2 : les mois et les cultures restent visibles pendant le défilement du tableau (340ms)
+  ✓  30 test/squelette.e2e.js:4:1 › [T01] un espace créé est retrouvé après fermeture et réouverture du fichier (391ms)
+  ✓  33 test/squelette.e2e.js:19:1 › [T01] le fichier assemblé ne charge aucune autre ressource (147ms)
+  ✓  32 test/presentation.e2e.js:169:1 › [T14] P1-S3 : la synthèse donne le chiffre d'affaires estimé de la saison en fourchette, et suit les modifications (663ms)
+  ✓  34 test/tableau.e2e.js:5:1 › [T05] S2 : en mai, la ligne courgette donne un CA en fourchette dont la médiane vaut le volume de mai × 2,50 € (540ms)
+  ✓  35 test/presentation.e2e.js:188:1 › [T14] la synthèse reste en tête quel que soit le défilement (345ms)
+  ✓  37 test/presentation.e2e.js:196:1 › [T14] une case vide du tableau s'affiche discrètement (257ms)
+  ✓  36 test/tableau.e2e.js:19:1 › [T05] EX-04 : le tableau donne pour chaque mois le volume, le chiffre d'affaires et la marge (631ms)
+  ✓  38 test/presentation.e2e.js:260:1 › [T15] EX-16 : texte courant d'au moins 14 px, aucun texte sous 12 px ni sous un contraste de 4,5:1 — ferme vide (136ms)
+  ✓  39 test/tableau.e2e.js:34:1 › [T05] EX-09 : les en-têtes signalent des estimations en fourchette basse / médiane / haute (557ms)
+  ✓  40 test/presentation.e2e.js:266:1 › [T15] EX-16 : mêmes règles avec la ferme d'exemple, une modification en cours, une sur-occupation et une erreur (645ms)
+  ✓  41 test/tableau.e2e.js:45:1 › [T05] sans plantation, le tableau annonce qu'aucune récolte n'est prévue (138ms)
+  ✓  42 test/presentation.e2e.js:283:1 › [T15] EX-16 : l'élément qui a le focus clavier porte un contour visible (416ms)
+  ✓  43 test/tableau.e2e.js:59:1 › [T06] modifier la surface d'une plantation recalcule le tableau sans autre action (624ms)
+  ✓  44 test/presentation.e2e.js:298:1 › [T16] à 1920 × 1080, le tableau occupe toute la largeur de sa boîte (275ms)
+  ✓  46 test/tranche.e2e.js:22:1 › [T10] parcours de la tranche : ferme d'exemple, plantation modifiée, tableau recalculé, export puis réimport à l'identique (770ms)
+  ✓  45 test/tableau.e2e.js:71:1 › [T06] changer un prix, ajouter ou supprimer une plantation recalcule le tableau (920ms)
+  ✓  47 test/ventes.e2e.js:5:1 › [T18] dans le fichier ouvert, points de vente, séances et débouchés sont enregistrés, retrouvés et exportés (378ms)
+  ✓  48 test/tableau.e2e.js:89:1 › [T06] une modification faite dans un autre onglet recalcule le tableau ouvert, sans l'écraser ensuite (1.1s)
+  ✓  49 test/ventes.e2e.js:57:1 › [T19] points de vente, séances et débouchés se saisissent, se listent et sont retrouvés après réouverture (965ms)
+  ✓  50 test/ventes.e2e.js:85:1 › [T19] un point de vente se modifie, une séance se supprime logiquement (934ms)
+  ✓  51 test/ventes.e2e.js:108:1 › [T19] une fourchette désordonnée est refusée avec un message, sans rien enregistrer (186ms)
+  ✓  52 test/ventes.e2e.js:120:1 › [T20] S6 : la liste des séances donne le nombre de séances datées et le coût de chacune (630ms)
+  ✓  53 test/ventes.e2e.js:131:1 › [T21] S4 : la vue « Offre et demande » montre, semaine par semaine, où la production dépasse ou manque (795ms)
+  ✓  54 test/ventes.e2e.js:155:1 › [T21] EX-09 : offre et demande s'affichent en fourchette, signalées comme estimations (785ms)
+  ✓  55 test/ventes.e2e.js:170:1 › [T22] S4 et S6 : le tableau donne le volume vendu, et la marge de la ferme déduit le coût des séances (741ms)
+  ✓  56 test/ventes.e2e.js:187:1 › [T23] S6 : la vue « Points de vente » donne, par mois, les séances, le chiffre d'affaires, les coûts et le résultat (817ms)
+  ✓  57 test/ventes.e2e.js:204:1 › [T23] un résultat arrondi à zéro s'affiche comme zéro, sans signe moins (94ms)
+
+  57 passed (20.1s)
+== N2 : vérification verte ==
 ```
