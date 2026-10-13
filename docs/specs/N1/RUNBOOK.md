@@ -79,5 +79,8 @@ Une ferme fictive de 10 plantations donne un tableau CA / marge par culture et p
 - T01 · Chaque module s'enveloppe pour exporter `module.exports` sous Node et un global dans le navigateur (`Store`, `Calc`, `Textes`) : `build.sh` reste une simple concaténation.
 - T01 · Identifiant, dates et suppression logique laissés à T02, tâche dédiée et relue ; un espace T01 porte seulement nom, surface et type.
 - T01 · Tests T01 dans `test/squelette.*`, pour laisser `store.test.js` et `calc.test.js` aux tâches qui les nomment. Le test de bout en bout remplit les trois champs de l'espace et cible les champs par identifiant (`#espace-nom`, …) plutôt que par libellé : T03 peut rendre les champs obligatoires et les textes d'`i18n.js` peuvent changer sans toucher au test.
+- T02 · Noms de champs : `id`, `creeLe`, `modifieLe`, `supprimeLe` (ISO 8601). Fourchette `{ basse, mediane, haute }`. API du store : `lister(objet, { avecSupprimes })`, `obtenir`, `ajouter`, `modifier`, `supprimer` sur `espaces`, `cultures`, `varietes`, `plantations` ; tout autre objet est refusé (`objet_inconnu`). Les erreurs portent un `code`, traduit par `i18n.js` au rendu.
+- T02 · Saisie d'une fourchette dans un seul champ texte : « 3 » ou « 2 / 2,5 / 3 », virgule décimale acceptée (`Store.lireFourchette`). Un seul nombre remplit les trois valeurs ; deux nombres ou un ordre inverse sont refusés.
+- T02 · Seuls le rendement et le prix sont des fourchettes, comme le dit le tableau du modèle ; les durées et le taux de pertes sont des nombres simples (scénario S1).
 
 ## ✎ Bilan de fin de tranche
