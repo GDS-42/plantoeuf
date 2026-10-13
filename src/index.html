@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>plantoeuf</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 60rem; margin: 1rem auto; padding: 0 1rem; color: #1f2a1f; }
+  h1 { font-size: 1.4rem; }
+  form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; margin-bottom: 1rem; }
+  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; }
+  input, select, button { font: inherit; padding: 0.3rem 0.5rem; }
+  [hidden] { display: none; }
+</style>
+</head>
+<body>
+<h1 data-texte="titre"></h1>
+
+<section>
+  <h2 data-texte="espaces.titre"></h2>
+  <form id="form-espace">
+    <label><span data-texte="espaces.nom"></span>
+      <input id="espace-nom" name="nom" required>
+    </label>
+    <label><span data-texte="espaces.surface"></span>
+      <input id="espace-surface" name="surface" type="number" min="0" step="any" required>
+    </label>
+    <label><span data-texte="espaces.type"></span>
+      <select id="espace-type" name="type"></select>
+    </label>
+    <button id="espace-ajouter" type="submit" data-texte="espaces.ajouter"></button>
+  </form>
+  <p id="espaces-vide" data-texte="espaces.aucun"></p>
+  <ul id="liste-espaces"></ul>
+</section>
+
+<script src="i18n.js"></script>
+<script src="store.js"></script>
+<script src="calc.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const ferme = Store.ouvrir(window.localStorage);
+
+  function texte(chemin) {
+    return chemin.split(".").reduce((objet, cle) => objet[cle], Textes);
+  }
+
+  function element(balise, contenu) {
+    const el = document.createElement(balise);
+    el.textContent = contenu;
+    return el;
+  }
+
+  function afficherEspaces() {
+    const espaces = ferme.espaces();
+    document.getElementById("espaces-vide").hidden = espaces.length > 0;
+    document.getElementById("liste-espaces").replaceChildren(
+      ...espaces.map((espace) => element("li",
+        espace.nom + " · " + espace.surface + " " + Textes.espaces.unite + " · " + Textes.typesEspace[espace.type]))
+    );
+  }
+
+  document.title = Textes.titre;
+  document.querySelectorAll("[data-texte]").forEach((el) => {
+    el.textContent = texte(el.dataset.texte);
+  });
+
+  const choixType = document.getElementById("espace-type");
+  Object.entries(Textes.typesEspace).forEach(([valeur, libelle]) => {
+    const option = element("option", libelle);
+    option.value = valeur;
+    choixType.append(option);
+  });
+
+  const formulaire = document.getElementById("form-espace");
+  formulaire.addEventListener("submit", (evenement) => {
+    evenement.preventDefault();
+    ferme.ajouterEspace({
+      nom: formulaire.elements.nom.value.trim(),
+      surface: formulaire.elements.surface.valueAsNumber,
+      type: formulaire.elements.type.value,
+    });
+    formulaire.reset();
+    afficherEspaces();
+  });
+
+  afficherEspaces();
+})();
+</script>
+</body>
+</html>

@@ -2,6 +2,8 @@
 # Vérifie une tâche (T01…) ou une tranche (N1…).
 # Les tests portent l'identifiant de tâche entre crochets dans leur nom : "[T04] …".
 # Une tranche lance tous les tests sans filtre.
+# Les tests unitaires sont désignés par motif (test/*.test.js) : Node 22 refuse un dossier
+# en argument de --test, et le motif écarte les tests Playwright (*.e2e.js).
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -23,9 +25,9 @@ echo "== Assemblage de dist/index.html =="
 echo "== Tests unitaires (node --test) =="
 if ls test/*.test.js >/dev/null 2>&1; then
   if [ -n "$FILTER" ]; then
-    node --test --test-name-pattern="$FILTER" test/
+    node --test --test-name-pattern="$FILTER" test/*.test.js
   else
-    node --test test/
+    node --test test/*.test.js
   fi
 else
   echo "aucun test unitaire dans test/ : échec" >&2
