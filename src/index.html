@@ -172,6 +172,9 @@
     <a href="#section-cultures"><span data-texte="cultures.titre"></span> <span class="compte-raccourci" data-objet="cultures"></span></a>
     <a href="#section-varietes"><span data-texte="varietes.titre"></span> <span class="compte-raccourci" data-objet="varietes"></span></a>
     <a href="#section-plantations"><span data-texte="plantations.titre"></span> <span class="compte-raccourci" data-objet="plantations"></span></a>
+    <a href="#section-pointsVente"><span data-texte="pointsVente.titre"></span> <span class="compte-raccourci" data-objet="pointsVente"></span></a>
+    <a href="#section-seances"><span data-texte="seances.titre"></span> <span class="compte-raccourci" data-objet="seances"></span></a>
+    <a href="#section-debouches"><span data-texte="debouches.titre"></span> <span class="compte-raccourci" data-objet="debouches"></span></a>
     <a href="#section-sauvegarde"><span data-texte="sauvegarde.titre"></span></a>
   </nav>
   <section id="section-espaces" class="panneau" data-objet="espaces">
@@ -310,6 +313,96 @@
     <ul id="liste-plantations" class="liste"></ul>
   </section>
 
+  <section id="section-pointsVente" class="panneau" data-objet="pointsVente">
+    <div class="panneau-entete">
+      <h2 data-texte="pointsVente.titre"></h2>
+      <span class="compte">0</span>
+      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
+    </div>
+    <form id="form-pointVente" data-objet="pointsVente">
+      <label><span data-texte="pointsVente.nom"></span>
+        <input id="pointVente-nom" data-champ="nom" required>
+      </label>
+      <label><span data-texte="pointsVente.distanceKm"></span>
+        <input id="pointVente-distanceKm" data-champ="distanceKm" data-format="nombre" type="number" min="0" step="any" required>
+      </label>
+      <label><span data-texte="pointsVente.coutKm"></span>
+        <input id="pointVente-coutKm" data-champ="coutKm" data-format="fourchette" required>
+      </label>
+      <p class="aide" data-texte="cultures.aideFourchette"></p>
+      <div class="boutons">
+        <button id="pointVente-ajouter" type="submit" class="principal" data-texte="pointsVente.ajouter"></button>
+        <button id="pointVente-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      </div>
+      <p id="pointVente-erreur" class="erreur" role="alert" hidden></p>
+    </form>
+    <p id="pointsVente-vide" class="vide" data-texte="pointsVente.aucun"></p>
+    <ul id="liste-pointsVente" class="liste"></ul>
+  </section>
+
+  <section id="section-seances" class="panneau" data-objet="seances">
+    <div class="panneau-entete">
+      <h2 data-texte="seances.titre"></h2>
+      <span class="compte">0</span>
+      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
+    </div>
+    <form id="form-seance" data-objet="seances">
+      <label><span data-texte="seances.pointVente"></span>
+        <select id="seance-pointVenteId" data-champ="pointVenteId" required></select>
+      </label>
+      <label><span data-texte="seances.jour"></span>
+        <select id="seance-jour" data-champ="jour" data-format="nombre" data-options="joursSemaine"></select>
+      </label>
+      <label><span data-texte="seances.debut"></span>
+        <input id="seance-debut" data-champ="debut" type="date" required>
+      </label>
+      <label><span data-texte="seances.fin"></span>
+        <input id="seance-fin" data-champ="fin" type="date" required>
+      </label>
+      <label><span data-texte="seances.frais"></span>
+        <input id="seance-frais" data-champ="frais" data-format="fourchette" required>
+      </label>
+      <p class="aide" data-texte="seances.aide"></p>
+      <div class="boutons">
+        <button id="seance-ajouter" type="submit" class="principal" data-texte="seances.ajouter"></button>
+        <button id="seance-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      </div>
+      <p id="seance-erreur" class="erreur" role="alert" hidden></p>
+    </form>
+    <p id="seances-vide" class="vide" data-texte="seances.aucun"></p>
+    <ul id="liste-seances" class="liste"></ul>
+  </section>
+
+  <section id="section-debouches" class="panneau" data-objet="debouches">
+    <div class="panneau-entete">
+      <h2 data-texte="debouches.titre"></h2>
+      <span class="compte">0</span>
+      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
+    </div>
+    <form id="form-debouche" data-objet="debouches">
+      <label><span data-texte="debouches.pointVente"></span>
+        <select id="debouche-pointVenteId" data-champ="pointVenteId" required></select>
+      </label>
+      <label><span data-texte="debouches.produit"></span>
+        <select id="debouche-produitId" data-champ="produitId" required></select>
+      </label>
+      <label><span data-texte="debouches.prix"></span>
+        <input id="debouche-prix" data-champ="prix" data-format="fourchette" required>
+      </label>
+      <label><span data-texte="debouches.volumeParSeance"></span>
+        <input id="debouche-volumeParSeance" data-champ="volumeParSeance" data-format="fourchette" required>
+      </label>
+      <p class="aide" data-texte="debouches.aide"></p>
+      <div class="boutons">
+        <button id="debouche-ajouter" type="submit" class="principal" data-texte="debouches.ajouter"></button>
+        <button id="debouche-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      </div>
+      <p id="debouche-erreur" class="erreur" role="alert" hidden></p>
+    </form>
+    <p id="debouches-vide" class="vide" data-texte="debouches.aucun"></p>
+    <ul id="liste-debouches" class="liste"></ul>
+  </section>
+
   <section id="section-sauvegarde" class="panneau">
     <div class="panneau-entete">
       <h2 data-texte="sauvegarde.titre"></h2>
@@ -350,6 +443,7 @@
 <script src="ui-saisie.js"></script>
 <script src="ui-tableau.js"></script>
 <script src="ui-sauvegarde.js"></script>
+<script src="ui-ventes.js"></script>
 <script>
 (function () {
   "use strict";
@@ -358,6 +452,7 @@
   let ferme = Store.ouvrir(window.localStorage);
   const fermeOuverte = () => ferme;
   const saisie = UiSaisie.creer({ ferme: fermeOuverte, rafraichir });
+  const ventes = UiVentes.creer({ ferme: fermeOuverte, saisie });
   const sauvegarde = UiSauvegarde.creer({
     ferme: fermeOuverte,
     apresImport: () => {
@@ -376,6 +471,7 @@
   function rafraichir() {
     const donnees = donneesActives();
     saisie.afficher(donnees);
+    ventes.afficher(donnees);
     UiTableau.afficher(Calc.tableau(donnees));
 
     // EX-10 : l'exemple est proposé tant que la ferme est vide, effaçable tant qu'il en reste quelque chose.

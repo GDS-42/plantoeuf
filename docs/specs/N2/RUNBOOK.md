@@ -67,4 +67,6 @@ Le format exporté reste en version 1 : un fichier de N1 s'importe dans N2 (les 
 
 ## ✎ Décisions
 
+- T19 · Trois panneaux de plus dans le volet de saisie, après les plantations, sur le modèle des autres (titre, nombre, formulaire, liste, mode modification). La mécanique des formulaires reste dans `UiSaisie` ; `UiVentes` affiche les listes et remplit les listes déroulantes (point de vente, culture vendue). Le jour d'une séance s'enregistre comme un nombre, de 1 (lundi) à 7 (dimanche).
+
 ## ✎ Bilan de fin de tranche

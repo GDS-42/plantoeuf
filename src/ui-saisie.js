@@ -84,7 +84,7 @@
     const champs = {};
     for (const entree of formulaire.querySelectorAll("[data-champ]")) {
       const champ = entree.dataset.champ;
-      if (entree.dataset.format === "nombre") champs[champ] = entree.value === "" ? null : entree.valueAsNumber;
+      if (entree.dataset.format === "nombre") champs[champ] = entree.value === "" ? null : Number(entree.value);
       else if (entree.dataset.format === "fourchette") champs[champ] = Store.lireFourchette(entree.value);
       else champs[champ] = entree.value.trim();
     }
@@ -209,7 +209,6 @@
       plantations.sort((a, b) => a.date.localeCompare(b.date) || libellePlantation(a).localeCompare(libellePlantation(b), "fr"));
 
       const surOccupations = Calc.surOccupations(donnees);
-      const enEdition = (objet) => formulaires[objet] && formulaires[objet].dataset.id;
       afficherListe("espaces", espaces, (e) => resumeEspace(e, surOccupations[e.id]), enEdition("espaces"));
       afficherListe("cultures", cultures, resumeCulture, enEdition("cultures"));
       afficherListe("varietes", varietes, (v) => resumeVariete(v, toutesCultures), enEdition("varietes"));
@@ -220,8 +219,14 @@
       remplirChoix(document.getElementById("plantation-espaceId"), espaces.map((e) => ({ valeur: e.id, libelle: e.nom })));
     }
 
-    return { brancher, afficher, quitterToutes };
+    // Identifiant de l'élément en cours de modification dans le formulaire d'un objet, s'il y en a un.
+    function enEdition(objet) {
+      return formulaires[objet] && formulaires[objet].dataset.id;
+    }
+
+    return { brancher, afficher, quitterToutes, enEdition };
   }
 
-  globalThis.UiSaisie = { creer };
+  // Outils partagés avec les autres panneaux de saisie (ui-ventes.js).
+  globalThis.UiSaisie = { creer, outils: { afficherListe, remplirChoix } };
 })();

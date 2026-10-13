@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N2 · Sessions consommées : 1 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : N2 · Sessions consommées : 2 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -1914,4 +1914,76 @@ Running 1 test using 1 worker
 
   1 passed (929ms)
 == T18 : vérification verte ==
+```
+
+## 13/10/2026 · T19 — Saisie des points de vente, séances et débouchés
+
+- Session 2 / 12 du seuil d'alerte de N2.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Résultat : **vert**. `./verify.sh T19` → exit 0 (3 tests de bout en bout) ; `./verify.sh N2` → exit 0 (53 tests unitaires, 49 de bout en bout).
+- Fichiers : `src/index.html` (trois panneaux et leurs raccourcis), `src/ui-ventes.js` (listes et listes déroulantes), `src/ui-saisie.js` (outils partagés, nombre lu aussi dans une liste déroulante), `src/i18n.js`, `test/ventes.e2e.js`.
+- Rouge d'abord : les 3 tests `[T19]` rouges (champs absents).
+- Commit : « T19 — Panneaux de saisie des points de vente, séances et débouchés ».
+
+Preuve (`./verify.sh T19`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 86025 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 73.604709
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 71.431899
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 72.461676
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 77.991655
+  type: 'test'
+  ...
+1..0
+# Subtest: test/ventes.test.js
+ok 5 - test/ventes.test.js
+  ---
+  duration_ms: 64.134008
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 162.110836
+== Tests de bout en bout (Playwright) ==
+
+Running 3 tests using 1 worker
+
+  ✓  1 test/ventes.e2e.js:57:1 › [T19] points de vente, séances et débouchés se saisissent, se listent et sont retrouvés après réouverture (991ms)
+  ✓  2 test/ventes.e2e.js:85:1 › [T19] un point de vente se modifie, une séance se supprime logiquement (977ms)
+  ✓  3 test/ventes.e2e.js:108:1 › [T19] une fourchette désordonnée est refusée avec un message, sans rien enregistrer (200ms)
+
+  3 passed (2.9s)
+== T19 : vérification verte ==
 ```
