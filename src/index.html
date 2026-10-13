@@ -128,6 +128,10 @@
     .defilement { max-height: 70vh; }
   }
 
+  /* Focus clavier toujours visible (EX-16) ; à l'intérieur des zones qui défilent, pour ne pas être rogné. */
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .volet-saisie:focus-visible, .defilement:focus-visible { outline-offset: -3px; }
+
   [hidden] { display: none !important; }
 </style>
 </head>

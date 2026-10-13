@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : P1 · Sessions consommées : 4 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
+Tranche en cours : P1 · Sessions consommées : 5 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
 
 ---
 
@@ -1376,4 +1376,69 @@ Running 4 tests using 1 worker
 
   4 passed (2.0s)
 == T14 : vérification verte ==
+```
+
+## 13/10/2026 · T15 — Lisibilité : tailles de texte, contrastes, focus clavier
+
+- Session 5 / 9 du seuil d'alerte de P1.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Résultat : **vert**. `./verify.sh T15` → exit 0 (3 tests) ; `./verify.sh P1` → exit 0 (48 tests unitaires, 44 de bout en bout dont les 26 de N1 inchangés).
+- Fichiers : `src/index.html` (contour de focus), `test/presentation.e2e.js`.
+- Rouge d'abord, en partie seulement : les deux audits de taille et de contraste (chaque texte affiché, comparé au fond réellement peint dessous, ferme vide puis ferme d'exemple avec une modification en cours, une sur-occupation et une erreur) étaient **verts dès l'écriture** : la palette posée en T12 respectait déjà 4,5:1 et 12 px. Le test du focus clavier était rouge (contour du navigateur : `auto`, 1 px).
+- Commit : « T15 — Lisibilité : focus clavier visible ; audits de taille et de contraste ».
+
+Preuve (`./verify.sh T15`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 75440 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 68.901084
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 65.241926
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 71.23742
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 60.049835
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 138.874682
+== Tests de bout en bout (Playwright) ==
+
+Running 3 tests using 1 worker
+
+  ✓  1 test/presentation.e2e.js:260:1 › [T15] EX-16 : texte courant d'au moins 14 px, aucun texte sous 12 px ni sous un contraste de 4,5:1 — ferme vide (149ms)
+  ✓  2 test/presentation.e2e.js:266:1 › [T15] EX-16 : mêmes règles avec la ferme d'exemple, une modification en cours, une sur-occupation et une erreur (510ms)
+  ✓  3 test/presentation.e2e.js:283:1 › [T15] EX-16 : l'élément qui a le focus clavier porte un contour visible (309ms)
+
+  3 passed (1.7s)
+== T15 : vérification verte ==
 ```

@@ -199,3 +199,96 @@ test("[T14] une case vide du tableau s'affiche discrètement", async ({ page }) 
   await expect(vide.locator(".mediane")).toHaveText("—");
   await expect(vide.locator(".bornes")).toBeHidden();
 });
+
+// ---- T15 — EX-16 : tailles de texte, contrastes, focus clavier visible.
+
+// Pour chaque texte affiché : sa taille et son contraste avec le fond réellement peint dessous.
+async function auditerTextes(page) {
+  return page.evaluate(() => {
+    const lineaire = (v) => {
+      const c = v / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = ({ r, g, b }) => 0.2126 * lineaire(r) + 0.7152 * lineaire(g) + 0.0722 * lineaire(b);
+    const lire = (s) => {
+      const m = s.match(/rgba?\(([^)]+)\)/);
+      if (!m) return null;
+      const p = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+      return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+    };
+    const melanger = (dessus, dessous) => ({
+      r: dessus.r * dessus.a + dessous.r * (1 - dessus.a),
+      g: dessus.g * dessus.a + dessous.g * (1 - dessus.a),
+      b: dessus.b * dessus.a + dessous.b * (1 - dessus.a),
+    });
+    const fondDe = (el) => {
+      const couches = [];
+      for (let e = el; e; e = e.parentElement) {
+        const c = lire(getComputedStyle(e).backgroundColor);
+        if (c && c.a > 0) {
+          couches.push(c);
+          if (c.a >= 1) break;
+        }
+      }
+      let fond = { r: 255, g: 255, b: 255 };
+      for (const c of couches.reverse()) fond = melanger(c, fond);
+      return fond;
+    };
+    const resultats = [];
+    const marcheur = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let n = marcheur.nextNode(); n; n = marcheur.nextNode()) {
+      const el = n.parentElement;
+      if (!n.textContent.trim() || el.closest("script, style, select") || !el.checkVisibility()) continue;
+      const style = getComputedStyle(el);
+      const fond = fondDe(el);
+      const texte = melanger(lire(style.color), fond);
+      const [clair, sombre] = [luminance(texte), luminance(fond)].sort((a, b) => b - a);
+      resultats.push({ texte: n.textContent.trim().slice(0, 50), taille: parseFloat(style.fontSize), contraste: (clair + 0.05) / (sombre + 0.05) });
+    }
+    return resultats;
+  });
+}
+
+function verifierLisibilite(textes) {
+  expect(textes.length).toBeGreaterThan(10);
+  const tropPetits = textes.filter((t) => t.taille < 12);
+  expect(tropPetits, "textes de moins de 12 px").toEqual([]);
+  const peuContrastes = textes.filter((t) => t.contraste < 4.5).map((t) => `${t.texte} (${t.contraste.toFixed(2)})`);
+  expect(peuContrastes, "textes de contraste inférieur à 4,5:1").toEqual([]);
+}
+
+test("[T15] EX-16 : texte courant d'au moins 14 px, aucun texte sous 12 px ni sous un contraste de 4,5:1 — ferme vide", async ({ page }) => {
+  await page.goto("index.html");
+  expect(parseFloat(await page.evaluate(() => getComputedStyle(document.body).fontSize))).toBeGreaterThanOrEqual(14);
+  verifierLisibilite(await auditerTextes(page));
+});
+
+test("[T15] EX-16 : mêmes règles avec la ferme d'exemple, une modification en cours, une sur-occupation et une erreur", async ({ page }) => {
+  await chargerExemple(page);
+  for (const selecteur of ["ul.liste li span.resume", "#tableau td .mediane", "label"]) {
+    const taille = await page.locator(selecteur).first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    expect(taille, selecteur).toBeGreaterThanOrEqual(14);
+  }
+  await page.locator("#liste-plantations li", { hasText: "Courgette" }).locator('[data-action="modifier"]').click();
+  await page.locator("#plantation-surface").fill("45");
+  await page.locator("#plantation-ajouter").click();
+  await expect(page.locator(".sur-occupation")).toHaveCount(1);
+  await page.locator("#liste-cultures li", { hasText: "Tomate" }).locator('[data-action="modifier"]').click();
+  await page.locator("#culture-prix").fill("4 / 3 / 5");
+  await page.locator("#culture-ajouter").click();
+  await expect(page.locator("#culture-erreur")).toBeVisible();
+  verifierLisibilite(await auditerTextes(page));
+});
+
+test("[T15] EX-16 : l'élément qui a le focus clavier porte un contour visible", async ({ page }) => {
+  await chargerExemple(page);
+  for (let i = 0; i < 15; i++) {
+    await page.keyboard.press("Tab");
+    const contour = await page.evaluate(() => {
+      const el = document.activeElement;
+      const s = getComputedStyle(el);
+      return { element: el.tagName + (el.id ? "#" + el.id : ""), style: s.outlineStyle, largeur: parseFloat(s.outlineWidth) };
+    });
+    expect(contour.style !== "none" && contour.largeur >= 2, JSON.stringify(contour)).toBe(true);
+  }
+});
