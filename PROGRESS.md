@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N2 · Sessions consommées : 8 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : N2 · Sessions consommées : 9 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -2567,4 +2567,81 @@ Running 2 tests using 1 worker
 
   2 passed (1.7s)
 == T23 : vérification verte ==
+```
+
+## 13/10/2026 · T24 — Ferme d'exemple : points de vente réunionnais, séances et débouchés
+
+- Session 9 / 12 du seuil d'alerte de N2.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Résultat : **vert**. `./verify.sh T24` → exit 0 (2 tests unitaires, 2 de bout en bout) ; `./verify.sh N2` → exit 0 (75 tests unitaires, 57 de bout en bout), dont les tests de N1 et de P1 qui chargent l'exemple (`[T09]`, `[T10]`, `[T12]` P1-S1 aux trois tailles d'écran, `[T14]`, `[T15]`).
+- Fichiers : `src/exemple.js` (3 points de vente, 3 séances, 14 débouchés ; `effacer` couvre les trois listes), `test/ventes.test.js`, `test/exemple-ventes.e2e.js`.
+- Rouge d'abord : 2 tests unitaires rouges, 1 test de bout en bout rouge (aucun point de vente dans l'exemple). Le second test de bout en bout (effacer l'exemple vide aussi les panneaux de vente) passait déjà, faute de données de vente à effacer ; il garde le comportement.
+- Contrainte tenue : la demande de courgette reste au-dessus de sa production, pour que les tests `[T10]` et `[T12]` (le chiffre d'affaires baisse quand la plantation de courgette rétrécit) restent valables.
+- Commit : « T24 — Ferme d'exemple : points de vente réunionnais, séances et débouchés ».
+
+Preuve (`./verify.sh T24`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 114321 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 78.01149
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 69.198777
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 62.907651
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 59.732435
+  type: 'test'
+  ...
+# Subtest: [T24] la ferme d'exemple a des points de vente, leurs séances et leurs débouchés, tous calculables
+ok 5 - [T24] la ferme d'exemple a des points de vente, leurs séances et leurs débouchés, tous calculables
+  ---
+  duration_ms: 31.529652
+  type: 'test'
+  ...
+# Subtest: [T24] effacer l'exemple efface aussi ses points de vente, séances et débouchés, et seulement eux
+ok 6 - [T24] effacer l'exemple efface aussi ses points de vente, séances et débouchés, et seulement eux
+  ---
+  duration_ms: 6.327045
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 188.655034
+== Tests de bout en bout (Playwright) ==
+
+Running 2 tests using 1 worker
+
+  ✓  1 test/exemple-ventes.e2e.js:4:1 › [T24] la ferme d'exemple remplit les points de vente, les séances, les débouchés et les deux vues de vente (403ms)
+  ✓  2 test/exemple-ventes.e2e.js:23:1 › [T24] effacer la ferme d'exemple vide aussi les panneaux de vente, et l'exemple est proposé de nouveau (338ms)
+
+  2 passed (1.4s)
+== T24 : vérification verte ==
 ```

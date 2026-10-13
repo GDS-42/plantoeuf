@@ -1,5 +1,6 @@
 // Ferme d'exemple (La Réunion) : 5 espaces, 7 cultures, 10 plantations sur la saison fraîche,
-// d'avril à octobre, la plus favorable au maraîchage (sèche, sans cyclone).
+// d'avril à octobre, la plus favorable au maraîchage (sèche, sans cyclone), vendues sur un marché,
+// en paniers et à une épicerie de l'Ouest.
 // C'est le seul fichier où figurent des valeurs agronomiques et des prix : ce sont des ordres
 // de grandeur pour montrer l'outil, pas des références.
 (function (racine, fabrique) {
@@ -56,10 +57,43 @@
     { variete: "zoizo", espace: "planche4", surface: 15, date: "03-15" },
   ];
 
+  // Points de vente de l'Ouest : distance aller depuis la ferme, coût du km (carburant et usure).
+  const POINTS_VENTE = {
+    marche: { nom: "Marché de Saint-Paul", distanceKm: 12, coutKm: f(0.3, 0.4, 0.5) },
+    amap: { nom: "Paniers de l'AMAP", distanceKm: 6, coutKm: f(0.3, 0.4, 0.5) },
+    epicerie: { nom: "Épicerie de Saint-Gilles", distanceKm: 9, coutKm: f(0.3, 0.4, 0.5) },
+  };
+
+  // Une séance par point de vente : jour (1 = lundi … 7 = dimanche), période « MM-JJ », frais par séance.
+  const SEANCES = [
+    { point: "marche", jour: 5, debut: "05-01", fin: "10-30", frais: f(10, 15, 20) },
+    { point: "amap", jour: 2, debut: "05-05", fin: "10-27", frais: f(0, 0, 0) },
+    { point: "epicerie", jour: 4, debut: "05-01", fin: "10-29", frais: f(0, 0, 0) },
+  ];
+
+  // Prix de vente par unité et volume vendable par séance : prix de détail au marché, un peu plus
+  // en paniers, prix de revendeur à l'épicerie.
+  const DEBOUCHES = [
+    { point: "marche", culture: "tomate", prix: f(2.5, 3, 3.5), volumeParSeance: f(10, 15, 20) },
+    { point: "marche", culture: "laitue", prix: f(0.8, 1, 1.2), volumeParSeance: f(15, 20, 30) },
+    { point: "marche", culture: "brede", prix: f(1, 1.5, 2), volumeParSeance: f(10, 15, 20) },
+    { point: "marche", culture: "carotte", prix: f(2, 2.5, 3), volumeParSeance: f(5, 8, 10) },
+    { point: "marche", culture: "haricot", prix: f(4, 5, 6), volumeParSeance: f(2, 3, 4) },
+    { point: "marche", culture: "courgette", prix: f(2, 2.5, 3), volumeParSeance: f(5, 8, 12) },
+    { point: "marche", culture: "piment", prix: f(12, 15, 18), volumeParSeance: f(0.5, 1, 1.5) },
+    { point: "amap", culture: "tomate", prix: f(3, 3.5, 3.5), volumeParSeance: f(5, 6, 8) },
+    { point: "amap", culture: "laitue", prix: f(1, 1.2, 1.2), volumeParSeance: f(8, 10, 12) },
+    { point: "amap", culture: "brede", prix: f(1.5, 1.5, 2), volumeParSeance: f(8, 10, 12) },
+    { point: "amap", culture: "courgette", prix: f(2.5, 3, 3), volumeParSeance: f(3, 4, 5) },
+    { point: "epicerie", culture: "tomate", prix: f(1.8, 2, 2.4), volumeParSeance: f(5, 10, 15) },
+    { point: "epicerie", culture: "carotte", prix: f(1.5, 1.8, 2), volumeParSeance: f(5, 8, 10) },
+    { point: "epicerie", culture: "piment", prix: f(8, 10, 12), volumeParSeance: f(1, 1.5, 2) },
+  ];
+
   // Enregistre la ferme d'exemple dans `ferme` (store ouvert) pour l'année `annee`, et retient
   // les identifiants créés pour pouvoir l'effacer d'un geste.
   function charger(ferme, annee) {
-    const ids = { espaces: [], cultures: [], varietes: [], plantations: [] };
+    const ids = { espaces: [], cultures: [], varietes: [], plantations: [], pointsVente: [], seances: [], debouches: [] };
     const cree = (objet, champs) => {
       const enregistrement = ferme.ajouter(objet, champs);
       ids[objet].push(enregistrement.id);
@@ -81,6 +115,14 @@
         date: `${annee}-${plantation.date}`,
       });
     }
+    const points = {};
+    for (const [cle, point] of Object.entries(POINTS_VENTE)) points[cle] = cree("pointsVente", point);
+    for (const { point, debut, fin, ...seance } of SEANCES) {
+      cree("seances", { ...seance, pointVenteId: points[point], debut: `${annee}-${debut}`, fin: `${annee}-${fin}` });
+    }
+    for (const { point, culture, ...debouche } of DEBOUCHES) {
+      cree("debouches", { ...debouche, pointVenteId: points[point], produitId: cultures[culture] });
+    }
     ferme.noterExemple(ids);
     return ids;
   }
@@ -99,7 +141,7 @@
   function effacer(ferme) {
     const ids = ferme.exemple();
     if (!ids) return;
-    for (const objet of ["plantations", "varietes", "cultures", "espaces"]) {
+    for (const objet of ["debouches", "seances", "pointsVente", "plantations", "varietes", "cultures", "espaces"]) {
       for (const id of ids[objet] || []) {
         const enregistrement = ferme.obtenir(objet, id);
         if (enregistrement && !enregistrement.supprimeLe) ferme.supprimer(objet, id);

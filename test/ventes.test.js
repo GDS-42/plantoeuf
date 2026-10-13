@@ -403,3 +403,54 @@ test("[T23] un point de vente sans débouché n'a que des coûts ; un point supp
   procheFourchette(amap.total.ca, f(0));
   assert.equal(amap.total.seances, 10);
 });
+
+// ---- T24 : la ferme d'exemple vend sur des points de vente réunionnais (EX-24)
+
+const Exemple = require("../src/exemple.js");
+
+function donneesDe(ferme) {
+  const resultat = {};
+  for (const objet of Store.OBJETS) resultat[objet] = ferme.lister(objet);
+  return resultat;
+}
+
+test("[T24] la ferme d'exemple a des points de vente, leurs séances et leurs débouchés, tous calculables", () => {
+  const ferme = Store.ouvrir(stockageEnMemoire());
+  Exemple.charger(ferme, 2027);
+  const d = donneesDe(ferme);
+  assert.ok(d.pointsVente.length >= 2);
+  const points = new Set(d.pointsVente.map((p) => p.id));
+  const cultures = new Set(d.cultures.map((c) => c.id));
+  for (const seance of d.seances) {
+    assert.ok(points.has(seance.pointVenteId));
+    assert.match(seance.debut, /^2027-/);
+    assert.ok(Calc.seancesDatees(seance).length > 0);
+  }
+  for (const debouche of d.debouches) assert.ok(points.has(debouche.pointVenteId) && cultures.has(debouche.produitId));
+
+  const vue = Calc.pointsDeVente(d);
+  assert.equal(vue.points.length, d.pointsVente.length);
+  for (const point of vue.points) {
+    assert.ok(point.total.seances > 0, point.nom);
+    assert.ok(point.total.ca.mediane > 0, point.nom);
+  }
+  // L'exemple montre les deux cas : des semaines où la production dépasse, d'autres où elle manque.
+  const etats = new Set(Calc.offreDemande(d).lignes.flatMap((l) => Object.values(l.semaines).map((s) => s.etat)));
+  assert.ok(etats.has("depasse") && etats.has("manque"), [...etats].join(", "));
+  assert.ok(Calc.tableau(d).total.total.couts.mediane > 0);
+});
+
+test("[T24] effacer l'exemple efface aussi ses points de vente, séances et débouchés, et seulement eux", () => {
+  const stockage = stockageEnMemoire();
+  const ferme = Store.ouvrir(stockage);
+  Exemple.charger(ferme, 2027);
+  const mien = ferme.ajouter("pointsVente", { nom: "mon marché", distanceKm: 3, coutKm: f(0.4) });
+  Exemple.effacer(ferme);
+  const reouverte = Store.ouvrir(stockage);
+  assert.deepEqual(reouverte.lister("pointsVente").map((p) => p.id), [mien.id]);
+  for (const objet of ["seances", "debouches"]) {
+    assert.deepEqual(reouverte.lister(objet), [], objet);
+    assert.ok(reouverte.lister(objet, { avecSupprimes: true }).length > 0, objet);
+  }
+  assert.equal(Exemple.estAffichee(reouverte), false);
+});
