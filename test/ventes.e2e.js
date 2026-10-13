@@ -114,3 +114,14 @@ test("[T19] une fourchette désordonnée est refusée avec un message, sans rien
   await expect(page.locator("#pointVente-erreur")).toBeVisible();
   await expect(page.locator("#liste-pointsVente li")).toHaveCount(0);
 });
+
+// ---- T20 : séances datées et coûts, dans la liste des séances
+
+test("[T20] S6 : la liste des séances donne le nombre de séances datées et le coût de chacune", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirS2(page);
+  await saisirMarche(page);
+  const seance = ligne(page, "seances", "samedi");
+  await expect(seance).toContainText("9 séances");
+  await expect(seance).toContainText("24,6");
+});

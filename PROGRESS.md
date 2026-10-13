@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N2 · Sessions consommées : 2 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : N2 · Sessions consommées : 3 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -1986,4 +1986,93 @@ Running 3 tests using 1 worker
 
   3 passed (2.9s)
 == T19 : vérification verte ==
+```
+
+## 13/10/2026 · T20 — Séances datées et coût de chaque séance
+
+- Session 3 / 12 du seuil d'alerte de N2.
+- Modèle : Opus 5.5, effort élevé · **Reprises : 1** · Relecteur : Fable, contexte frais.
+  - 1er passage → **ÉCART** : une fonction `lundiDe` ajoutée et exportée sans test ni usage (AGENTS.md : « test avant code »). Reprise : la fonction quitte T20 ; elle revient en T21, où elle sert, avec son test.
+  - 2e passage, sur le diff corrigé → **CONFORME**.
+- Résultat : **vert**. `./verify.sh T20` → exit 0 (4 tests unitaires, 1 de bout en bout) ; `./verify.sh N2` → exit 0 (57 tests unitaires, 50 de bout en bout).
+- Fichiers : `src/calc.js` (`jourDeLaSemaine`, `seancesDatees`, `coutSeance`, `seancesDeLaFerme`), `src/ui-ventes.js` et `src/i18n.js` (nombre de séances et coût dans la liste), `test/ventes.test.js`, `test/ventes.e2e.js`.
+- Rouge d'abord : 4 tests unitaires rouges (`Calc.seancesDatees is not a function`…), test de bout en bout rouge (« 9 séances » absent).
+- Commit : « T20 — Séances datées et coût de chaque séance ».
+
+Preuve (`./verify.sh T20`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 88116 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 71.2912
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 79.013161
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 59.880122
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 66.647643
+  type: 'test'
+  ...
+# Subtest: [T20] une séance du samedi du 2 mai au 27 juin 2026 donne 9 séances datées
+ok 5 - [T20] une séance du samedi du 2 mai au 27 juin 2026 donne 9 séances datées
+  ---
+  duration_ms: 2.382145
+  type: 'test'
+  ...
+# Subtest: [T20] les séances datées tombent le jour dit, dans la période, bornes comprises
+ok 6 - [T20] les séances datées tombent le jour dit, dans la période, bornes comprises
+  ---
+  duration_ms: 0.2843
+  type: 'test'
+  ...
+# Subtest: [T20] S6 : chaque séance coûte 15 + 2 × 12 × 0,40 = 24,60 €
+ok 7 - [T20] S6 : chaque séance coûte 15 + 2 × 12 × 0,40 = 24,60 €
+  ---
+  duration_ms: 1.323204
+  type: 'test'
+  ...
+# Subtest: [T20] S6 : les séances datées de la ferme, avec leur coût ; une séance ou un point de vente supprimé ne compte plus
+ok 8 - [T20] S6 : les séances datées de la ferme, avec leur coût ; une séance ou un point de vente supprimé ne compte plus
+  ---
+  duration_ms: 0.486133
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 157.299813
+== Tests de bout en bout (Playwright) ==
+
+Running 1 test using 1 worker
+
+  ✓  1 test/ventes.e2e.js:120:1 › [T20] S6 : la liste des séances donne le nombre de séances datées et le coût de chacune (827ms)
+
+  1 passed (1.5s)
+== T20 : vérification verte ==
 ```

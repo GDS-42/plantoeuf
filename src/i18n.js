@@ -146,6 +146,7 @@
       jour: "le {jour}",
       periode: "du {debut} au {fin}",
       frais: "frais estimés {valeur} €",
+      seancesDatees: "{nombre} séances, chacune {cout} € trajet compris (estimation)",
       debouche: "{produit} à {pointVente}",
       prixDebouche: "prix estimé {valeur} €/{unite}",
       volumeParSeance: "{valeur} {unite} par séance (estimation)",

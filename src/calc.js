@@ -25,6 +25,11 @@
     return depuisJour(versJour(date) + jours);
   }
 
+  // 1 = lundi … 7 = dimanche.
+  function jourDeLaSemaine(date) {
+    return ((new Date(versJour(date) * JOUR_MS).getUTCDay() + 6) % 7) + 1;
+  }
+
   // ---- Fourchettes : { basse, mediane, haute }
 
   function fourchetteNulle() {
@@ -236,9 +241,42 @@
     return resultat;
   }
 
+  // ---- Séances (EX-19)
+
+  // Les dates d'une séance régulière : chaque semaine, le jour dit, de la première à la dernière date incluses.
+  function seancesDatees(seance) {
+    const dates = [];
+    const decalage = (seance.jour - jourDeLaSemaine(seance.debut) + 7) % 7;
+    for (let date = ajouterJours(seance.debut, decalage); date <= seance.fin; date = ajouterJours(date, 7)) dates.push(date);
+    return dates;
+  }
+
+  // Coût d'une séance datée : ses frais + le trajet aller-retour (2 × distance × coût du km), en fourchette.
+  function coutSeance(seance, pointVente) {
+    const trajet = proportion(pointVente.coutKm, 2 * pointVente.distanceKm, 1);
+    return somme(seance.frais, trajet);
+  }
+
+  // Toutes les séances datées de la ferme, avec leur coût : séances actives d'un point de vente actif.
+  function seancesDeLaFerme({ pointsVente = [], seances = [] }) {
+    const pointsParId = new Map(pointsVente.filter((p) => !p.supprimeLe).map((p) => [p.id, p]));
+    const resultat = [];
+    for (const seance of seances.filter((s) => !s.supprimeLe)) {
+      const pointVente = pointsParId.get(seance.pointVenteId);
+      if (!pointVente) continue;
+      const cout = coutSeance(seance, pointVente);
+      for (const date of seancesDatees(seance)) resultat.push({ seanceId: seance.id, pointVenteId: pointVente.id, date, cout });
+    }
+    return resultat;
+  }
+
   return {
     CHAMPS_SURCHARGEABLES,
     ajouterJours,
+    jourDeLaSemaine,
+    seancesDatees,
+    coutSeance,
+    seancesDeLaFerme,
     parametres,
     datesRecolte,
     productionTotale,

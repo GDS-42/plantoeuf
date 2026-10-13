@@ -68,5 +68,6 @@ Le format exporté reste en version 1 : un fichier de N1 s'importe dans N2 (les 
 ## ✎ Décisions
 
 - T19 · Trois panneaux de plus dans le volet de saisie, après les plantations, sur le modèle des autres (titre, nombre, formulaire, liste, mode modification). La mécanique des formulaires reste dans `UiSaisie` ; `UiVentes` affiche les listes et remplit les listes déroulantes (point de vente, culture vendue). Le jour d'une séance s'enregistre comme un nombre, de 1 (lundi) à 7 (dimanche).
+- T20 · Une séance régulière donne ses séances datées : le premier jour dit à partir de la première date, puis toutes les semaines jusqu'à la dernière, incluse. Coût d'une séance datée = frais + 2 × distance × coût du km, niveau par niveau ; il s'affiche dans la liste des séances avec leur nombre.
 
 ## ✎ Bilan de fin de tranche

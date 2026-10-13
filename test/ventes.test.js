@@ -83,3 +83,51 @@ test("[T18] un fichier exporté avant N2, sans ces listes, s'importe toujours", 
   ferme.importer(ancien);
   for (const objet of ["pointsVente", "seances", "debouches"]) assert.deepEqual(ferme.lister(objet), [], objet);
 });
+
+// ---- T20 : séances datées et coût de chaque séance (EX-19, scénario S6)
+
+const Calc = require("../src/calc.js");
+
+function proche(obtenu, attendu, message) {
+  assert.ok(Math.abs(obtenu - attendu) < 1e-9, `${message || ""} ${obtenu} ≠ ${attendu}`);
+}
+
+function procheFourchette(obtenue, attendue, message) {
+  for (const cle of ["basse", "mediane", "haute"]) proche(obtenue[cle], attendue[cle], `${message || ""} ${cle}`);
+}
+
+const MARCHE = { id: "pv1", nom: "marché de Saint-Paul", distanceKm: 12, coutKm: f(0.4) };
+const SAMEDI = { id: "s1", pointVenteId: "pv1", jour: 6, debut: "2026-05-02", fin: "2026-06-27", frais: f(15) };
+
+test("[T20] une séance du samedi du 2 mai au 27 juin 2026 donne 9 séances datées", () => {
+  assert.deepEqual(Calc.seancesDatees(SAMEDI), [
+    "2026-05-02", "2026-05-09", "2026-05-16", "2026-05-23", "2026-05-30",
+    "2026-06-06", "2026-06-13", "2026-06-20", "2026-06-27",
+  ]);
+});
+
+test("[T20] les séances datées tombent le jour dit, dans la période, bornes comprises", () => {
+  assert.equal(Calc.jourDeLaSemaine("2026-04-27"), 1);
+  assert.equal(Calc.jourDeLaSemaine("2026-05-03"), 7);
+  assert.deepEqual(Calc.seancesDatees({ ...SAMEDI, jour: 2, debut: "2026-04-27", fin: "2026-05-12" }), ["2026-04-28", "2026-05-05", "2026-05-12"]);
+  assert.deepEqual(Calc.seancesDatees({ ...SAMEDI, debut: "2026-06-28", fin: "2026-06-27" }), []);
+});
+
+test("[T20] S6 : chaque séance coûte 15 + 2 × 12 × 0,40 = 24,60 €", () => {
+  procheFourchette(Calc.coutSeance(SAMEDI, MARCHE), f(24.6));
+  const fourchettes = Calc.coutSeance({ ...SAMEDI, frais: f(10, 15, 20) }, { ...MARCHE, coutKm: f(0.3, 0.4, 0.5) });
+  procheFourchette(fourchettes, f(10 + 7.2, 15 + 9.6, 20 + 12));
+});
+
+test("[T20] S6 : les séances datées de la ferme, avec leur coût ; une séance ou un point de vente supprimé ne compte plus", () => {
+  const supprime = "2026-10-13T08:00:00.000Z";
+  const donnees = {
+    pointsVente: [MARCHE, { ...MARCHE, id: "pv2", supprimeLe: supprime }],
+    seances: [SAMEDI, { ...SAMEDI, id: "s2", supprimeLe: supprime }, { ...SAMEDI, id: "s3", pointVenteId: "pv2" }],
+  };
+  const seances = Calc.seancesDeLaFerme(donnees);
+  assert.equal(seances.length, 9);
+  assert.ok(seances.every((s) => s.pointVenteId === "pv1" && s.seanceId === "s1"));
+  const total = seances.reduce((somme, s) => somme + s.cout.mediane, 0);
+  proche(total, 221.4);
+});

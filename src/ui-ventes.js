@@ -13,10 +13,19 @@
   }
 
   function resumeSeance(seance, pointsVente) {
-    return [nomDe(pointsVente.get(seance.pointVenteId)),
+    const pointVente = pointsVente.get(seance.pointVenteId);
+    const morceaux = [nomDe(pointVente),
       remplir(T.resume.jour, { jour: T.joursSemaine[seance.jour] }),
       remplir(T.resume.periode, { debut: afficherDate(seance.debut), fin: afficherDate(seance.fin) }),
-      remplir(T.resume.frais, { valeur: afficherFourchette(seance.frais) })].join(" · ");
+      remplir(T.resume.frais, { valeur: afficherFourchette(seance.frais) })];
+    // EX-19 : le nombre de séances datées et le coût de chacune, trajet compris.
+    if (pointVente && !pointVente.supprimeLe) {
+      morceaux.push(remplir(T.resume.seancesDatees, {
+        nombre: Calc.seancesDatees(seance).length,
+        cout: afficherFourchette(Calc.coutSeance(seance, pointVente)),
+      }));
+    }
+    return morceaux.join(" · ");
   }
 
   function resumeDebouche(debouche, pointsVente, cultures) {
