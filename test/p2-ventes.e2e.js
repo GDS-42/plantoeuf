@@ -37,6 +37,8 @@ const valeurs = (locator) => locator.evaluateAll((els) => els.map((el) => Number
 const nombre = async (locator) => Number(await locator.getAttribute("data-valeur"));
 // Les trois valeurs exactes [basse, médiane, haute] d'une fourchette affichée sous `locator`.
 const trois = async (locator) => [await nombre(locator.locator(".basse")), await nombre(locator.locator(".mediane")), await nombre(locator.locator(".haute"))];
+// Les trois valeurs [basse, médiane, haute] d'une bande de la rangée des fourchettes de la matrice.
+const bornes = async (locator) => [await nombre(locator.locator(".od-borne-basse")), await nombre(locator.locator(".od-borne-mediane")), await nombre(locator.locator(".od-borne-haute"))];
 
 // Couleur calculée d'un jeton de :root, pour comparer à la couleur d'un texte.
 function couleurDuJeton(page, jeton) {
@@ -173,8 +175,10 @@ test("[T35] EX-34 : dans le tableau, médiane en évidence, fourchette dessous, 
 test("[T35] EX-20 : la matrice offre-demande a une ligne par produit ; chaque case est colorée selon l'état et porte l'écart signé", async ({ page }) => {
   await fermeVentes(page);
   await vue(page, "offre");
-  await expect(page.locator("#matrice tbody tr").filter({ visible: true })).toHaveCount(1);
-  await expect(page.locator('#matrice tr[data-mesure="demande"]')).toHaveCount(1);
+  // Une ligne d'écarts par produit, et sous elle la rangée de ses fourchettes ; aucune ligne masquée.
+  await expect(page.locator('#matrice tbody tr[data-mesure="offre"]').filter({ visible: true })).toHaveCount(1);
+  await expect(page.locator('#matrice tbody tr[data-mesure="fourchettes"]').filter({ visible: true })).toHaveCount(1);
+  await expect(page.locator("#matrice tbody tr").filter({ visible: false })).toHaveCount(0);
   const ligne = page.locator('#matrice tr[data-mesure="offre"]', { hasText: "courgette" });
 
   const excedent = ligne.locator('td[data-semaine="2026-04-27"]');
@@ -223,6 +227,52 @@ test("[T35] le bilan de la saison de chaque produit compte ses semaines en excé
   await expect(bilan).toContainText("1 sem. en manque");
 });
 
+test("[T35] EX-20 : les fourchettes de l'offre et de la demande se lisent sans survol, semaine par semaine, avec l'unité du produit", async ({ page }) => {
+  await fermeVentes(page);
+  await vue(page, "offre");
+  const rangee = page.locator('#matrice tr[data-mesure="fourchettes"][data-produit]').first();
+  const en_tete = rangee.locator("th");
+  await expect(en_tete).toBeVisible();
+  await expect(en_tete).toContainText("kg");
+  await expect(en_tete).toContainText(/estim/i);
+
+  // Semaine du 27 avril : production 33,75 kg (une seule valeur), demande 15 à 25 kg, médiane 20.
+  const semaine = rangee.locator('td[data-semaine="2026-04-27"]');
+  const offre = semaine.locator('[data-mesure="offre"]');
+  const demande = semaine.locator('[data-mesure="demande"]');
+  for (const borne of ["basse", "mediane", "haute"]) {
+    await expect(offre.locator(`.od-borne-${borne}`)).toBeVisible();
+    await expect(demande.locator(`.od-borne-${borne}`)).toBeVisible();
+  }
+  expect(await bornes(offre)).toEqual([33.75, 33.75, 33.75]);
+  expect(await bornes(demande)).toEqual([15, 20, 25]);
+  await expect(semaine.locator(".od-bandes")).toHaveAttribute("role", "img");
+  await expect(semaine.locator(".od-bandes")).toHaveAttribute("aria-label", /15 à 25/);
+
+  // À la même échelle : la production (33,75) est au-dessus de la demande haute (25), la bande de demande a une hauteur.
+  const boite = (l) => l.boundingBox();
+  expect((await boite(offre.locator(".od-borne-mediane"))).y).toBeLessThan((await boite(demande.locator(".od-borne-haute"))).y);
+  expect((await boite(demande.locator(".od-plage"))).height).toBeGreaterThan(4);
+  // Alignée sur la colonne de sa semaine.
+  const ecart = await boite(page.locator('#matrice tr[data-mesure="offre"] td[data-semaine="2026-04-27"]'));
+  const bande = await boite(semaine);
+  expect(Math.abs(bande.x - ecart.x)).toBeLessThan(1);
+  await expect(page.locator("#offre-legende [data-bande]")).toHaveCount(2);
+});
+
+test("[T35] sans débouché, une case montre la fourchette de la production, et l'unité est dans l'en-tête de la ligne", async ({ page }) => {
+  await page.goto("index.html");
+  await page.locator("#charger-exemple").click();
+  await vue(page, "offre");
+  const oeufs = page.locator('#matrice tr[data-produit="oeufs"][data-mesure="offre"] td[data-etat="sans_debouche"]:not(.od-vide)').first();
+  for (const niveau of ["mediane", "basse", "haute"]) await expect(oeufs.locator(`.od-offre .${niveau}`)).toBeVisible();
+  const [basse, mediane, haute] = await trois(oeufs.locator(".od-offre"));
+  expect(basse).toBeLessThan(mediane);
+  expect(mediane).toBeLessThan(haute);
+  await expect(page.locator('#matrice tr[data-produit="oeufs"][data-mesure="fourchettes"] th')).toContainText("œufs");
+  await expect(page.locator('#matrice tr[data-mesure="fourchettes"]', { hasText: "botte" })).toHaveCount(1);
+});
+
 test("[T35] la semaine choisie se lit en détail : offre, demande et écart en fourchettes, et les ventes par point de vente", async ({ page }) => {
   await fermeVentes(page);
   await vue(page, "offre");
@@ -236,10 +286,10 @@ test("[T35] la semaine choisie se lit en détail : offre, demande et écart en f
   await expect(detail).toContainText("courgette");
   await expect(detail).toContainText(/semaine 18/i);
 
-  const demandeCase = page.locator('#matrice tr[data-mesure="demande"] td[data-semaine="2026-04-27"]');
-  expect(await trois(detail.locator('[data-mesure="offre"]'))).toEqual(await trois(cellule.locator(".od-offre")));
-  expect(await trois(detail.locator('[data-mesure="demande"]'))).toEqual(await trois(demandeCase));
-  expect(await trois(demandeCase)).toEqual([15, 20, 25]);
+  const fourchettes = page.locator('#matrice tr[data-mesure="fourchettes"] td[data-semaine="2026-04-27"]');
+  expect(await trois(detail.locator('[data-mesure="offre"]'))).toEqual(await bornes(fourchettes.locator('[data-mesure="offre"]')));
+  expect(await trois(detail.locator('[data-mesure="demande"]'))).toEqual(await bornes(fourchettes.locator('[data-mesure="demande"]')));
+  expect(await trois(detail.locator('[data-mesure="demande"]'))).toEqual([15, 20, 25]);
   await expect(detail.locator('[data-mesure="demande"]')).toContainText("15 à 25");
   expect(await nombre(detail.locator('[data-mesure="ecart"] .ecart'))).toBeCloseTo(13.75, 6);
   await expect(detail.locator('[data-mesure="ecart"]')).toContainText(/sûr/i);

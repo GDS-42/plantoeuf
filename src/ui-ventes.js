@@ -185,20 +185,8 @@
     return remplir(V.offre.bulle, { produit: produit.nom, semaine, offre: texteFourchette(s.offre, produit), demande: texteFourchette(s.demande, produit), etat });
   }
 
-  // Le mois d'une semaine est celui de son jeudi (comme dans calc.js) : un trait marque le début de chaque mois.
-  function debutsDeMois(semaines) {
-    const debuts = new Set();
-    let precedent = null;
-    for (const lundi of semaines) {
-      const mois = Calc.ajouterJours(lundi, 3).slice(0, 7);
-      if (precedent !== null && mois !== precedent) debuts.add(lundi);
-      precedent = mois;
-    }
-    return debuts;
-  }
-
-  // Case d'un produit : teinte selon l'état et l'écart, écart signé ; l'offre en fourchette (data-valeur),
-  // visible seulement sans débouché (la production, vendue toute à son prix).
+  // Case d'un produit : teinte selon l'état et l'écart, écart signé. Sans débouché, pas d'écart : la case
+  // donne la production de la semaine en fourchette, médiane et bornes (data-valeur garde les nombres exacts).
   function caseProduit(s, lundi, produit, debutMois) {
     const classes = ["od-case", `od-${s.etat}`];
     if (estVide(s)) classes.push("od-vide");
@@ -207,17 +195,59 @@
     const td = element("td", { class: classes.join(" "), "data-semaine": lundi, "data-etat": s.etat, "data-sur": String(s.sur), tabindex: "-1", title: bulle(s, produit, lundi) });
     if (aUnEcart(s)) td.append(element("span", { class: "ecart", "data-valeur": String(s.ecart) }, ecartCourt(s.ecart, produit.oeufs)));
     else if (s.etat === "equilibre" && !estVide(s)) td.append(element("span", { class: "od-egal", "aria-hidden": "true" }, V.offre.egal));
-    const format = (v) => produit.format.format(v);
-    td.append(element("span", { class: "od-offre" }, valeur("mediane", s.offre.mediane, format), valeur("basse", s.offre.basse, format), valeur("haute", s.offre.haute, format)));
+    if (s.etat === "sans_debouche" && !estVide(s)) {
+      const format = (v) => produit.format.format(v);
+      const bornes = s.offre.basse === s.offre.haute ? [] : [element("span", { class: "od-offre-bornes" },
+        valeur("basse", s.offre.basse, format), V.offre.tiret, valeur("haute", s.offre.haute, format))];
+      td.append(element("span", { class: "od-offre" }, valeur("mediane", s.offre.mediane, format), ...bornes));
+    }
     return td;
   }
 
-  // Ligne masquée de la demande : ses fourchettes exactes, pour la lecture des tests et des outils.
-  function caseDemande(s, lundi, produit) {
-    if (s.demande === null) return element("td", { "data-semaine": lundi, class: "nul" }, element("span", { class: "mediane" }, T.tableau.nul));
-    const format = (v) => produit.format.format(v);
-    return element("td", { "data-semaine": lundi },
-      valeur("mediane", s.demande.mediane, format), element("span", { class: "bornes" }, valeur("basse", s.demande.basse, format), ` ${V.a} `, valeur("haute", s.demande.haute, format)));
+  // Échelle des bandes d'un produit (rendu) : de zéro à un nombre rond au-dessus de la plus haute borne de la saison.
+  function echelleBandes(ligne, semaines) {
+    let max = 0;
+    for (const lundi of semaines) {
+      const s = ligne.semaines[lundi];
+      max = Math.max(max, s.offre.haute, s.demande ? s.demande.haute : 0);
+    }
+    if (max <= 0) return 1;
+    const puissance = 10 ** Math.floor(Math.log10(max));
+    return [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((pas) => max <= pas * puissance * (1 + 1e-9)) * puissance;
+  }
+
+  // Rangée des fourchettes sous chaque produit (EX-20) : pour chaque semaine, la production et la demande en
+  // bandes de la valeur basse à la haute, un trait à la médiane, sur l'échelle du produit. Deux bandes qui se
+  // recouvrent : l'écart n'est pas sûr. Chaque borne garde sa valeur exacte (data-valeur).
+  function caseBandes(s, lundi, produit, echelle, debutMois) {
+    const td = element("td", { class: debutMois ? "od-bande-case od-debut-mois" : "od-bande-case", "data-semaine": lundi });
+    if (estVide(s)) return td;
+    const position = (v) => `${(v / echelle) * 100}%`;
+    const borne = (niveau, v) => element("span", { class: `od-borne-${niveau}`, "data-valeur": String(v), style: `bottom: ${position(v)}` });
+    const barre = (mesure, f) => element("span", { class: `od-barre od-barre-${mesure}`, "data-mesure": mesure },
+      element("span", { class: "od-plage", style: `bottom: ${position(f.basse)}; height: ${position(f.haute - f.basse)}` }),
+      borne("basse", f.basse), borne("haute", f.haute), borne("mediane", f.mediane));
+    const semaine = remplir(V.offre.semaine, { numero: Calc.numeroDeSemaine(lundi) });
+    const description = s.demande === null
+      ? remplir(V.offre.bandes.descriptionSans, { semaine, offre: texteFourchette(s.offre, produit) })
+      : remplir(V.offre.bandes.description, { semaine, offre: texteFourchette(s.offre, produit), demande: texteFourchette(s.demande, produit) });
+    // Une bande nulle (rien de produit, ou aucune séance cette semaine) ne se dessine pas, comme une barre de zéro.
+    const visible = (f) => f !== null && f.haute > 0;
+    td.append(element("span", { class: "od-bandes", role: "img", "aria-label": description, title: description },
+      ...(visible(s.offre) ? [barre("offre", s.offre)] : [element("span", { class: "od-barre" })]),
+      ...(visible(s.demande) ? [barre("demande", s.demande)] : s.demande === null ? [] : [element("span", { class: "od-barre" })])));
+    return td;
+  }
+
+  // En-tête de la rangée des fourchettes : ce qu'elle montre, l'unité du produit, et son échelle.
+  function enteteBandes(produit, echelle) {
+    return element("th", { scope: "row", class: "od-bandes-entete" },
+      element("span", { class: "od-bandes-corps" },
+        element("span", { class: "od-bandes-textes" },
+          element("span", {}, V.offre.bandes.titre),
+          element("span", { class: "od-bandes-unite" }, remplir(V.offre.bandes.unite, { unite: produit.unites.plusieurs }))),
+        element("span", { class: "od-axe", "aria-hidden": "true" },
+          element("span", {}, produit.format.format(echelle)), element("span", {}, "0"))));
   }
 
   function pastille(etat, niveau) {
@@ -237,7 +267,7 @@
     if (!lignes.length && b.sansDebouche) lignes.push(ligne("sans_debouche", V.offre.bilan.sansDebouche));
     else if (!lignes.length && b.equilibre) lignes.push(ligne("equilibre", V.offre.bilan.equilibre));
     else if (!lignes.length) lignes.push(element("span", { class: "od-bilan-ligne" }, V.offre.bilan.rien));
-    return element("td", { class: "od-bilan" }, ...lignes);
+    return element("td", { class: "od-bilan", rowspan: "2" }, ...lignes);
   }
 
   function legendeOffre() {
@@ -251,6 +281,9 @@
       item({ "data-etat": "sans_debouche" }, pastille("sans_debouche"), L.sans_debouche),
       item({ "data-sur": "true" }, element("span", { class: "od-pastille od-pastille-sur", "aria-hidden": "true" }), L.sur),
       element("p", { class: "od-legende-note" }, L.intensite),
+      item({ "data-bande": "offre" }, element("span", { class: "od-barre-echantillon od-barre-offre", "aria-hidden": "true" }), L.production),
+      item({ "data-bande": "demande" }, element("span", { class: "od-barre-echantillon od-barre-demande", "aria-hidden": "true" }), L.demande),
+      element("p", { class: "od-legende-note" }, L.bandes),
     ];
   }
 
@@ -396,6 +429,10 @@
       });
       document.querySelectorAll("#matrice thead th[data-semaine]").forEach((th) => th.classList.toggle("od-choisie", th.dataset.semaine === choix.lundi));
       lignesVisibles().forEach((tr) => tr.classList.toggle("od-choisie", tr.dataset.produit === choix.produitId));
+      // Les bandes de la semaine choisie, sous sa case, sont mises en avant.
+      document.querySelectorAll("#matrice td.od-bande-case").forEach((td) => {
+        td.classList.toggle("od-choisie", td.dataset.semaine === choix.lundi && td.parentElement.dataset.produit === choix.produitId);
+      });
     }
 
     function afficherDetail() {
@@ -467,7 +504,7 @@
       }
 
       document.getElementById("offre-legende").replaceChildren(...legendeOffre());
-      const debuts = debutsDeMois(od.semaines);
+      const debuts = new Set(Calc.debutsDeMois(od.semaines));
       table.tHead.replaceChildren(element("tr", {},
         element("th", { scope: "col", class: "od-coin" }, od.lignes.some((l) => l.produitId === Calc.OEUFS) ? T.offre.cultureOuOeufs : T.offre.culture),
         ...od.semaines.map((lundi) => element("th", { scope: "col", "data-semaine": lundi, class: debuts.has(lundi) ? "od-debut-mois" : "", title: texteSemaine(lundi) },
@@ -478,14 +515,15 @@
       const bilans = new Map(Calc.bilanOffreDemande(od).map((b) => [b.produitId, b]));
       table.tBodies[0].replaceChildren(...od.lignes.flatMap((ligne) => {
         const produit = produitDeLigne(ligne);
+        const echelle = echelleBandes(ligne, od.semaines);
         return [
           element("tr", { "data-produit": ligne.produitId, "data-mesure": "offre" },
             element("th", { scope: "row" }, produit.nom),
             ...od.semaines.map((lundi) => caseProduit(ligne.semaines[lundi], lundi, produit, debuts.has(lundi))),
             caseBilan(bilans.get(ligne.produitId))),
-          element("tr", { "data-produit": ligne.produitId, "data-mesure": "demande", hidden: "" },
-            element("th", { scope: "row" }, remplir(T.offre.demande, { unite: produit.unite })),
-            ...od.semaines.map((lundi) => caseDemande(ligne.semaines[lundi], lundi, produit))),
+          element("tr", { "data-produit": ligne.produitId, "data-mesure": "fourchettes", class: "od-bandes-ligne" },
+            enteteBandes(produit, echelle),
+            ...od.semaines.map((lundi) => caseBandes(ligne.semaines[lundi], lundi, produit, echelle, debuts.has(lundi)))),
         ];
       }));
 
@@ -501,6 +539,14 @@
       table.addEventListener("focusin", (evenement) => {
         const td = evenement.target.closest("td.od-case");
         if (td) choisir(td);
+      });
+      // Un clic sur les bandes d'une semaine choisit la case de cette semaine, juste au-dessus.
+      table.addEventListener("click", (evenement) => {
+        const bandes = evenement.target.closest("td.od-bande-case");
+        if (!bandes) return;
+        const ligne = bandes.parentElement.previousElementSibling;
+        const td = ligne && ligne.querySelector(`td.od-case[data-semaine="${bandes.dataset.semaine}"]`);
+        if (td) td.focus();
       });
       table.addEventListener("keydown", (evenement) => {
         const td = evenement.target.closest("td.od-case");
@@ -542,8 +588,8 @@
       const vuePoints = Calc.pointsDeVente(donnees);
       const bilans = new Map(vuePoints.points.map((p) => [p.pointVenteId, p]));
 
-      const debouchesParPoint = (id) => donnees.debouches.filter((d) => d.pointVenteId === id).length;
-      afficherListe("pointsVente", pointsVente, (p) => resumePointVente(p, bilans.get(p.id), debouchesParPoint(p.id)), saisie.enEdition("pointsVente"));
+      const nombreDeDebouches = Calc.nombreDeDebouches(donnees);
+      afficherListe("pointsVente", pointsVente, (p) => resumePointVente(p, bilans.get(p.id), nombreDeDebouches.get(p.id) || 0), saisie.enEdition("pointsVente"));
 
       const nomPoint = (s) => nomDe(tousPoints.get(s.pointVenteId));
       const seances = donnees.seances.slice().sort((a, b) => nomPoint(a).localeCompare(nomPoint(b), "fr") || a.jour - b.jour || a.debut.localeCompare(b.debut));
