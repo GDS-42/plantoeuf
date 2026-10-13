@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : P1 · Sessions consommées : 6 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
+Tranche en cours : N2 · Sessions consommées : 0 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -1810,3 +1810,15 @@ Running 45 tests using 2 workers
   45 passed (14.6s)
 == P1 : vérification verte ==
 ```
+
+## 13/10/2026 · T17 — Captures envoyées, en attente de validation
+
+- Captures à 1366 × 768 et 1920 × 1080, ferme d'exemple chargée, et fichier `plantoeuf.html` de P1 envoyés à l'humain. `passe` reste à `false` jusqu'à sa validation (EX-17).
+- La suite ne bloque pas sur cette validation : les panneaux de N2 se logent dans la mise en page de P1, qui reste retouchable.
+
+---
+
+# Tranche N2 — Points de vente et séances
+
+- Spec, runbook et tâches (T18 à T25, seuil de 12 sessions) dans `docs/specs/N2/`.
+- Deux questions posées à l'humain sans réponse à ce jour (version du format exporté, nom de la liste des points de vente) : l'agent avance avec la voie qui ne modifie aucun test (version 1 conservée, liste `pointsVente`), consignée dans la spec ; la voie plus propre (version 2 avec migration, `pointsDeVente`) attend son accord.

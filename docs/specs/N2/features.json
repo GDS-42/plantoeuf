@@ -1,0 +1,208 @@
+{
+  "tranche": "N2",
+  "seuil_alerte_sessions": 12,
+  "parallelisme_max": 1,
+  "evaluateur": {
+    "modele": "fable",
+    "effort": "high"
+  },
+  "taches": [
+    {
+      "id": "T18",
+      "exigences": [
+        "EX-18"
+      ],
+      "description": "Modèle : points de vente, séances et débouchés dans le store, avec UUID, dates et suppression logique ; export et import à l'identique, un fichier de N1 restant importable",
+      "verification": [
+        "./verify.sh T18"
+      ],
+      "depend_de": [],
+      "fichiers": [
+        "src/store.js",
+        "test/ventes.test.js",
+        "test/ventes.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T19",
+      "exigences": [
+        "EX-18"
+      ],
+      "description": "Panneau de saisie des points de vente, de leurs séances et de leurs débouchés : ajouter, modifier, supprimer, retrouver après réouverture",
+      "verification": [
+        "./verify.sh T19"
+      ],
+      "depend_de": [
+        "T18"
+      ],
+      "fichiers": [
+        "src/index.html",
+        "src/ui-ventes.js",
+        "src/i18n.js",
+        "test/ventes.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T20",
+      "exigences": [
+        "EX-19"
+      ],
+      "description": "Séances datées (chaque semaine, le jour dit, de la première à la dernière date) et coût de chaque séance datée : frais + 2 × distance × coût du km, en fourchette (scénario S6, coûts)",
+      "verification": [
+        "./verify.sh T20"
+      ],
+      "depend_de": [
+        "T18"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "test/ventes.test.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T21",
+      "exigences": [
+        "EX-20"
+      ],
+      "description": "Offre et demande par culture et par semaine (lundi à dimanche), état dépasse / manque / équilibre et sûreté ; vue « Offre et demande » (scénario S4, matrice)",
+      "verification": [
+        "./verify.sh T21"
+      ],
+      "depend_de": [
+        "T20"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "src/ui-ventes.js",
+        "src/index.html",
+        "src/i18n.js",
+        "test/ventes.test.js",
+        "test/ventes.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T22",
+      "exigences": [
+        "EX-21",
+        "EX-23"
+      ],
+      "description": "Ventes plafonnées par la demande, au meilleur prix d'abord ; culture sans débouché vendue comme en N1 ; tableau : volume vendu, coût des séances, marge de la ferme (scénarios S4 et S5)",
+      "verification": [
+        "./verify.sh T22"
+      ],
+      "depend_de": [
+        "T21"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "src/ui-tableau.js",
+        "src/i18n.js",
+        "test/ventes.test.js",
+        "test/ventes.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T23",
+      "exigences": [
+        "EX-22"
+      ],
+      "description": "Vue « Points de vente » : par point de vente et par mois, nombre de séances, chiffre d'affaires, coûts et résultat, en fourchette (scénario S6)",
+      "verification": [
+        "./verify.sh T23"
+      ],
+      "depend_de": [
+        "T22"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "src/ui-ventes.js",
+        "src/index.html",
+        "src/i18n.js",
+        "test/ventes.test.js",
+        "test/ventes.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T24",
+      "exigences": [
+        "EX-24"
+      ],
+      "description": "Ferme d'exemple : points de vente réunionnais, leurs séances et leurs débouchés, effaçables avec le reste de l'exemple",
+      "verification": [
+        "./verify.sh T24"
+      ],
+      "depend_de": [
+        "T19",
+        "T23"
+      ],
+      "fichiers": [
+        "src/exemple.js",
+        "test/exemple-ventes.e2e.js",
+        "test/ventes.test.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T25",
+      "exigences": [
+        "EX-18",
+        "EX-19",
+        "EX-20",
+        "EX-21",
+        "EX-22",
+        "EX-23",
+        "EX-24"
+      ],
+      "description": "Vérification de bout en bout de la tranche, puis revue par l'évaluateur séparé, restreinte à la conformité à la spec",
+      "verification": [
+        "./verify.sh N2"
+      ],
+      "depend_de": [
+        "T18",
+        "T19",
+        "T20",
+        "T21",
+        "T22",
+        "T23",
+        "T24"
+      ],
+      "fichiers": [],
+      "modele": "fable",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    }
+  ],
+  "mode": "simple",
+  "modele_minimum": {
+    "modele": "opus",
+    "effort": "high"
+  }
+}
