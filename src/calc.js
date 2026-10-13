@@ -9,6 +9,7 @@
   // Champs numériques de la culture qu'une variété peut surcharger (SPEC, objet Variété).
   const CHAMPS_SURCHARGEABLES = ["rendement", "prix", "joursAvantRecolte", "semainesRecolte", "pertes"];
   const JOUR_MS = 24 * 3600 * 1000;
+  const NIVEAUX = ["basse", "mediane", "haute"];
 
   // ---- Dates : chaînes « AAAA-MM-JJ », comptées en jours UTC pour ignorer fuseaux et heures d'été.
 
@@ -43,6 +44,11 @@
 
   function somme(a, b) {
     return { basse: a.basse + b.basse, mediane: a.mediane + b.mediane, haute: a.haute + b.haute };
+  }
+
+  // Soustraction de fourchettes : la basse retire la haute, la haute retire la basse (le résultat reste ordonné).
+  function soustraire(a, b) {
+    return { basse: a.basse - b.haute, mediane: a.mediane - b.mediane, haute: a.haute - b.basse };
   }
 
   // f × numerateur / denominateur, niveau par niveau.
@@ -155,23 +161,45 @@
     cumul.ca = somme(cumul.ca, ca);
   }
 
-  // Volume, CA (volume × prix) et marge (égale au CA en N1) par culture et par mois, en fourchette.
-  // Le CA se calcule plantation par plantation, au prix de sa variété. Seuls comptent les
-  // enregistrements actifs dont la variété et la culture sont actives.
+  // Volume, chiffre d'affaires et marge par culture et par mois, en fourchette (EX-04).
+  // Une culture sans débouché se vend comme en N1 : toute sa production, au prix de sa variété, chaque
+  // semaine de récolte dans le mois de son jour du milieu. Une culture avec débouché compte ce qui se vend
+  // (Calc.ventes), chaque semaine dans le mois de son jeudi. Le coût des séances se déduit de la marge de
+  // la ferme (EX-23) ; la marge d'une culture reste égale à son chiffre d'affaires.
   function tableau(donnees) {
+    const ventesParCulture = ventes(donnees);
     const parCulture = new Map();
+    const entree = (culture, aDebouche) => {
+      if (!parCulture.has(culture.id)) parCulture.set(culture.id, { culture, aDebouche, mois: new Map() });
+      return parCulture.get(culture.id).mois;
+    };
+    const ajouterAuMois = (parMois, mois, volume, ca) => {
+      if (!parMois.has(mois)) parMois.set(mois, caseVide());
+      ajouterA(parMois.get(mois), volume, ca);
+    };
 
     for (const { plantation, culture, p } of plantationsCalculables(donnees)) {
-      if (!parCulture.has(culture.id)) parCulture.set(culture.id, { culture, mois: new Map() });
-      const parMois = parCulture.get(culture.id).mois;
+      const aDebouche = ventesParCulture.has(culture.id);
+      const parMois = entree(culture, aDebouche);
+      if (aDebouche) continue;
       for (const semaine of productionHebdomadaire(plantation, p)) {
-        const mois = moisDeLaSemaine(semaine);
-        if (!parMois.has(mois)) parMois.set(mois, caseVide());
-        ajouterA(parMois.get(mois), semaine.volume, produit(semaine.volume, p.prix));
+        ajouterAuMois(parMois, moisDeLaSemaine(semaine), semaine.volume, produit(semaine.volume, p.prix));
       }
     }
+    for (const [produitId, parSemaine] of ventesParCulture) {
+      if (!parCulture.has(produitId)) continue;
+      const parMois = parCulture.get(produitId).mois;
+      for (const [lundi, vente] of parSemaine) {
+        if (vente.vendu.haute > 0) ajouterAuMois(parMois, moisDuJeudi(lundi), vente.vendu, vente.ca);
+      }
+    }
+    const couts = new Map();
+    for (const seance of seancesDeLaFerme(donnees)) {
+      const mois = moisDuJeudi(lundiDe(seance.date));
+      couts.set(mois, somme(couts.get(mois) || fourchetteNulle(), seance.cout));
+    }
 
-    const tousLesMois = [...parCulture.values()].flatMap((c) => [...c.mois.keys()]).sort();
+    const tousLesMois = [...[...parCulture.values()].flatMap((c) => [...c.mois.keys()]), ...couts.keys()].sort();
     const mois = tousLesMois.length ? moisEntre(tousLesMois[0], tousLesMois[tousLesMois.length - 1]) : [];
     const avecMarge = (c) => ({ volume: c.volume, ca: c.ca, marge: { ...c.ca } });
     const totalFerme = { mois: {}, total: caseVide() };
@@ -179,8 +207,8 @@
 
     const lignes = [...parCulture.values()]
       .sort((a, b) => a.culture.nom.localeCompare(b.culture.nom, "fr"))
-      .map(({ culture, mois: parMois }) => {
-        const ligne = { cultureId: culture.id, nom: culture.nom, unite: culture.unite, mois: {}, total: caseVide() };
+      .map(({ culture, aDebouche, mois: parMois }) => {
+        const ligne = { cultureId: culture.id, nom: culture.nom, unite: culture.unite, aDebouche, mois: {}, total: caseVide() };
         for (const m of mois) {
           const c = parMois.get(m) || caseVide();
           ligne.mois[m] = avecMarge(c);
@@ -192,10 +220,10 @@
         return ligne;
       });
 
-    // Le total de la ferme additionne des unités différentes : seuls le CA et la marge y ont un sens.
-    const sansVolume = (c) => ({ ca: c.ca, marge: { ...c.ca } });
-    const total = { mois: {}, total: sansVolume(totalFerme.total) };
-    for (const m of mois) total.mois[m] = sansVolume(totalFerme.mois[m]);
+    // Le total de la ferme additionne des unités différentes : seuls le chiffre d'affaires, les coûts et la marge y ont un sens.
+    const bilan = (ca, cout) => ({ ca, couts: cout, marge: soustraire(ca, cout) });
+    const total = { mois: {}, total: bilan(totalFerme.total.ca, [...couts.values()].reduce(somme, fourchetteNulle())) };
+    for (const m of mois) total.mois[m] = bilan(totalFerme.mois[m].ca, couts.get(m) || fourchetteNulle());
 
     return { mois, lignes, total };
   }
@@ -330,6 +358,72 @@
     return Math.floor((versJour(jeudi) - versJour(premierJanvier)) / 7) + 1;
   }
 
+  // ---- Ventes (EX-21)
+
+  // Ordre de service des débouchés : prix médian décroissant, puis nom du point de vente ; le même aux trois niveaux.
+  function parPrixDecroissant(a, b) {
+    return b.debouche.prix.mediane - a.debouche.prix.mediane ||
+      a.pointVente.nom.localeCompare(b.pointVente.nom, "fr") || a.debouche.id.localeCompare(b.debouche.id);
+  }
+
+  function seancesParPointEtSemaine(donnees) {
+    const table = new Map();
+    for (const seance of seancesDeLaFerme(donnees)) {
+      if (!table.has(seance.pointVenteId)) table.set(seance.pointVenteId, new Map());
+      const parSemaine = table.get(seance.pointVenteId);
+      const lundi = lundiDe(seance.date);
+      parSemaine.set(lundi, (parSemaine.get(lundi) || 0) + 1);
+    }
+    return table;
+  }
+
+  // Ventes des cultures qui ont un débouché, par culture puis par semaine (son lundi) :
+  // { vendu, ca, debouches: [{ debouche, pointVenteId, vendu, ca }] }. La production de la semaine va aux
+  // débouchés dans l'ordre de service, chacun jusqu'à sa demande (séances de la semaine × volume vendable) ;
+  // chaque niveau de la fourchette se calcule avec les valeurs de ce niveau.
+  function ventes(donnees) {
+    const offre = offreParSemaine(donnees);
+    const seances = seancesParPointEtSemaine(donnees);
+    const parCulture = new Map();
+    for (const actif of debouchesActifs(donnees)) {
+      if (!parCulture.has(actif.debouche.produitId)) parCulture.set(actif.debouche.produitId, []);
+      parCulture.get(actif.debouche.produitId).push(actif);
+    }
+    const resultat = new Map();
+    for (const [produitId, liste] of parCulture) {
+      liste.sort(parPrixDecroissant);
+      const offreCulture = offre.get(produitId) || new Map();
+      const lundis = new Set(offreCulture.keys());
+      for (const { pointVente } of liste) for (const lundi of (seances.get(pointVente.id) || new Map()).keys()) lundis.add(lundi);
+      const parSemaine = new Map();
+      for (const lundi of [...lundis].sort()) {
+        const reste = { ...(offreCulture.get(lundi) || fourchetteNulle()) };
+        const servis = liste.map(({ debouche, pointVente }) => {
+          const nombre = (seances.get(pointVente.id) && seances.get(pointVente.id).get(lundi)) || 0;
+          const vendu = {};
+          const ca = {};
+          for (const niveau of NIVEAUX) {
+            vendu[niveau] = Math.min(nombre * debouche.volumeParSeance[niveau], reste[niveau]);
+            reste[niveau] -= vendu[niveau];
+            ca[niveau] = vendu[niveau] * debouche.prix[niveau];
+          }
+          return { debouche, pointVenteId: pointVente.id, vendu, ca };
+        });
+        parSemaine.set(lundi, {
+          vendu: servis.reduce((total, d) => somme(total, d.vendu), fourchetteNulle()),
+          ca: servis.reduce((total, d) => somme(total, d.ca), fourchetteNulle()),
+          debouches: servis,
+        });
+      }
+      resultat.set(produitId, parSemaine);
+    }
+    return resultat;
+  }
+
+  function moisDuJeudi(lundi) {
+    return ajouterJours(lundi, 3).slice(0, 7);
+  }
+
   function semainesEntre(premiere, derniere) {
     const liste = [];
     for (let lundi = premiere; lundi <= derniere; lundi = ajouterJours(lundi, 7)) liste.push(lundi);
@@ -374,6 +468,7 @@
     coutSeance,
     seancesDeLaFerme,
     offreDemande,
+    ventes,
     numeroDeSemaine,
     parametres,
     datesRecolte,

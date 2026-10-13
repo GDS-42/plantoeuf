@@ -126,10 +126,12 @@
     },
     tableau: {
       titre: "Tableau économique",
-      legende: "Estimations : chaque case donne une fourchette, la valeur médiane en gras, les valeurs basse et haute en dessous. La marge est égale au chiffre d'affaires tant que les charges ne sont pas saisies.",
+      legende: "Estimations : chaque case donne une fourchette, la médiane en gras, la basse et la haute dessous. La marge de la ferme déduit le coût des séances ; celle d'une culture égale son chiffre d'affaires.",
       culture: "Culture",
       estimation: "Estimation (fourchette basse – médiane – haute)",
       volume: "Volume estimé ({unite})",
+      volumeVendu: "Volume vendu estimé ({unite})",
+      couts: "Coût des séances estimé (€)",
       ca: "Chiffre d'affaires estimé (€)",
       marge: "Marge estimée (€)",
       total: "Total",

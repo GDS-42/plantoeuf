@@ -67,6 +67,7 @@ Le format exporté reste en version 1 : un fichier de N1 s'importe dans N2 (les 
 
 - T21 · La règle CSS qui fixe la colonne Total à droite visait toutes les grilles : la dernière semaine de la matrice se retrouvait collée au bord. Règle limitée à `#tableau`.
 - T21 · Le test `[T12]` P1-S1 (Total visible à 1280 × 720) dépend de la hauteur occupée au-dessus du tableau : la barre d'onglets et la légende doivent rester sur une ligne chacune.
+- T22 · La spec se contredit pour toute différence de fourchettes (marge de la ferme ici ; résultat d'un point de vente en T23 ; marge des œufs et charges plus tard) : « chaque niveau avec les valeurs de ce niveau » peut donner une fourchette désordonnée, contraire à `fourchette_ordonnee`. Question posée à l'humain le 13/10/2026.
 
 ## ✎ Décisions
 

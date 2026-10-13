@@ -164,3 +164,20 @@ test("[T21] EX-09 : offre et demande s'affichent en fourchette, signalées comme
   expect([await valeur("basse"), await valeur("mediane"), await valeur("haute")]).toEqual([15, 20, 25]);
   await expect(page.locator("#section-offre .legende")).toContainText(/fourchette/i);
 });
+
+// ---- T22 : le tableau compte ce qui se vend, et déduit le coût des séances de la marge de la ferme
+
+test("[T22] S4 et S6 : le tableau donne le volume vendu, et la marge de la ferme déduit le coût des séances", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirS2(page);
+  await saisirMarche(page);
+
+  const volume = page.locator('#tableau tbody tr[data-mesure="volume"]', { hasText: "courgette" });
+  await expect(volume.locator("th").last()).toContainText(/vendu/i);
+  expect(Number(await volume.locator('td[data-mois="total"] .mediane').getAttribute("data-valeur"))).toBeCloseTo(160, 6);
+  const valeurPied = async (mesure) => Number(await page.locator(`#tableau tfoot tr[data-mesure="${mesure}"] td[data-mois="total"] .mediane`).getAttribute("data-valeur"));
+  expect(await valeurPied("ca")).toBeCloseTo(400, 6);
+  expect(await valeurPied("couts")).toBeCloseTo(221.4, 6);
+  expect(await valeurPied("marge")).toBeCloseTo(178.6, 6);
+  await expect(page.locator('#tableau tfoot tr[data-mesure="couts"] th')).toContainText(/séances/i);
+});

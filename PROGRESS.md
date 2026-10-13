@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N2 · Sessions consommées : 4 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : N2 · Sessions consommées : 5 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -2176,4 +2176,107 @@ Running 2 tests using 1 worker
 
   2 passed (2.4s)
 == T21 : vérification verte ==
+```
+
+## 13/10/2026 · T22 — Ventes plafonnées par la demande, au meilleur prix ; tableau : volume vendu, coût des séances, marge de la ferme · **ARRÊT, question posée**
+
+- Session 5 / 12 du seuil d'alerte de N2.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **ÉCART** (un seul, de calcul ; le reste conforme : vente = min(offre, demande) niveau par niveau, ordre de service, culture sans débouché comme en N1, règle du jeudi, scénarios S4, S5, S6).
+  - Écart : la marge de la ferme se calcule en croisant les niveaux (basse = CA bas − coûts hauts ; haute = CA haut − coûts bas), alors que la spec dit : « Fourchettes : basse, médiane et haute se calculent chacune avec les valeurs basses, médianes ou hautes. »
+  - Pourquoi aucune reprise ne peut le résoudre : niveau par niveau, la marge peut sortir désordonnée et violer l'invariant `fourchette_ordonnee` que la même spec reprend de N1. Exemple réel : un mois avec des séances et aucune vente (avril, avant les récoltes) — CA 0, coûts 22 / 25 / 27 € → marge −22 / −25 / −27 €, la « basse » au-dessus de la « haute ». La spec se contredit ; la corriger revient à l'humain (AGENTS.md : jamais modifier la spec). Le relecteur conclut de même.
+- Conformément au runbook (« une exigence paraît fausse » ; « un écart … puis arrêt et compte rendu »), l'agent s'arrête et pose la question. **`passe` reste à `false`.**
+- Résultat des tests : **vert**. `./verify.sh T22` → exit 0 (6 tests unitaires, 1 de bout en bout) ; `./verify.sh N2` → exit 0 (69 tests unitaires, 53 de bout en bout).
+- Rouge d'abord : 4 tests unitaires rouges (`Calc.ventes is not a function`, `couts` absent du total), 1 test de bout en bout rouge (« vendu » absent).
+- Fichiers : `src/calc.js` (`soustraire`, `ventes`, `moisDuJeudi`, `tableau` avec ventes et coûts), `src/ui-tableau.js` (volume vendu, ligne des coûts des séances), `src/i18n.js`, `test/ventes.test.js`, `test/ventes.e2e.js`.
+- Commit : « T22 — en cours, arrêtée sur une question de spec (marge de la ferme) » — commité pour mettre le travail à l'abri, la tâche n'est pas passée. La règle retenue par l'humain se change en un seul endroit (`soustraire`, `src/calc.js`) et dans une ligne du test « [T22] S6 et EX-23 ».
+- Remarques non bloquantes du relecteur : la ligne « Coût des séances » n'apparaît que si des séances coûtent quelque chose ; un troisième critère de tri (identifiant du débouché) départage deux débouchés de même prix et même point de vente ; les mois des séances étendent les colonnes du tableau.
+
+Preuve (`./verify.sh T22`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 104567 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 70.05193
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 84.021238
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 56.138168
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 76.700412
+  type: 'test'
+  ...
+# Subtest: [T22] S4 : la demande plafonne les ventes : 160 kg et 400 € sur la saison au lieu de 675 €
+ok 5 - [T22] S4 : la demande plafonne les ventes : 160 kg et 400 € sur la saison au lieu de 675 €
+  ---
+  duration_ms: 4.293458
+  type: 'test'
+  ...
+# Subtest: [T22] S5 : la production va d'abord au point de vente qui paie le mieux
+ok 6 - [T22] S5 : la production va d'abord au point de vente qui paie le mieux
+  ---
+  duration_ms: 0.756974
+  type: 'test'
+  ...
+# Subtest: [T22] vendu_borne : le volume vendu ne dépasse ni l'offre ni la demande, à chaque niveau ; chaque case reste ordonnée
+ok 7 - [T22] vendu_borne : le volume vendu ne dépasse ni l'offre ni la demande, à chaque niveau ; chaque case reste ordonnée
+  ---
+  duration_ms: 3.208276
+  type: 'test'
+  ...
+# Subtest: [T22] sans_debouche_comme_n1 : une culture sans débouché se calcule exactement comme en N1
+ok 8 - [T22] sans_debouche_comme_n1 : une culture sans débouché se calcule exactement comme en N1
+  ---
+  duration_ms: 7.759379
+  type: 'test'
+  ...
+# Subtest: [T22] S6 et EX-23 : le coût des séances se déduit de la marge de la ferme, mois par mois
+ok 9 - [T22] S6 et EX-23 : le coût des séances se déduit de la marge de la ferme, mois par mois
+  ---
+  duration_ms: 1.402412
+  type: 'test'
+  ...
+# Subtest: [T22] 200 plantations, 10 points de vente, 20 séances et 100 débouchés se calculent en moins d'une seconde
+ok 10 - [T22] 200 plantations, 10 points de vente, 20 séances et 100 débouchés se calculent en moins d'une seconde
+  ---
+  duration_ms: 115.184107
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 290.708588
+== Tests de bout en bout (Playwright) ==
+
+Running 1 test using 1 worker
+
+  ✓  1 test/ventes.e2e.js:170:1 › [T22] S4 et S6 : le tableau donne le volume vendu, et la marge de la ferme déduit le coût des séances (889ms)
+
+  1 passed (1.6s)
+== T22 : vérification verte ==
 ```

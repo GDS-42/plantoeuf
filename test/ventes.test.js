@@ -226,3 +226,119 @@ test("[T21] séances, débouchés et points de vente supprimés ne font plus de 
     assert.equal(caseOD(Calc.offreDemande(donnees), "c1", "2026-05-04").etat, "sans_debouche");
   }
 });
+
+
+// ---- T22 : ventes plafonnées par la demande, au meilleur prix d'abord (EX-21) ; coût des séances dans la marge (EX-23)
+
+const AMAP = { id: "pv2", nom: "AMAP du mardi", distanceKm: 0, coutKm: f(0) };
+const MARDI = { id: "s2", pointVenteId: "pv2", jour: 2, debut: "2026-04-28", fin: "2026-06-30", frais: f(0) };
+const DEBOUCHE_AMAP = { id: "d2", pointVenteId: "pv2", produitId: "c1", prix: f(3), volumeParSeance: f(10) };
+
+function ordonnee(fourchette) {
+  return fourchette.basse <= fourchette.mediane + 1e-9 && fourchette.mediane <= fourchette.haute + 1e-9;
+}
+
+test("[T22] S4 : la demande plafonne les ventes : 160 kg et 400 € sur la saison au lieu de 675 €", () => {
+  const tableau = Calc.tableau(fermeS4());
+  assert.deepEqual(tableau.mois, ["2026-04", "2026-05", "2026-06"]);
+  const [courgette] = tableau.lignes;
+  procheFourchette(courgette.total.volume, f(160));
+  procheFourchette(courgette.total.ca, f(400));
+  procheFourchette(courgette.mois["2026-04"].volume, f(20));
+  procheFourchette(courgette.mois["2026-05"].volume, f(80));
+  procheFourchette(courgette.mois["2026-06"].volume, f(60));
+  procheFourchette(courgette.mois["2026-05"].ca, f(200));
+  assert.deepEqual(courgette.total.marge, courgette.total.ca);
+});
+
+test("[T22] S5 : la production va d'abord au point de vente qui paie le mieux", () => {
+  const donnees = fermeS4({
+    plantations: [{ ...PLANTATION_S1, surface: 50 }],
+    pointsVente: [AMAP], seances: [MARDI], debouches: [DEBOUCHE, DEBOUCHE_AMAP],
+  });
+  const semaine = Calc.ventes(donnees).get("c1").get("2026-05-04");
+  procheFourchette(semaine.vendu, f(16.875));
+  procheFourchette(semaine.ca, f(10 * 3 + 6.875 * 2.5));
+  const parPoint = Object.fromEntries(semaine.debouches.map((d) => [d.pointVenteId, d.vendu.mediane]));
+  proche(parPoint.pv2, 10);
+  proche(parPoint.pv1, 6.875);
+});
+
+test("[T22] vendu_borne : le volume vendu ne dépasse ni l'offre ni la demande, à chaque niveau ; chaque case reste ordonnée", () => {
+  const donnees = fermeS4({
+    plantations: [{ ...PLANTATION_S1, surface: 60 }],
+    pointsVente: [AMAP], seances: [MARDI],
+    debouches: [{ ...DEBOUCHE, prix: f(2, 2.5, 3), volumeParSeance: f(5, 20, 40) }, { ...DEBOUCHE_AMAP, prix: f(1, 2.6, 5), volumeParSeance: f(0, 10, 30) }],
+    cultures: [], varietes: [],
+  });
+  donnees.cultures = [{ ...COURGETTE, rendement: f(2, 3, 4) }];
+  const od = Calc.offreDemande(donnees);
+  const ventes = Calc.ventes(donnees).get("c1");
+  for (const lundi of od.semaines) {
+    const { offre, demande } = od.lignes[0].semaines[lundi];
+    const vente = ventes.get(lundi);
+    for (const niveau of ["basse", "mediane", "haute"]) {
+      assert.ok(vente.vendu[niveau] <= offre[niveau] + 1e-9, `${lundi} ${niveau} offre`);
+      assert.ok(vente.vendu[niveau] <= demande[niveau] + 1e-9, `${lundi} ${niveau} demande`);
+    }
+    assert.ok(ordonnee(vente.vendu) && ordonnee(vente.ca), lundi);
+  }
+  const tableau = Calc.tableau(donnees);
+  for (const m of tableau.mois) {
+    for (const cle of ["volume", "ca", "marge"]) assert.ok(ordonnee(tableau.lignes[0].mois[m][cle]), `${m} ${cle}`);
+    for (const cle of ["ca", "couts", "marge"]) assert.ok(ordonnee(tableau.total.mois[m][cle]), `ferme ${m} ${cle}`);
+  }
+});
+
+test("[T22] sans_debouche_comme_n1 : une culture sans débouché se calcule exactement comme en N1", () => {
+  const brede = { ...COURGETTE, id: "c2", nom: "brède", unite: "botte", rendement: f(6, 8, 10), prix: f(1, 1.5, 2), joursAvantRecolte: 35, semainesRecolte: 3 };
+  const varieteBrede = { ...BLACK_BEAUTY, id: "v2", cultureId: "c2", prix: f(1.2, 1.6, 2.1) };
+  const plantationBrede = { ...PLANTATION_S1, id: "p2", varieteId: "v2", surface: 10, date: "2026-04-01" };
+  const avecVentes = fermeS4({ cultures: [brede], varietes: [varieteBrede], plantations: [PLANTATION_S1, plantationBrede] });
+  const seulementN1 = { cultures: [brede], varietes: [varieteBrede], plantations: [plantationBrede] };
+  const ligne = Calc.tableau(avecVentes).lignes.find((l) => l.cultureId === "c2");
+  const attendue = Calc.tableau(seulementN1).lignes[0];
+  for (const m of Object.keys(attendue.mois)) assert.deepEqual(ligne.mois[m], attendue.mois[m], m);
+  assert.deepEqual(ligne.total, attendue.total);
+});
+
+test("[T22] S6 et EX-23 : le coût des séances se déduit de la marge de la ferme, mois par mois", () => {
+  const tableau = Calc.tableau(fermeS4());
+  procheFourchette(tableau.total.mois["2026-04"].couts, f(24.6));
+  procheFourchette(tableau.total.mois["2026-05"].couts, f(4 * 24.6));
+  procheFourchette(tableau.total.mois["2026-06"].couts, f(4 * 24.6));
+  procheFourchette(tableau.total.total.couts, f(221.4));
+  procheFourchette(tableau.total.total.ca, f(400));
+  procheFourchette(tableau.total.total.marge, f(400 - 221.4));
+  const etendue = fermeS4({ debouches: [{ ...DEBOUCHE, volumeParSeance: f(15, 20, 25) }] });
+  etendue.seances = [{ ...SAMEDI, frais: f(10, 15, 20) }];
+  const { ca, couts, marge } = Calc.tableau(etendue).total.total;
+  assert.ok(couts.basse < couts.haute && ca.basse < ca.haute);
+  proche(marge.basse, ca.basse - couts.haute);
+  proche(marge.haute, ca.haute - couts.basse);
+});
+
+test("[T22] 200 plantations, 10 points de vente, 20 séances et 100 débouchés se calculent en moins d'une seconde", () => {
+  const cultures = [];
+  const varietes = [];
+  const plantations = [];
+  for (let c = 0; c < 20; c++) {
+    cultures.push({ ...COURGETTE, id: `c${c}`, nom: `culture ${c}` });
+    varietes.push({ ...BLACK_BEAUTY, id: `v${c}`, cultureId: `c${c}` });
+  }
+  for (let i = 0; i < 200; i++) plantations.push({ ...PLANTATION_S1, id: `p${i}`, varieteId: `v${i % 20}`, date: Calc.ajouterJours("2026-01-05", 3 * i) });
+  const pointsVente = [];
+  const seances = [];
+  const debouches = [];
+  for (let p = 0; p < 10; p++) {
+    pointsVente.push({ ...MARCHE, id: `pv${p}`, nom: `point ${p}` });
+    for (let s = 0; s < 2; s++) seances.push({ ...SAMEDI, id: `s${p}-${s}`, pointVenteId: `pv${p}`, jour: 1 + ((p + s) % 7), debut: "2026-01-01", fin: "2027-06-30" });
+    for (let d = 0; d < 10; d++) debouches.push({ ...DEBOUCHE, id: `d${p}-${d}`, pointVenteId: `pv${p}`, produitId: `c${(p + d) % 20}`, prix: f(2 + p / 10), volumeParSeance: f(5, 8, 12) });
+  }
+  const debut = process.hrtime.bigint();
+  const tableau = Calc.tableau({ cultures, varietes, plantations, pointsVente, seances, debouches });
+  Calc.offreDemande({ cultures, varietes, plantations, pointsVente, seances, debouches });
+  const ms = Number(process.hrtime.bigint() - debut) / 1e6;
+  assert.equal(tableau.lignes.length, 20);
+  assert.ok(ms < 1000, `${ms} ms`);
+});

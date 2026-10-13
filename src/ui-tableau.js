@@ -7,7 +7,7 @@
   // Une case : la médiane en gras, la basse et la haute dessous ; data-valeur garde le nombre exact.
   // Une case nulle affiche un tiret, discret, et garde ses valeurs exactes.
   function caseFourchette(fourchette, format, attributs) {
-    const nulle = fourchette.haute === 0;
+    const nulle = fourchette.basse === 0 && fourchette.haute === 0;
     const valeur = (niveau) => element("span", { class: niveau, "data-valeur": String(fourchette[niveau]) },
       nulle ? T.tableau.nul : format(fourchette[niveau]));
     const td = element("td", attributs, valeur("mediane"), element("span", { class: "bornes" }, valeur("basse"), " – ", valeur("haute")));
@@ -55,7 +55,8 @@
       const unite = T.unitesVente[ligne.unite];
       return [
         ligneDuTableau({ "data-culture": ligne.cultureId, "data-mesure": "volume" },
-          [element("th", { rowspan: "3", scope: "rowgroup" }, ligne.nom), element("th", { scope: "row" }, remplir(T.tableau.volume, { unite }))],
+          [element("th", { rowspan: "3", scope: "rowgroup" }, ligne.nom),
+            element("th", { scope: "row" }, remplir(ligne.aDebouche ? T.tableau.volumeVendu : T.tableau.volume, { unite }))],
           casesDe(ligne.mois, "volume"), ligne.total.volume, (v) => formats.volumes.format(v)),
         ligneDuTableau({ "data-culture": ligne.cultureId, "data-mesure": "ca" },
           [element("th", { scope: "row" }, T.tableau.ca)], casesDe(ligne.mois, "ca"), ligne.total.ca, enEuros),
@@ -64,12 +65,12 @@
       ];
     }));
 
-    table.tFoot.replaceChildren(
-      ligneDuTableau({ "data-culture": "ferme", "data-mesure": "ca" },
-        [element("th", { rowspan: "2", scope: "rowgroup" }, T.tableau.ferme), element("th", { scope: "row" }, T.tableau.ca)],
-        casesDe(tableau.total.mois, "ca"), tableau.total.total.ca, enEuros),
-      ligneDuTableau({ "data-culture": "ferme", "data-mesure": "marge" },
-        [element("th", { scope: "row" }, T.tableau.marge)], casesDe(tableau.total.mois, "marge"), tableau.total.total.marge, enEuros));
+    // Pied : chiffre d'affaires, coût des séances s'il y en a (EX-23), marge de la ferme.
+    const avecCouts = tableau.total.total.couts.haute > 0;
+    const pied = [["ca", T.tableau.ca], ...(avecCouts ? [["couts", T.tableau.couts]] : []), ["marge", T.tableau.marge]];
+    table.tFoot.replaceChildren(...pied.map(([mesure, libelle], rang) => ligneDuTableau({ "data-culture": "ferme", "data-mesure": mesure },
+      [...(rang === 0 ? [element("th", { rowspan: String(pied.length), scope: "rowgroup" }, T.tableau.ferme)] : []), element("th", { scope: "row" }, libelle)],
+      casesDe(tableau.total.mois, mesure), tableau.total.total[mesure], enEuros)));
   }
 
   globalThis.UiTableau = { afficher, outils: { caseFourchette } };
