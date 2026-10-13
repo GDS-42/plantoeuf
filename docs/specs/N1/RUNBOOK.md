@@ -72,6 +72,7 @@ Une ferme fictive de 10 plantations donne un tableau CA / marge par culture et p
 - T01 · Node 22 refuse un dossier en argument de `--test` : `node --test test/` échoue (`Cannot find module '…/test'`). `verify.sh` lance désormais `node --test test/*.test.js`, ce qui écarte aussi les `*.e2e.js` (Node 20 les aurait exécutés via son motif `**/test/**/*.js`). `AGENTS.md` (« tests unitaires ») et le script `test` de `package.json` portent encore l'ancienne commande : à corriger par l'humain, hors périmètre de l'agent.
 - T01 · Le conteneur cloud fournit Chromium révision 1194 alors que Playwright 1.64 attend la 1248, et `playwright install` y est proscrit. Vérification lancée avec `PLAYWRIGHT_BROWSERS_PATH` vers un dossier local (hors dépôt) qui fait passer les binaires 1194 pour la 1248. Sur un poste ordinaire, `./init.sh` installe le bon navigateur, mais seulement si le dossier des navigateurs n'existe pas encore : une ancienne installation masque une mise à jour de Playwright.
 - T01 · `./init.sh` produit un `package-lock.json` (repli de `npm ci` sur `npm install`, faute de fichier de verrouillage). Non versionné : figer les dépendances relève de « demander d'abord ».
+- T02, T04 · `./verify.sh <ID>` filtre aussi Playwright sur `[ID]`, et Playwright échoue quand aucun test ne correspond : une tâche sans test de bout en bout ne peut pas passer. T02 et T04 ont donc reçu un test de bout en bout utile (UUID en `file://`, dates de récolte affichées), hors de leur liste `fichiers`.
 
 ## ✎ Décisions
 
@@ -100,3 +101,9 @@ Une ferme fictive de 10 plantations donne un tableau CA / marge par culture et p
 - T09 · Les valeurs agronomiques et les prix de l'exemple (`src/exemple.js`) sont des ordres de grandeur pour montrer l'outil, pas des références réunionnaises vérifiées : à faire relire par un maraîcher avant de montrer l'outil à une ferme pilote.
 
 ## ✎ Bilan de fin de tranche
+
+- **Résultat** : les dix tâches passent ; `./verify.sh N1` → exit 0 (48 tests unitaires, 26 de bout en bout). Le résultat observable du runbook est atteint : la ferme d'exemple de 10 plantations donne le tableau CA / marge par culture et par mois, en fourchette, recalculé à chaque modification ; l'export puis l'import restituent la même ferme.
+- **Coût** : 10 sessions sur 15 (seuil d'alerte non atteint), T02 à T10 enchaînées dans une même conversation à la demande de l'humain. Aucune reprise : chaque relecture Fable (T02, T04, T05, T08) a conclu « conforme » ; T04 a été relue deux fois, la première relecture ayant signalé un risque sur la granularité à la semaine, corrigé avant commit.
+- **Ce qui a résisté** : l'outillage plus que le code — `node --test test/` refusé par Node 22, révision de Chromium du conteneur différente de celle de Playwright, et `./verify.sh <ID>` qui exige au moins un test Playwright par tâche (d'où des tests de bout en bout pour T02 et T04, hors de leur liste `fichiers`).
+- **À trancher par l'humain** : corriger la commande `node --test test/` dans `AGENTS.md` et `package.json` ; versionner ou non `package-lock.json` ; tester dans Firefox (non disponible ici, exigence non fonctionnelle non vérifiée) ; faire relire les valeurs de la ferme d'exemple par un maraîcher réunionnais ; licence (ADR-002).
+- **Pour N2** : `index.html` fait désormais environ 600 lignes ; le découper en modules d'écran (`src/ui-*.js`), comme le prévoit `docs/ORCHESTRATION.md`, ouvrira le parallélisme.
