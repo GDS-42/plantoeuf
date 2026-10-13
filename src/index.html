@@ -29,6 +29,9 @@
   #tableau td .mediane { display: block; font-weight: 600; }
   #tableau td .bornes { display: block; font-size: 0.75rem; color: #5a6652; }
   #tableau td.nul { color: #a3ad9b; }
+  .bandeau { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin: 1rem 0; padding: 0.6rem 0.9rem; border-radius: 0.4rem; background: #fff0d4; color: #5c3300; }
+  #import-message { font-weight: 600; color: #2f5a1c; }
+  #import-message.erreur { color: #a12a1a; }
   .sur-occupation { margin-left: 0.5rem; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #7a3f00; background: #fff0d4; }
   #tableau tfoot { border-top: 2px solid #8a9a7e; }
   [hidden] { display: none !important; }
@@ -43,8 +46,14 @@
     <a href="#section-cultures" data-texte="cultures.titre"></a>
     <a href="#section-varietes" data-texte="varietes.titre"></a>
     <a href="#section-plantations" data-texte="plantations.titre"></a>
+    <a href="#section-sauvegarde" data-texte="sauvegarde.titre"></a>
   </nav>
 </header>
+
+<div id="rappel-export" class="bandeau" role="alert" hidden>
+  <span id="rappel-texte"></span>
+  <button id="rappel-exporter" type="button" data-texte="sauvegarde.rappelExporter"></button>
+</div>
 
 <section id="section-tableau">
   <h2 data-texte="tableau.titre"></h2>
@@ -169,6 +178,20 @@
   </form>
   <p id="plantations-vide" data-texte="plantations.aucun"></p>
   <ul id="liste-plantations" class="liste"></ul>
+</section>
+
+<section id="section-sauvegarde">
+  <h2 data-texte="sauvegarde.titre"></h2>
+  <p data-texte="sauvegarde.explication"></p>
+  <p>
+    <button id="exporter" type="button" data-texte="sauvegarde.exporter"></button>
+  </p>
+  <p>
+    <label><span data-texte="sauvegarde.importer"></span>
+      <input id="importer" type="file" accept=".json,application/json">
+    </label>
+  </p>
+  <p id="import-message" role="status" hidden></p>
 </section>
 
 <script src="i18n.js"></script>
@@ -434,6 +457,61 @@
     });
   }
 
+  // ---- Sauvegarde : export, import, rappel (EX-07, EX-08)
+
+  function telecharger(nom, texte) {
+    const url = URL.createObjectURL(new Blob([texte], { type: "application/json" }));
+    const lien = element("a", { href: url, download: nom });
+    document.body.append(lien);
+    lien.click();
+    lien.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  function exporter() {
+    const fichier = ferme.exporter();
+    telecharger(`plantoeuf-${fichier.exporteLe.slice(0, 10)}.json`, JSON.stringify(fichier, null, 2));
+    document.getElementById("rappel-export").hidden = true;
+  }
+
+  function messageImport(texte, estErreur) {
+    const zone = document.getElementById("import-message");
+    zone.textContent = texte;
+    zone.classList.toggle("erreur", estErreur);
+    zone.hidden = false;
+  }
+
+  function erreurImport() {
+    const e = new Error("Fichier illisible");
+    e.code = "import_invalide";
+    return e;
+  }
+
+  async function importer(evenement) {
+    const champ = evenement.target;
+    const choisi = champ.files[0];
+    champ.value = "";
+    if (!choisi) return;
+    try {
+      let contenu;
+      try {
+        contenu = JSON.parse(await choisi.text());
+      } catch (e) {
+        throw erreurImport();
+      }
+      const fermeOccupee = Store.OBJETS.some((objet) => ferme.lister(objet, { avecSupprimes: true }).length > 0);
+      if (fermeOccupee && !window.confirm(T.sauvegarde.confirmerImport)) return;
+      ferme.importer(contenu);
+    } catch (e) {
+      if (!T.erreurs[e.code]) console.error(e);
+      messageImport(T.erreurs[e.code] || T.erreurs.inconnue, true);
+      return;
+    }
+    Object.values(formulaires).forEach(quitterEdition);
+    rafraichir();
+    messageImport(remplir(T.sauvegarde.importReussi, { plantations: ferme.lister("plantations").length }), false);
+  }
+
   // ---- Rafraîchissement : tout l'affichage se recalcule depuis les données enregistrées.
 
   function rafraichir() {
@@ -475,6 +553,13 @@
     }
   });
   document.querySelectorAll("form[data-objet]").forEach(brancherFormulaire);
+  document.getElementById("exporter").addEventListener("click", exporter);
+  document.getElementById("rappel-exporter").addEventListener("click", exporter);
+  document.getElementById("importer").addEventListener("change", importer);
+
+  // EX-08 : le rappel d'export se décide à l'ouverture.
+  document.getElementById("rappel-texte").textContent = remplir(T.sauvegarde.rappel, { jours: Store.DELAI_RAPPEL_JOURS });
+  document.getElementById("rappel-export").hidden = !ferme.rappelExport();
 
   // EX-05 : une modification faite dans un autre onglet recalcule aussi cette page. Relire la ferme
   // évite en plus qu'une saisie ici n'écrase ce qui a été enregistré là-bas.

@@ -72,6 +72,16 @@
       aucun: "Aucune récolte prévue : ajoutez des plantations pour voir le tableau.",
       euros: "{valeur} €",
     },
+    sauvegarde: {
+      titre: "Sauvegarde",
+      explication: "Vos données restent dans ce navigateur, qui peut les effacer. Exportez-les régulièrement dans un fichier : c'est votre sauvegarde, à réimporter ici ou sur un autre ordinateur.",
+      exporter: "Exporter la ferme (fichier JSON)",
+      importer: "Importer un fichier exporté",
+      confirmerImport: "L'import remplace toute la ferme ouverte ici par celle du fichier. Continuer ?",
+      importReussi: "Ferme importée : {plantations} plantations.",
+      rappel: "Vos dernières modifications n'ont pas été exportées depuis {jours} jours ou plus. Le navigateur peut effacer ses données : pensez à exporter.",
+      rappelExporter: "Exporter maintenant",
+    },
     // Morceaux des lignes de liste.
     resume: {
       surface: "{valeur} m²",
@@ -97,6 +107,8 @@
     erreurs: {
       fourchette_invalide: "Écrivez un nombre, ou trois nombres séparés par « / » : basse / médiane / haute.",
       fourchette_desordonnee: "Une fourchette va de la plus petite valeur à la plus grande : basse / médiane / haute.",
+      import_invalide: "Ce fichier n'est pas un export plantoeuf lisible. Rien n'a été changé.",
+      import_version: "Ce fichier vient d'une version plus récente de plantoeuf. Rien n'a été changé.",
       inconnue: "L'enregistrement n'a pas pu se faire.",
     },
   };

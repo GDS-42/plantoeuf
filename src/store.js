@@ -8,7 +8,14 @@
   "use strict";
 
   const CLE = "plantoeuf";
+  const APPLICATION = "plantoeuf";
+  // Version du format enregistré et exporté. L'import accepte les versions précédentes (MIGRATIONS).
   const VERSION = 1;
+  // EX-08 : délai sans export, en jours, au-delà duquel un rappel s'affiche si des données ont changé.
+  const DELAI_RAPPEL_JOURS = 7;
+  const JOUR_MS = 24 * 3600 * 1000;
+  // MIGRATIONS[n] transforme un fichier de version n en version n + 1. Aucune tant que VERSION vaut 1.
+  const MIGRATIONS = {};
   // Les objets du noyau en N1 (SPEC, « Modèle de données du noyau »).
   const OBJETS = ["espaces", "cultures", "varietes", "plantations"];
   // Champs tenus par le store, jamais par la saisie.
@@ -83,7 +90,32 @@
     const enregistre = brut ? JSON.parse(brut) : {};
     const donnees = { version: VERSION };
     for (const objet of OBJETS) donnees[objet] = Array.isArray(enregistre[objet]) ? enregistre[objet] : [];
+    // État propre à ce navigateur, jamais exporté : dernier export, première modification non exportée.
+    donnees.etat = { dernierExport: null, nonExporteDepuis: null, ...enregistre.etat };
     return donnees;
+  }
+
+  // Vérifie un fichier importé et le met à la version courante ; refuse sans rien changer sinon.
+  function verifierImport(fichier) {
+    if (!fichier || typeof fichier !== "object" || fichier.application !== APPLICATION) {
+      throw erreur("import_invalide", "Ce fichier n'est pas un export plantoeuf.");
+    }
+    if (!Number.isInteger(fichier.version) || fichier.version < 1) throw erreur("import_invalide", "Version absente.");
+    if (fichier.version > VERSION) throw erreur("import_version", "Fichier d'une version plus récente.");
+    let migre = copie(fichier);
+    for (let version = migre.version; version < VERSION; version++) migre = MIGRATIONS[version](migre);
+    for (const objet of OBJETS) {
+      const liste = migre[objet] === undefined ? [] : migre[objet];
+      const valide = Array.isArray(liste) && liste.every((e) => e && typeof e === "object" && typeof e.id === "string");
+      if (!valide) throw erreur("import_invalide", `Liste illisible : ${objet}`);
+      for (const enregistrement of liste) {
+        for (const valeur of Object.values(enregistrement)) {
+          if (estFourchette(valeur)) fourchette(valeur.basse, valeur.mediane, valeur.haute);
+        }
+      }
+      migre[objet] = liste;
+    }
+    return migre;
   }
 
   // Ouvre la ferme enregistrée dans `stockage`, ou une ferme vide s'il n'y en a pas.
@@ -98,6 +130,12 @@
 
     function enregistrer() {
       stockage.setItem(CLE, JSON.stringify(donnees));
+    }
+
+    // Toute écriture de données date la première modification non exportée.
+    function enregistrerModification() {
+      if (!donnees.etat.nonExporteDepuis) donnees.etat.nonExporteDepuis = maintenant();
+      enregistrer();
     }
 
     function collection(objet) {
@@ -135,14 +173,14 @@
       const instant = maintenant();
       const enregistrement = { id: nouvelId(), ...saisie(champs), creeLe: instant, modifieLe: instant, supprimeLe: null };
       liste.push(enregistrement);
-      enregistrer();
+      enregistrerModification();
       return copie(enregistrement);
     }
 
     function modifier(objet, id, champs) {
       const enregistrement = trouver(objet, id);
       Object.assign(enregistrement, saisie(champs), { modifieLe: maintenant() });
-      enregistrer();
+      enregistrerModification();
       return copie(enregistrement);
     }
 
@@ -153,9 +191,38 @@
         const instant = maintenant();
         enregistrement.supprimeLe = instant;
         enregistrement.modifieLe = instant;
-        enregistrer();
+        enregistrerModification();
       }
       return copie(enregistrement);
+    }
+
+    // EX-07 : toute la ferme, éléments supprimés compris, dans un document versionné.
+    function exporter() {
+      const instant = maintenant();
+      const fichier = { application: APPLICATION, version: VERSION, exporteLe: instant };
+      for (const objet of OBJETS) fichier[objet] = copie(donnees[objet]);
+      donnees.etat.dernierExport = instant;
+      donnees.etat.nonExporteDepuis = null;
+      enregistrer();
+      return fichier;
+    }
+
+    // EX-07 : remplace toute la ferme par celle du fichier, telle quelle. Les données importées
+    // sont celles d'un fichier que l'utilisateur détient déjà : rien n'est à exporter.
+    function importer(fichier) {
+      const migre = verifierImport(fichier);
+      for (const objet of OBJETS) donnees[objet] = migre[objet];
+      donnees.etat.nonExporteDepuis = null;
+      enregistrer();
+    }
+
+    // EX-08 : vrai si des données ont changé sans être exportées et que le dernier export
+    // (ou, faute d'export, la première modification) date d'au moins DELAI_RAPPEL_JOURS jours.
+    function rappelExport() {
+      const { dernierExport, nonExporteDepuis } = donnees.etat;
+      if (!nonExporteDepuis) return false;
+      const depuis = Date.parse(dernierExport || nonExporteDepuis);
+      return horloge().getTime() - depuis >= DELAI_RAPPEL_JOURS * JOUR_MS;
     }
 
     return {
@@ -164,10 +231,13 @@
       ajouter,
       modifier,
       supprimer,
+      exporter,
+      importer,
+      rappelExport,
       espaces: () => lister("espaces"),
       ajouterEspace: (champs) => ajouter("espaces", champs),
     };
   }
 
-  return { ouvrir, fourchette, fourchetteOrdonnee, lireFourchette, lireNombre, OBJETS, CLE, VERSION };
+  return { ouvrir, fourchette, fourchetteOrdonnee, lireFourchette, lireNombre, OBJETS, CLE, VERSION, DELAI_RAPPEL_JOURS };
 });

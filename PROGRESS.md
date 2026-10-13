@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N1 · Sessions consommées : 7 / 15 (seuil d'alerte)
+Tranche en cours : N1 · Sessions consommées : 8 / 15 (seuil d'alerte)
 
 ---
 
@@ -574,4 +574,99 @@ Running 2 tests using 1 worker
 
   2 passed (2.3s)
 == T07 : vérification verte ==
+```
+
+## 13/10/2026 · T08 — Export et import JSON, rappel d'export
+
+- Session 8 du seuil d'alerte.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME**.
+- Résultat : **vert**. `./verify.sh T08` → exit 0 (7 tests unitaires, 4 de bout en bout) ; `./verify.sh N1` → exit 0.
+- Fichiers : `src/store.js`, `src/index.html`, `src/i18n.js`, `test/store.test.js` (tests ajoutés à la fin), `test/export.e2e.js`.
+- Rouge d'abord : 7 tests unitaires rouges (`ferme.exporter is not a function`…), 4 de bout en bout rouges (boutons absents).
+- Aller-retour vérifié par un vrai téléchargement d'un navigateur vers un autre, vide : réexport identique hors date d'export, supprimés compris. Rappel vérifié à l'ouverture avec l'horloge de Playwright (6 jours : rien ; 7 jours : rappel ; après export : plus rien).
+- Commit : « T08 — Export et import JSON à l'identique, rappel d'export à 7 jours ».
+
+Preuve (`./verify.sh T08`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 51486 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 71.185043
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 2 - test/squelette.test.js
+  ---
+  duration_ms: 69.781088
+  type: 'test'
+  ...
+# Subtest: [T08] EX-07 : export puis import restituent la ferme à l'identique, y compris les éléments supprimés
+ok 3 - [T08] EX-07 : export puis import restituent la ferme à l'identique, y compris les éléments supprimés
+  ---
+  duration_ms: 8.039331
+  type: 'test'
+  ...
+# Subtest: [T08] le fichier exporté porte l'application, un numéro de version et sa date
+ok 4 - [T08] le fichier exporté porte l'application, un numéro de version et sa date
+  ---
+  duration_ms: 0.712807
+  type: 'test'
+  ...
+# Subtest: [T08] l'import remplace toute la ferme actuelle
+ok 5 - [T08] l'import remplace toute la ferme actuelle
+  ---
+  duration_ms: 0.502278
+  type: 'test'
+  ...
+# Subtest: [T08] un fichier qui n'est pas un export plantoeuf, ou d'une version plus récente, est refusé sans rien changer
+ok 6 - [T08] un fichier qui n'est pas un export plantoeuf, ou d'une version plus récente, est refusé sans rien changer
+  ---
+  duration_ms: 2.143234
+  type: 'test'
+  ...
+# Subtest: [T08] EX-08 : rappel à l'ouverture quand rien n'a été exporté depuis 7 jours et que des données ont changé
+ok 7 - [T08] EX-08 : rappel à l'ouverture quand rien n'a été exporté depuis 7 jours et que des données ont changé
+  ---
+  duration_ms: 0.320995
+  type: 'test'
+  ...
+# Subtest: [T08] EX-08 : après un export, le rappel revient 7 jours après cet export si des données ont changé
+ok 8 - [T08] EX-08 : après un export, le rappel revient 7 jours après cet export si des données ont changé
+  ---
+  duration_ms: 0.312319
+  type: 'test'
+  ...
+# Subtest: [T08] EX-08 : ni une ferme vide ni une ferme tout juste importée ne déclenchent de rappel
+ok 9 - [T08] EX-08 : ni une ferme vide ni une ferme tout juste importée ne déclenchent de rappel
+  ---
+  duration_ms: 0.378659
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 97.764484
+== Tests de bout en bout (Playwright) ==
+
+Running 4 tests using 1 worker
+
+  ✓  1 test/export.e2e.js:17:1 › [T08] EX-07 : Exporter produit un fichier JSON que Importer restaure à l'identique, y compris les supprimés (894ms)
+  ✓  2 test/export.e2e.js:43:1 › [T08] l'import remplace la ferme ouverte après confirmation (648ms)
+  ✓  3 test/export.e2e.js:55:1 › [T08] un fichier illisible est refusé avec un message, et la ferme reste intacte (209ms)
+  ✓  4 test/export.e2e.js:68:1 › [T08] EX-08 : le rappel d'export s'affiche à l'ouverture après 7 jours de modifications non exportées (372ms)
+
+  4 passed (2.8s)
+== T08 : vérification verte ==
 ```

@@ -189,3 +189,123 @@ test("[T02] la saisie d'une fourchette accepte un nombre ou trois, avec la virgu
   assert.throws(() => Store.lireFourchette("2 / 3"));
   assert.throws(() => Store.lireFourchette("trois"));
 });
+
+// ---- T08 : export et import JSON (EX-07), rappel d'export (EX-08)
+
+const UN_JOUR = 24 * UNE_HEURE;
+
+function fermeRemplie(horloge) {
+  const ferme = Store.ouvrir(stockageEnMemoire(), { horloge });
+  const espace = ferme.ajouter("espaces", EXEMPLES.espaces);
+  const culture = ferme.ajouter("cultures", EXEMPLES.cultures);
+  const variete = ferme.ajouter("varietes", { ...EXEMPLES.varietes, cultureId: culture.id });
+  ferme.ajouter("plantations", { ...EXEMPLES.plantations, varieteId: variete.id, espaceId: espace.id });
+  const supprimee = ferme.ajouter("plantations", { ...EXEMPLES.plantations, varieteId: variete.id, espaceId: espace.id, surface: 5 });
+  ferme.supprimer("plantations", supprimee.id);
+  ferme.modifier("espaces", espace.id, { surface: 40 });
+  return ferme;
+}
+
+function sansDate(fichier) {
+  const { exporteLe, ...reste } = fichier;
+  return reste;
+}
+
+test("[T08] EX-07 : export puis import restituent la ferme à l'identique, y compris les éléments supprimés", () => {
+  const horloge = horlogeManuelle("2026-10-13T08:00:00.000Z");
+  const source = fermeRemplie(horloge);
+  const fichier = JSON.parse(JSON.stringify(source.exporter()));
+
+  const stockage = stockageEnMemoire();
+  Store.ouvrir(stockage).importer(fichier);
+  const importee = Store.ouvrir(stockage);
+
+  for (const objet of Store.OBJETS) {
+    assert.deepEqual(importee.lister(objet, { avecSupprimes: true }), source.lister(objet, { avecSupprimes: true }), objet);
+  }
+  assert.equal(importee.lister("plantations", { avecSupprimes: true }).filter((p) => p.supprimeLe).length, 1);
+  assert.deepEqual(sansDate(importee.exporter()), sansDate(fichier));
+});
+
+test("[T08] le fichier exporté porte l'application, un numéro de version et sa date", () => {
+  const horloge = horlogeManuelle("2026-10-13T08:00:00.000Z");
+  const fichier = fermeRemplie(horloge).exporter();
+  assert.equal(fichier.application, "plantoeuf");
+  assert.equal(fichier.version, Store.VERSION);
+  assert.equal(fichier.exporteLe, "2026-10-13T08:00:00.000Z");
+  for (const objet of Store.OBJETS) assert.ok(Array.isArray(fichier[objet]), objet);
+  assert.equal(fichier.plantations.length, 2);
+});
+
+test("[T08] l'import remplace toute la ferme actuelle", () => {
+  const fichier = fermeRemplie(horlogeManuelle("2026-10-13T08:00:00.000Z")).exporter();
+  const stockage = stockageEnMemoire();
+  const ferme = Store.ouvrir(stockage);
+  const ancien = ferme.ajouter("espaces", { nom: "ancien", surface: 10, type: "abri" });
+  ferme.importer(fichier);
+  assert.equal(ferme.obtenir("espaces", ancien.id), null);
+  assert.deepEqual(Store.ouvrir(stockage).lister("espaces").map((e) => e.nom), ["planche 1"]);
+});
+
+test("[T08] un fichier qui n'est pas un export plantoeuf, ou d'une version plus récente, est refusé sans rien changer", () => {
+  const fichier = fermeRemplie(horlogeManuelle("2026-10-13T08:00:00.000Z")).exporter();
+  const stockage = stockageEnMemoire();
+  const ferme = Store.ouvrir(stockage);
+  ferme.ajouter("espaces", { nom: "à garder", surface: 10, type: "abri" });
+
+  assert.throws(() => ferme.importer(null), { code: "import_invalide" });
+  assert.throws(() => ferme.importer({ espaces: [] }), { code: "import_invalide" });
+  assert.throws(() => ferme.importer({ ...fichier, plantations: "rien" }), { code: "import_invalide" });
+  assert.throws(() => ferme.importer({ ...fichier, espaces: [{ nom: "sans identifiant" }] }), { code: "import_invalide" });
+  assert.throws(() => ferme.importer({ ...fichier, version: Store.VERSION + 1 }), { code: "import_version" });
+  const desordonnee = { ...fichier.cultures[0], prix: { basse: 3, mediane: 2, haute: 4 } };
+  assert.throws(() => ferme.importer({ ...fichier, cultures: [desordonnee] }), { code: "fourchette_desordonnee" });
+
+  assert.deepEqual(Store.ouvrir(stockage).lister("espaces").map((e) => e.nom), ["à garder"]);
+});
+
+test("[T08] EX-08 : rappel à l'ouverture quand rien n'a été exporté depuis 7 jours et que des données ont changé", () => {
+  const horloge = horlogeManuelle("2026-10-01T08:00:00.000Z");
+  const stockage = stockageEnMemoire();
+  Store.ouvrir(stockage, { horloge }).ajouter("espaces", EXEMPLES.espaces);
+
+  horloge.avancer(6 * UN_JOUR);
+  assert.equal(Store.ouvrir(stockage, { horloge }).rappelExport(), false);
+  horloge.avancer(UN_JOUR);
+  const ferme = Store.ouvrir(stockage, { horloge });
+  assert.equal(ferme.rappelExport(), true);
+
+  ferme.exporter();
+  assert.equal(Store.ouvrir(stockage, { horloge }).rappelExport(), false);
+  horloge.avancer(30 * UN_JOUR);
+  assert.equal(Store.ouvrir(stockage, { horloge }).rappelExport(), false, "aucune donnée changée depuis l'export");
+});
+
+test("[T08] EX-08 : après un export, le rappel revient 7 jours après cet export si des données ont changé", () => {
+  const horloge = horlogeManuelle("2026-10-01T08:00:00.000Z");
+  const stockage = stockageEnMemoire();
+  const ferme = Store.ouvrir(stockage, { horloge });
+  const espace = ferme.ajouter("espaces", EXEMPLES.espaces);
+  ferme.exporter();
+
+  horloge.avancer(UN_JOUR);
+  Store.ouvrir(stockage, { horloge }).modifier("espaces", espace.id, { surface: 50 });
+  horloge.avancer(5 * UN_JOUR);
+  assert.equal(Store.ouvrir(stockage, { horloge }).rappelExport(), false);
+  horloge.avancer(UN_JOUR);
+  assert.equal(Store.ouvrir(stockage, { horloge }).rappelExport(), true);
+});
+
+test("[T08] EX-08 : ni une ferme vide ni une ferme tout juste importée ne déclenchent de rappel", () => {
+  const horloge = horlogeManuelle("2026-10-01T08:00:00.000Z");
+  const vide = stockageEnMemoire();
+  Store.ouvrir(vide, { horloge });
+  horloge.avancer(100 * UN_JOUR);
+  assert.equal(Store.ouvrir(vide, { horloge }).rappelExport(), false);
+
+  const fichier = fermeRemplie(horloge).exporter();
+  const stockage = stockageEnMemoire();
+  Store.ouvrir(stockage, { horloge }).importer(fichier);
+  horloge.avancer(30 * UN_JOUR);
+  assert.equal(Store.ouvrir(stockage, { horloge }).rappelExport(), false);
+});
