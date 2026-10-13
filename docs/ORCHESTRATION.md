@@ -1,6 +1,8 @@
 # ORCHESTRATION — répartition des tâches entre modèles et sous-agents
 
-Ce document fixe comment une session orchestratrice distribue les tâches d'une tranche. Tout y est paramètre de `features.json`, jamais règle codée : un niveau peut être supprimé sans rien casser, parce que les harnais se périment avec les modèles.
+**Statut : option non activée.** N1 s'exécute en mode simple (une session par tâche, Opus 5.5 effort élevé, relecture Fable sur les tâches de fondation) ; voir le runbook. Ce mode sera activé quand le parallélisme aura une raison d'exister : rendu découpé en modules à partir de N2, ou exécutions sans humain sous orchestrateur durable.
+
+Ce document fixe comment une session orchestratrice distribuerait les tâches d'une tranche. Tout y est paramètre de `features.json`, jamais règle codée : un niveau peut être supprimé sans rien casser, parce que les harnais se périment avec les modèles.
 
 ## Principe
 

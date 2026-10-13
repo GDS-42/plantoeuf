@@ -38,12 +38,17 @@ Une ferme fictive de 10 plantations donne un tableau CA / marge par culture et p
 4. Écrire le test (rouge).
 5. Implémenter (vert), puis refactorer.
 6. Lancer la vérification de la tâche et coller la sortie comme preuve dans `PROGRESS.md`.
+6 bis. Si la tâche porte `relecture: true` : faire relire le diff par le sous-agent relecteur (voir « Modèles et relecture ») et noter son verdict.
 7. Faire un commit atomique.
 8. Mettre à jour `PROGRESS.md` et le champ `passe` de `features.json`.
 
-## Mode orchestré (sous-agents par modèle)
+## Modèles et relecture (mode simple, retenu pour N1)
 
-Si la session est orchestratrice, elle suit `docs/ORCHESTRATION.md` : elle lit `features.json`, lance chaque tâche prête dans un sous-agent avec le `modele` et l'`effort` indiqués, au plus `parallelisme_max` à la fois et seulement si leurs `fichiers` sont disjoints, fait relire par l'évaluateur (`evaluateur`) les tâches marquées `relecture`, fusionne et commite. Chaque sous-agent suit la routine ci-dessus. Chaque sous-agent lancé compte pour une session du seuil d'alerte.
+- Une session par tâche, l'humain relance entre chaque. Pas d'orchestrateur ni de parallélisme en N1 (`mode: simple`, `parallelisme_max: 1`).
+- Toute tâche s'exécute avec **Opus 5.5 au minimum, effort élevé** (`modele_minimum` dans `features.json`).
+- Pour une tâche marquée `relecture: true` (T02, T04, T05, T08), avant le commit, la session lance un sous-agent relecteur avec le modèle de `evaluateur` (Fable, effort élevé), contexte frais, avec pour seule question : « ce diff est-il conforme à `SPEC.md` et aux limites d'`AGENTS.md` ? ». Il ne cherche pas ce qui manque. Un écart → une seule reprise, puis arrêt et compte rendu.
+- `PROGRESS.md` note le modèle, l'effort, le nombre de reprises et le verdict du relecteur.
+- `docs/ORCHESTRATION.md` décrit le mode orchestré, non activé : il le sera quand le parallélisme aura une raison d'exister (rendu découpé en modules à partir de N2, exécutions sans humain).
 
 ## Conditions d'arrêt — s'arrêter et demander si
 
@@ -52,7 +57,7 @@ Si la session est orchestratrice, elle suit `docs/ORCHESTRATION.md` : elle lit `
 - deux tentatives de correction successives échouent ;
 - un objet absent du modèle de données paraît nécessaire ;
 - le seuil d'alerte de la tranche est atteint, ou le contexte dépasse environ 60 % ;
-- en mode orchestré, une fusion de worktree ne passe pas en rebase propre.
+- le relecteur signale un écart à la spec qu'une reprise n'a pas résolu.
 
 ## Idempotence et retour arrière
 
