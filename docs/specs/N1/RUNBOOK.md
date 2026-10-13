@@ -82,5 +82,8 @@ Une ferme fictive de 10 plantations donne un tableau CA / marge par culture et p
 - T02 · Noms de champs : `id`, `creeLe`, `modifieLe`, `supprimeLe` (ISO 8601). Fourchette `{ basse, mediane, haute }`. API du store : `lister(objet, { avecSupprimes })`, `obtenir`, `ajouter`, `modifier`, `supprimer` sur `espaces`, `cultures`, `varietes`, `plantations` ; tout autre objet est refusé (`objet_inconnu`). Les erreurs portent un `code`, traduit par `i18n.js` au rendu.
 - T02 · Saisie d'une fourchette dans un seul champ texte : « 3 » ou « 2 / 2,5 / 3 », virgule décimale acceptée (`Store.lireFourchette`). Un seul nombre remplit les trois valeurs ; deux nombres ou un ordre inverse sont refusés.
 - T02 · Seuls le rendement et le prix sont des fourchettes, comme le dit le tableau du modèle ; les durées et le taux de pertes sont des nombres simples (scénario S1).
+- T03 · Une seule page, une section par objet : formulaire, puis liste. « Modifier » remplit le formulaire, « Supprimer » supprime logiquement, sans confirmation. Après chaque enregistrement, tout l'affichage se recalcule depuis les données enregistrées (`rafraichir`).
+- T03 · Une variété enregistre `null` pour chaque champ numérique non surchargé ; la famille botanique est facultative. Un élément dont la référence a été supprimée reste affiché, marqué « (supprimé) ».
+- T03 · Identifiants des champs : `<objet>-<champ>` (ex. `#culture-joursAvantRecolte`), listes `#liste-<objets>`, boutons `[data-action="modifier|supprimer"]`.
 
 ## ✎ Bilan de fin de tranche

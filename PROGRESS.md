@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N1 · Sessions consommées : 2 / 15 (seuil d'alerte)
+Tranche en cours : N1 · Sessions consommées : 3 / 15 (seuil d'alerte)
 
 ---
 
@@ -180,4 +180,58 @@ Running 1 test using 1 worker
 
   1 passed (884ms)
 == T02 : vérification verte ==
+```
+
+## 13/10/2026 · T03 — Saisie et liste des espaces, cultures, variétés et plantations
+
+- Session 3 du seuil d'alerte.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Résultat : **vert**. `./verify.sh T03` → exit 0 (5 tests de bout en bout) ; `./verify.sh N1` → exit 0.
+- Fichiers : `src/index.html`, `src/i18n.js`, `test/saisie.e2e.js`.
+- Rouge d'abord : les 5 tests `[T03]` échouaient (champs `#culture-nom`, `#variete-nom`… absents).
+- Les erreurs du store s'affichent par leur `code`, traduit dans `i18n.js` (remarque du relecteur de T02).
+- Commit : « T03 — Saisie et liste des espaces, cultures, variétés et plantations ».
+
+Preuve (`./verify.sh T03`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 27018 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/squelette.test.js
+ok 1 - test/squelette.test.js
+  ---
+  duration_ms: 61.497155
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 2 - test/store.test.js
+  ---
+  duration_ms: 93.538906
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 109.15854
+== Tests de bout en bout (Playwright) ==
+
+Running 5 tests using 1 worker
+
+  ✓  1 test/saisie.e2e.js:73:1 › [T03] espaces, cultures, variétés et plantations sont saisis, listés et retrouvés après réouverture (718ms)
+  ✓  2 test/saisie.e2e.js:94:1 › [T03] une variété ne garde que les champs numériques surchargés, les autres viennent de la culture (496ms)
+  ✓  3 test/saisie.e2e.js:110:1 › [T03] une modification est enregistrée et retrouvée après réouverture (870ms)
+  ✓  4 test/saisie.e2e.js:142:1 › [T03] une suppression retire l'élément des listes, même après réouverture, sans l'effacer du stockage (668ms)
+  ✓  5 test/saisie.e2e.js:165:1 › [T03] une fourchette désordonnée est refusée avec un message, sans rien enregistrer (230ms)
+
+  5 passed (3.8s)
+== T03 : vérification verte ==
 ```
