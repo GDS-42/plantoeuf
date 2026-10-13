@@ -5,42 +5,109 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>plantoeuf</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 70rem; margin: 1rem auto; padding: 0 1rem; color: #1f2a1f; background: #fbfcf8; }
-  h1 { font-size: 1.4rem; }
-  h2 { font-size: 1.15rem; border-bottom: 1px solid #c9d3c0; padding-bottom: 0.25rem; margin-top: 2rem; }
-  nav a { margin-right: 1rem; }
-  form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; margin-bottom: 1rem; padding: 0.75rem; background: #eef2e8; border-radius: 0.4rem; }
-  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; }
+  :root {
+    --fond: #f3f5f1;
+    --surface: #ffffff;
+    --surface-douce: #f8faf7;
+    --encre: #1b2620;
+    --encre-douce: #4a564e;
+    --trait: #dce2da;
+    --trait-fort: #b3beb5;
+    --accent: #2e6a3e;
+    --accent-fonce: #1f4d2b;
+    --accent-doux: #e6f0e7;
+    --barre: #1e3a2a;
+    --barre-douce: #d3e3d6;
+    --alerte-fond: #fff1d6;
+    --alerte-texte: #6b3a00;
+    --info-fond: #e5eef8;
+    --info-texte: #1d3f6e;
+    --erreur: #a12a1a;
+    --entete-tableau: #eaf0e8;
+    --largeur-saisie: 30rem;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0; display: flex; flex-direction: column;
+    background: var(--fond); color: var(--encre);
+    font: 15px/1.45 "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  }
+  h1, h2 { margin: 0; }
+
+  /* Barre du haut */
+  .barre { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.6rem 1.25rem; background: var(--barre); color: #ffffff; }
+  .marque { display: flex; align-items: baseline; gap: 0.6rem; }
+  .marque h1 { font-size: 1.3rem; }
+  .marque span { color: var(--barre-douce); font-size: 0.95rem; }
+  .barre nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
+  .barre nav a { color: #ffffff; font-size: 0.95rem; }
+
+  /* Bandeaux d'information et d'alerte */
+  .bandeau { flex: none; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; padding: 0.5rem 1.25rem; background: var(--alerte-fond); color: var(--alerte-texte); border-bottom: 1px solid var(--trait); }
+  .bandeau.exemple { background: var(--info-fond); color: var(--info-texte); }
+  .bandeau > span { flex: 1 1 20rem; }
+
+  /* Deux volets : la saisie à gauche, la projection à droite, chacun avec son défilement (EX-11) */
+  .volets { flex: 1; min-height: 0; display: flex; }
+  .volet-saisie { flex: none; width: var(--largeur-saisie); overflow-y: auto; border-right: 1px solid var(--trait); padding: 0 1rem 2rem; box-sizing: border-box; }
+  .volet-projection { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 0.9rem 1.25rem 1rem; }
+  #section-tableau { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  .defilement { flex: 1; min-height: 0; overflow: auto; background: var(--surface); border: 1px solid var(--trait); border-radius: 10px; }
+  #tableau-vide { margin: 0; }
+
+  /* Saisie */
+  .volet-saisie section { margin-top: 1rem; }
+  .volet-saisie h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+  form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; margin-bottom: 0.75rem; padding: 0.75rem; background: var(--surface-douce); border: 1px solid var(--trait); border-radius: 8px; }
+  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; }
   input, select, button { font: inherit; padding: 0.3rem 0.5rem; }
   input[type="number"] { width: 7rem; }
-  .aide { flex-basis: 100%; margin: 0; font-size: 0.85rem; color: #4d5a46; }
-  .erreur { flex-basis: 100%; margin: 0; color: #a12a1a; font-weight: 600; }
-  ul.liste { list-style: none; padding: 0; }
-  ul.liste li { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid #e1e6da; }
-  ul.liste li span.resume { flex: 1 1 20rem; }
-  .defilement { overflow-x: auto; }
-  table#tableau { border-collapse: collapse; font-size: 0.85rem; }
-  #tableau caption { caption-side: top; text-align: left; padding: 0.4rem 0; color: #4d5a46; }
-  #tableau th, #tableau td { border: 1px solid #d5dccd; padding: 0.3rem 0.5rem; vertical-align: top; }
-  #tableau thead th { background: #eef2e8; white-space: nowrap; }
+  .aide { flex-basis: 100%; margin: 0; font-size: 0.875rem; color: var(--encre-douce); }
+  .erreur { flex-basis: 100%; margin: 0; color: var(--erreur); font-weight: 600; }
+  ul.liste { list-style: none; padding: 0; margin: 0; }
+  ul.liste li { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid var(--trait); }
+  ul.liste li span.resume { flex: 1 1 16rem; }
+  .sur-occupation { margin-left: 0.5rem; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: var(--alerte-texte); background: var(--alerte-fond); }
+  #import-message { font-weight: 600; color: var(--accent-fonce); }
+  #import-message.erreur { color: var(--erreur); }
+
+  /* Tableau économique */
+  .volet-projection h2 { font-size: 1.15rem; }
+  table#tableau { border-collapse: collapse; font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+  #tableau caption { caption-side: top; text-align: left; padding: 0.5rem 0.75rem; color: var(--encre-douce); }
+  #tableau th, #tableau td { border: 1px solid var(--trait); padding: 0.3rem 0.5rem; vertical-align: top; }
+  #tableau thead th { background: var(--entete-tableau); white-space: nowrap; }
   #tableau tbody th, #tableau tfoot th { text-align: left; font-weight: normal; }
   #tableau th[rowspan] { font-weight: 600; }
   #tableau td { text-align: right; white-space: nowrap; }
   #tableau td .mediane { display: block; font-weight: 600; }
-  #tableau td .bornes { display: block; font-size: 0.75rem; color: #5a6652; }
-  #tableau td.nul { color: #a3ad9b; }
-  .bandeau.exemple { background: #e3eefa; color: #1d3a5c; }
-  .bandeau { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin: 1rem 0; padding: 0.6rem 0.9rem; border-radius: 0.4rem; background: #fff0d4; color: #5c3300; }
-  #import-message { font-weight: 600; color: #2f5a1c; }
-  #import-message.erreur { color: #a12a1a; }
-  .sur-occupation { margin-left: 0.5rem; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #7a3f00; background: #fff0d4; }
-  #tableau tfoot { border-top: 2px solid #8a9a7e; }
+  #tableau td .bornes { display: block; font-size: 0.8rem; color: var(--encre-douce); }
+  #tableau tfoot { border-top: 2px solid var(--trait-fort); }
+  /* La colonne Total reste au bord droit pendant que les mois défilent : le chiffre de la saison reste sous les yeux. */
+  #tableau thead th:last-child, #tableau td[data-mois="total"] { position: sticky; right: 0; z-index: 1; box-shadow: -1px 0 0 var(--trait-fort); }
+  #tableau thead th:last-child { background: var(--entete-tableau); }
+  #tableau tbody td[data-mois="total"] { background: var(--surface); }
+  #tableau tfoot td[data-mois="total"] { background: var(--surface-douce); }
+  #tableau tfoot td, #tableau tfoot th { background: var(--surface-douce); }
+
+  /* Écran étroit : une seule colonne, la projection en premier */
+  @media (max-width: 1099px) {
+    body { display: block; height: auto; }
+    .volets { flex-direction: column; }
+    .volet-projection { order: -1; }
+    .volet-saisie { width: auto; overflow: visible; border-right: 0; }
+    .defilement { max-height: 70vh; }
+  }
+
   [hidden] { display: none !important; }
 </style>
 </head>
 <body>
-<header>
-  <h1 data-texte="titre"></h1>
+<header class="barre">
+  <div class="marque">
+    <h1 data-texte="marque"></h1>
+    <span data-texte="sousTitre"></span>
+  </div>
   <nav>
     <a href="#section-tableau" data-texte="tableau.titre"></a>
     <a href="#section-espaces" data-texte="espaces.titre"></a>
@@ -66,144 +133,150 @@
   <button id="rappel-exporter" type="button" data-texte="sauvegarde.rappelExporter"></button>
 </div>
 
-<section id="section-tableau">
-  <h2 data-texte="tableau.titre"></h2>
-  <p id="tableau-vide" data-texte="tableau.aucun"></p>
-  <div class="defilement">
-    <table id="tableau">
-      <caption data-texte="tableau.legende"></caption>
-      <thead></thead>
-      <tbody></tbody>
-      <tfoot></tfoot>
-    </table>
-  </div>
-</section>
+<div class="volets">
+<div class="volet-saisie" id="volet-saisie">
+  <section id="section-espaces">
+    <h2 data-texte="espaces.titre"></h2>
+    <form id="form-espace" data-objet="espaces">
+      <label><span data-texte="espaces.nom"></span>
+        <input id="espace-nom" data-champ="nom" required>
+      </label>
+      <label><span data-texte="espaces.surface"></span>
+        <input id="espace-surface" data-champ="surface" data-format="nombre" type="number" min="0" step="any" required>
+      </label>
+      <label><span data-texte="espaces.type"></span>
+        <select id="espace-type" data-champ="type" data-options="typesEspace"></select>
+      </label>
+      <button id="espace-ajouter" type="submit" data-texte="espaces.ajouter"></button>
+      <button id="espace-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      <p id="espace-erreur" class="erreur" role="alert" hidden></p>
+    </form>
+    <p id="espaces-vide" data-texte="espaces.aucun"></p>
+    <ul id="liste-espaces" class="liste"></ul>
+  </section>
 
-<section id="section-espaces">
-  <h2 data-texte="espaces.titre"></h2>
-  <form id="form-espace" data-objet="espaces">
-    <label><span data-texte="espaces.nom"></span>
-      <input id="espace-nom" data-champ="nom" required>
-    </label>
-    <label><span data-texte="espaces.surface"></span>
-      <input id="espace-surface" data-champ="surface" data-format="nombre" type="number" min="0" step="any" required>
-    </label>
-    <label><span data-texte="espaces.type"></span>
-      <select id="espace-type" data-champ="type" data-options="typesEspace"></select>
-    </label>
-    <button id="espace-ajouter" type="submit" data-texte="espaces.ajouter"></button>
-    <button id="espace-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-    <p id="espace-erreur" class="erreur" role="alert" hidden></p>
-  </form>
-  <p id="espaces-vide" data-texte="espaces.aucun"></p>
-  <ul id="liste-espaces" class="liste"></ul>
-</section>
+  <section id="section-cultures">
+    <h2 data-texte="cultures.titre"></h2>
+    <form id="form-culture" data-objet="cultures">
+      <label><span data-texte="cultures.nom"></span>
+        <input id="culture-nom" data-champ="nom" required>
+      </label>
+      <label><span data-texte="cultures.famille"></span>
+        <input id="culture-famille" data-champ="famille">
+      </label>
+      <label><span data-texte="cultures.unite"></span>
+        <select id="culture-unite" data-champ="unite" data-options="unitesVente"></select>
+      </label>
+      <label><span data-texte="cultures.rendement"></span>
+        <input id="culture-rendement" data-champ="rendement" data-format="fourchette" required>
+      </label>
+      <label><span data-texte="cultures.prix"></span>
+        <input id="culture-prix" data-champ="prix" data-format="fourchette" required>
+      </label>
+      <label><span data-texte="cultures.joursAvantRecolte"></span>
+        <input id="culture-joursAvantRecolte" data-champ="joursAvantRecolte" data-format="nombre" type="number" min="0" step="1" required>
+      </label>
+      <label><span data-texte="cultures.semainesRecolte"></span>
+        <input id="culture-semainesRecolte" data-champ="semainesRecolte" data-format="nombre" type="number" min="1" step="1" required>
+      </label>
+      <label><span data-texte="cultures.pertes"></span>
+        <input id="culture-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any" required>
+      </label>
+      <p class="aide" data-texte="cultures.aideFourchette"></p>
+      <button id="culture-ajouter" type="submit" data-texte="cultures.ajouter"></button>
+      <button id="culture-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      <p id="culture-erreur" class="erreur" role="alert" hidden></p>
+    </form>
+    <p id="cultures-vide" data-texte="cultures.aucun"></p>
+    <ul id="liste-cultures" class="liste"></ul>
+  </section>
 
-<section id="section-cultures">
-  <h2 data-texte="cultures.titre"></h2>
-  <form id="form-culture" data-objet="cultures">
-    <label><span data-texte="cultures.nom"></span>
-      <input id="culture-nom" data-champ="nom" required>
-    </label>
-    <label><span data-texte="cultures.famille"></span>
-      <input id="culture-famille" data-champ="famille">
-    </label>
-    <label><span data-texte="cultures.unite"></span>
-      <select id="culture-unite" data-champ="unite" data-options="unitesVente"></select>
-    </label>
-    <label><span data-texte="cultures.rendement"></span>
-      <input id="culture-rendement" data-champ="rendement" data-format="fourchette" required>
-    </label>
-    <label><span data-texte="cultures.prix"></span>
-      <input id="culture-prix" data-champ="prix" data-format="fourchette" required>
-    </label>
-    <label><span data-texte="cultures.joursAvantRecolte"></span>
-      <input id="culture-joursAvantRecolte" data-champ="joursAvantRecolte" data-format="nombre" type="number" min="0" step="1" required>
-    </label>
-    <label><span data-texte="cultures.semainesRecolte"></span>
-      <input id="culture-semainesRecolte" data-champ="semainesRecolte" data-format="nombre" type="number" min="1" step="1" required>
-    </label>
-    <label><span data-texte="cultures.pertes"></span>
-      <input id="culture-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any" required>
-    </label>
-    <p class="aide" data-texte="cultures.aideFourchette"></p>
-    <button id="culture-ajouter" type="submit" data-texte="cultures.ajouter"></button>
-    <button id="culture-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-    <p id="culture-erreur" class="erreur" role="alert" hidden></p>
-  </form>
-  <p id="cultures-vide" data-texte="cultures.aucun"></p>
-  <ul id="liste-cultures" class="liste"></ul>
-</section>
+  <section id="section-varietes">
+    <h2 data-texte="varietes.titre"></h2>
+    <form id="form-variete" data-objet="varietes">
+      <label><span data-texte="varietes.nom"></span>
+        <input id="variete-nom" data-champ="nom" required>
+      </label>
+      <label><span data-texte="varietes.culture"></span>
+        <select id="variete-cultureId" data-champ="cultureId" required></select>
+      </label>
+      <label><span data-texte="cultures.rendement"></span>
+        <input id="variete-rendement" data-champ="rendement" data-format="fourchette">
+      </label>
+      <label><span data-texte="cultures.prix"></span>
+        <input id="variete-prix" data-champ="prix" data-format="fourchette">
+      </label>
+      <label><span data-texte="cultures.joursAvantRecolte"></span>
+        <input id="variete-joursAvantRecolte" data-champ="joursAvantRecolte" data-format="nombre" type="number" min="0" step="1">
+      </label>
+      <label><span data-texte="cultures.semainesRecolte"></span>
+        <input id="variete-semainesRecolte" data-champ="semainesRecolte" data-format="nombre" type="number" min="1" step="1">
+      </label>
+      <label><span data-texte="cultures.pertes"></span>
+        <input id="variete-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any">
+      </label>
+      <p class="aide"><span data-texte="varietes.aide"></span> <span data-texte="cultures.aideFourchette"></span></p>
+      <button id="variete-ajouter" type="submit" data-texte="varietes.ajouter"></button>
+      <button id="variete-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      <p id="variete-erreur" class="erreur" role="alert" hidden></p>
+    </form>
+    <p id="varietes-vide" data-texte="varietes.aucun"></p>
+    <ul id="liste-varietes" class="liste"></ul>
+  </section>
 
-<section id="section-varietes">
-  <h2 data-texte="varietes.titre"></h2>
-  <form id="form-variete" data-objet="varietes">
-    <label><span data-texte="varietes.nom"></span>
-      <input id="variete-nom" data-champ="nom" required>
-    </label>
-    <label><span data-texte="varietes.culture"></span>
-      <select id="variete-cultureId" data-champ="cultureId" required></select>
-    </label>
-    <label><span data-texte="cultures.rendement"></span>
-      <input id="variete-rendement" data-champ="rendement" data-format="fourchette">
-    </label>
-    <label><span data-texte="cultures.prix"></span>
-      <input id="variete-prix" data-champ="prix" data-format="fourchette">
-    </label>
-    <label><span data-texte="cultures.joursAvantRecolte"></span>
-      <input id="variete-joursAvantRecolte" data-champ="joursAvantRecolte" data-format="nombre" type="number" min="0" step="1">
-    </label>
-    <label><span data-texte="cultures.semainesRecolte"></span>
-      <input id="variete-semainesRecolte" data-champ="semainesRecolte" data-format="nombre" type="number" min="1" step="1">
-    </label>
-    <label><span data-texte="cultures.pertes"></span>
-      <input id="variete-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any">
-    </label>
-    <p class="aide"><span data-texte="varietes.aide"></span> <span data-texte="cultures.aideFourchette"></span></p>
-    <button id="variete-ajouter" type="submit" data-texte="varietes.ajouter"></button>
-    <button id="variete-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-    <p id="variete-erreur" class="erreur" role="alert" hidden></p>
-  </form>
-  <p id="varietes-vide" data-texte="varietes.aucun"></p>
-  <ul id="liste-varietes" class="liste"></ul>
-</section>
+  <section id="section-plantations">
+    <h2 data-texte="plantations.titre"></h2>
+    <form id="form-plantation" data-objet="plantations">
+      <label><span data-texte="plantations.variete"></span>
+        <select id="plantation-varieteId" data-champ="varieteId" required></select>
+      </label>
+      <label><span data-texte="plantations.espace"></span>
+        <select id="plantation-espaceId" data-champ="espaceId" required></select>
+      </label>
+      <label><span data-texte="plantations.surface"></span>
+        <input id="plantation-surface" data-champ="surface" data-format="nombre" type="number" min="0" step="any" required>
+      </label>
+      <label><span data-texte="plantations.date"></span>
+        <input id="plantation-date" data-champ="date" type="date" required>
+      </label>
+      <button id="plantation-ajouter" type="submit" data-texte="plantations.ajouter"></button>
+      <button id="plantation-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      <p id="plantation-erreur" class="erreur" role="alert" hidden></p>
+    </form>
+    <p id="plantations-vide" data-texte="plantations.aucun"></p>
+    <ul id="liste-plantations" class="liste"></ul>
+  </section>
 
-<section id="section-plantations">
-  <h2 data-texte="plantations.titre"></h2>
-  <form id="form-plantation" data-objet="plantations">
-    <label><span data-texte="plantations.variete"></span>
-      <select id="plantation-varieteId" data-champ="varieteId" required></select>
-    </label>
-    <label><span data-texte="plantations.espace"></span>
-      <select id="plantation-espaceId" data-champ="espaceId" required></select>
-    </label>
-    <label><span data-texte="plantations.surface"></span>
-      <input id="plantation-surface" data-champ="surface" data-format="nombre" type="number" min="0" step="any" required>
-    </label>
-    <label><span data-texte="plantations.date"></span>
-      <input id="plantation-date" data-champ="date" type="date" required>
-    </label>
-    <button id="plantation-ajouter" type="submit" data-texte="plantations.ajouter"></button>
-    <button id="plantation-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-    <p id="plantation-erreur" class="erreur" role="alert" hidden></p>
-  </form>
-  <p id="plantations-vide" data-texte="plantations.aucun"></p>
-  <ul id="liste-plantations" class="liste"></ul>
-</section>
+  <section id="section-sauvegarde">
+    <h2 data-texte="sauvegarde.titre"></h2>
+    <p data-texte="sauvegarde.explication"></p>
+    <p>
+      <button id="exporter" type="button" data-texte="sauvegarde.exporter"></button>
+    </p>
+    <p>
+      <label><span data-texte="sauvegarde.importer"></span>
+        <input id="importer" type="file" accept=".json,application/json">
+      </label>
+    </p>
+    <p id="import-message" role="status" hidden></p>
+  </section>
+</div>
 
-<section id="section-sauvegarde">
-  <h2 data-texte="sauvegarde.titre"></h2>
-  <p data-texte="sauvegarde.explication"></p>
-  <p>
-    <button id="exporter" type="button" data-texte="sauvegarde.exporter"></button>
-  </p>
-  <p>
-    <label><span data-texte="sauvegarde.importer"></span>
-      <input id="importer" type="file" accept=".json,application/json">
-    </label>
-  </p>
-  <p id="import-message" role="status" hidden></p>
-</section>
+<main class="volet-projection" id="volet-projection">
+  <section id="section-tableau">
+    <h2 data-texte="tableau.titre"></h2>
+    <p id="tableau-vide" data-texte="tableau.aucun"></p>
+    <div class="defilement" id="tableau-defilement">
+      <table id="tableau">
+        <caption data-texte="tableau.legende"></caption>
+        <thead></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+  </section>
+</main>
+</div>
 
 <script src="i18n.js"></script>
 <script src="store.js"></script>

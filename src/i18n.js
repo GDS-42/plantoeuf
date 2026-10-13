@@ -8,6 +8,8 @@
 
   return {
     titre: "plantoeuf — plan de culture",
+    marque: "plantoeuf",
+    sousTitre: "plan de culture",
     commun: {
       modifier: "Modifier",
       supprimer: "Supprimer",

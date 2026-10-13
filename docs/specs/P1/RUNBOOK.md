@@ -69,5 +69,7 @@ La tranche ne touche ni au modèle de données ni au format exporté : une ferme
 ## ✎ Décisions
 
 - T11 · Quatre modules de rendu, chargés après `calc.js` et `store.js` et intégrés par `build.sh` : `UiCommun` (éléments, textes, formats), `UiSaisie.creer({ ferme, rafraichir })` (formulaires, listes), `UiTableau.afficher(tableau)`, `UiSauvegarde.creer({ ferme, apresImport })`. Ils reçoivent la ferme par une fonction, car l'événement `storage` la rouvre. Le démarrage reste dans `index.html`.
+- T12 · Volet de saisie de 30 rem à gauche, volet de projection à droite, chacun avec son défilement ; en dessous de 1100 px, une seule colonne, la projection en premier. Dans l'ordre du document, la saisie vient d'abord. La colonne Total du tableau reste figée au bord droit : c'est le chiffre qui bouge « sous les yeux » quand on modifie une plantation (P1-S1).
+- T12 · Couleurs en variables CSS : fond vert-gris clair, encre vert très foncé, accent vert foncé, alerte ambre, information bleue ; polices du système, chiffres à chasse fixe dans le tableau.
 
 ## ✎ Bilan de fin de tranche

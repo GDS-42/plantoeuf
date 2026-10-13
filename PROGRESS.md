@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : P1 · Sessions consommées : 1 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
+Tranche en cours : P1 · Sessions consommées : 2 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
 
 ---
 
@@ -1175,4 +1175,71 @@ Running 1 test using 1 worker
 
   1 passed (1.0s)
 == T11 : vérification verte ==
+```
+
+## 13/10/2026 · T12 — Deux volets : la saisie à gauche, le tableau toujours visible à droite
+
+- Session 2 / 9 du seuil d'alerte de P1.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME**. Ses mesures : volets côte à côte à 1280, 1366 et 1920 px ; aucun débordement horizontal de la page de 1100 à 1920 px ; aucune police téléchargée. Remarques hors verdict : la colonne Total figée à droite anticipe T14 ; la légende du tableau, coupée à droite parce qu'elle défile avec lui, est reprise en T14.
+- Résultat : **vert**. `./verify.sh T12` → exit 0 (5 tests) ; `./verify.sh P1` → exit 0 (48 tests unitaires, 32 de bout en bout dont les 26 de N1 inchangés).
+- Fichiers : `src/index.html` (mise en page et styles : couleurs en variables, polices du système), `src/i18n.js` (marque, sous-titre), `test/presentation.e2e.js`.
+- Rouge d'abord : les trois scénarios P1-S1 rouges (le tableau sortait de la fenêtre au défilement des panneaux). Deux garde-fous verts dès l'écriture : la page de N1 ne débordait pas horizontalement et mettait déjà le tableau en premier. Après la mise en page, P1-S1 restait rouge à 1280 et 1366 px : la case Total de la courgette sortait de la boîte du tableau ; la colonne Total est désormais figée au bord droit.
+- Commit : « T12 — Deux volets : saisie à gauche, tableau toujours visible à droite ».
+
+Preuve (`./verify.sh T12`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 66068 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 76.155085
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 72.5293
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 74.323985
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 90.88182
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 180.495645
+== Tests de bout en bout (Playwright) ==
+
+Running 5 tests using 1 worker
+
+  ✓  1 test/presentation.e2e.js:43:3 › [T12] P1-S1 à 1280 × 720 : le tableau reste visible pendant le défilement des panneaux de saisie (739ms)
+  ✓  2 test/presentation.e2e.js:43:3 › [T12] P1-S1 à 1366 × 768 : le tableau reste visible pendant le défilement des panneaux de saisie (645ms)
+  ✓  3 test/presentation.e2e.js:43:3 › [T12] P1-S1 à 1920 × 1080 : le tableau reste visible pendant le défilement des panneaux de saisie (663ms)
+  ✓  4 test/presentation.e2e.js:68:1 › [T12] EX-16 : aucun défilement horizontal de la page de 1280 à 1920 px de large, ferme d'exemple chargée (552ms)
+  ✓  5 test/presentation.e2e.js:78:1 › [T12] sous 1100 px de large, une seule colonne, la projection en premier (237ms)
+
+  5 passed (3.6s)
+== T12 : vérification verte ==
 ```
