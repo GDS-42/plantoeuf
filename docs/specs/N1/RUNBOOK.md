@@ -69,6 +69,15 @@ Une ferme fictive de 10 plantations donne un tableau CA / marge par culture et p
 
 ## ✎ Surprises et découvertes
 
+- T01 · Node 22 refuse un dossier en argument de `--test` : `node --test test/` échoue (`Cannot find module '…/test'`). `verify.sh` lance désormais `node --test test/*.test.js`, ce qui écarte aussi les `*.e2e.js` (Node 20 les aurait exécutés via son motif `**/test/**/*.js`). `AGENTS.md` (« tests unitaires ») et le script `test` de `package.json` portent encore l'ancienne commande : à corriger par l'humain, hors périmètre de l'agent.
+- T01 · Le conteneur cloud fournit Chromium révision 1194 alors que Playwright 1.64 attend la 1248, et `playwright install` y est proscrit. Vérification lancée avec `PLAYWRIGHT_BROWSERS_PATH` vers un dossier local (hors dépôt) qui fait passer les binaires 1194 pour la 1248. Sur un poste ordinaire, `./init.sh` installe le bon navigateur, mais seulement si le dossier des navigateurs n'existe pas encore : une ancienne installation masque une mise à jour de Playwright.
+- T01 · `./init.sh` produit un `package-lock.json` (repli de `npm ci` sur `npm install`, faute de fichier de verrouillage). Non versionné : figer les dépendances relève de « demander d'abord ».
+
 ## ✎ Décisions
+
+- T01 · Stockage dans `localStorage`, clé `plantoeuf`, document JSON `{ version: 1, espaces: [...] }`. Le stockage est injecté (`Store.ouvrir(stockage)`) pour que `store.js` se teste sous Node avec un substitut en mémoire.
+- T01 · Chaque module s'enveloppe pour exporter `module.exports` sous Node et un global dans le navigateur (`Store`, `Calc`, `Textes`) : `build.sh` reste une simple concaténation.
+- T01 · Identifiant, dates et suppression logique laissés à T02, tâche dédiée et relue ; un espace T01 porte seulement nom, surface et type.
+- T01 · Tests T01 dans `test/squelette.*`, pour laisser `store.test.js` et `calc.test.js` aux tâches qui les nomment. Le test de bout en bout remplit les trois champs de l'espace et cible les champs par identifiant (`#espace-nom`, …) plutôt que par libellé : T03 peut rendre les champs obligatoires et les textes d'`i18n.js` peuvent changer sans toucher au test.
 
 ## ✎ Bilan de fin de tranche
