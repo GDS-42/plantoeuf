@@ -103,3 +103,12 @@ test("[T27] chaque raccourci mène à son panneau, titre visible sous la barre d
     }), { message: objet }).toBe(true);
   }
 });
+
+// ---- T28 : ponte et aliment par semaine (EX-26, scénario S7)
+
+test("[T28] S7 : la liste des lots donne les œufs d'une semaine de ponte et le coût d'une semaine d'aliment", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirLot(page);
+  await expect(ligneLot(page, "Lot 1")).toContainText("532 œufs par semaine de ponte");
+  await expect(ligneLot(page, "Lot 1")).toContainText("aliment 50,4 / 50,4 / 50,4 € par semaine");
+});

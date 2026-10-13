@@ -482,6 +482,69 @@
     return { mois, points };
   }
 
+  // ---- Poules pondeuses (S3)
+
+  // Nombre de jours de [debut, fin] (inclus) dans chaque semaine, désignée par son lundi.
+  function joursParSemaine(debut, fin) {
+    const jours = new Map();
+    if (!debut || !fin || fin < debut) return jours;
+    for (let lundi = lundiDe(debut); lundi <= fin; lundi = ajouterJours(lundi, 7)) {
+      const dimanche = ajouterJours(lundi, 6);
+      const premier = debut > lundi ? debut : lundi;
+      const dernier = fin < dimanche ? fin : dimanche;
+      jours.set(lundi, versJour(dernier) - versJour(premier) + 1);
+    }
+    return jours;
+  }
+
+  // Œufs pondus par un lot en un jour de ponte : effectif × ponte × (1 − pertes).
+  function oeufsParJour(lot) {
+    return proportion(lot.ponte, lot.effectif * (100 - (lot.pertes || 0)), 100);
+  }
+
+  // Œufs d'une semaine entière de ponte.
+  function oeufsParSemaine(lot) {
+    return proportion(oeufsParJour(lot), 7, 1);
+  }
+
+  // Aliment d'un lot en un jour de présence, en kg : effectif × grammes par poule.
+  function alimentParJour(lot) {
+    return proportion(lot.aliment, lot.effectif, 1000);
+  }
+
+  // Coût de l'aliment d'une semaine entière de présence.
+  function coutAlimentParSemaine(lot) {
+    return produit(proportion(alimentParJour(lot), 7, 1), lot.prixAliment);
+  }
+
+  // Par semaine (son lundi), pour les lots actifs : œufs pondus (du début de ponte à la réforme), leur valeur
+  // au prix de l'œuf de chaque lot, aliment en kg et son coût (de l'arrivée à la réforme). Invariant
+  // ponte_nulle_hors_periode : une semaine ne compte que ses jours dans ces périodes.
+  function poulesParSemaine({ lots = [] }) {
+    const semaines = new Map();
+    const semaine = (lundi) => {
+      if (!semaines.has(lundi)) {
+        semaines.set(lundi, { oeufs: fourchetteNulle(), valeur: fourchetteNulle(), alimentKg: fourchetteNulle(), aliment: fourchetteNulle() });
+      }
+      return semaines.get(lundi);
+    };
+    for (const lot of lots.filter((l) => !l.supprimeLe)) {
+      for (const [lundi, jours] of joursParSemaine(lot.debutPonte, lot.reforme)) {
+        const s = semaine(lundi);
+        const oeufs = proportion(oeufsParJour(lot), jours, 1);
+        s.oeufs = somme(s.oeufs, oeufs);
+        s.valeur = somme(s.valeur, produit(oeufs, lot.prixOeuf));
+      }
+      for (const [lundi, jours] of joursParSemaine(lot.arrivee, lot.reforme)) {
+        const s = semaine(lundi);
+        const kg = proportion(alimentParJour(lot), jours, 1);
+        s.alimentKg = somme(s.alimentKg, kg);
+        s.aliment = somme(s.aliment, produit(kg, lot.prixAliment));
+      }
+    }
+    return new Map([...semaines].sort(([a], [b]) => a.localeCompare(b)));
+  }
+
   function semainesEntre(premiere, derniere) {
     const liste = [];
     for (let lundi = premiere; lundi <= derniere; lundi = ajouterJours(lundi, 7)) liste.push(lundi);
@@ -529,6 +592,9 @@
     offreDemande,
     ventes,
     pointsDeVente,
+    oeufsParSemaine,
+    coutAlimentParSemaine,
+    poulesParSemaine,
     numeroDeSemaine,
     parametres,
     datesRecolte,

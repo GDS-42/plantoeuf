@@ -210,6 +210,8 @@
       arrivee: "arrivée le {valeur}",
       ponteLot: "ponte du {debut} au {fin}",
       ponteParJour: "{valeur} œuf par poule et par jour (estimation)",
+      oeufsParSemaine: "{valeur} œufs par semaine de ponte",
+      alimentParSemaine: "aliment {valeur} € par semaine (estimations)",
     },
     // Les clés sont les valeurs enregistrées ; les textes sont ce qui s'affiche.
     typesEspace: {

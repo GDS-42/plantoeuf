@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : S3 · Sessions consommées : 2 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : S3 · Sessions consommées : 3 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -3370,4 +3370,99 @@ Running 4 tests using 1 worker
 
   4 passed (2.4s)
 == T27 : vérification verte ==
+```
+
+## 13/10/2026 · T28 — Ponte et aliment par semaine
+
+- Session 3 / 11 du seuil d'alerte de S3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (règles de ponte et d'aliment, semaine du lundi au dimanche, `ponte_nulle_hors_periode` ; scénario S7 recalculé jour par jour par un script indépendant : 532 œufs par semaine, 84 kg et 50,40 € d'aliment sur 6 semaines).
+  - Remarques non bloquantes : `i18n.js` et `ui-poules.js` hors de la liste `fichiers` de T28 (résumé du lot, pour le test de bout en bout) ; la mention « (estimations) » du résumé couvre les deux fragments accolés.
+- Résultat : **vert**. `./verify.sh T28` → exit 0 (4 tests unitaires, 1 de bout en bout) ; `./verify.sh S3` → exit 0 (83 tests unitaires, 63 de bout en bout).
+- Fichiers : `src/calc.js` (`joursParSemaine`, `oeufsParSemaine`, `coutAlimentParSemaine`, `poulesParSemaine`), `src/ui-poules.js` et `src/i18n.js` (œufs d'une semaine de ponte et aliment d'une semaine dans la liste des lots), `test/poules.test.js`, `test/poules.e2e.js`.
+- Rouge d'abord : 4 tests unitaires rouges (`Calc.oeufsParSemaine is not a function`…), 1 de bout en bout rouge. Le test de bout en bout attendait d'abord « 50,4 € » : corrigé avant le code en « 50,4 / 50,4 / 50,4 € », la forme de toutes les fourchettes affichées dans les listes.
+- Commit : « T28 — Ponte et aliment par semaine ».
+
+Preuve (`./verify.sh T28`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 124407 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 65.184817
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 65.416112
+  type: 'test'
+  ...
+# Subtest: [T28] S7 : le lot pond 100 × 0,8 × 7 × 0,95 = 532 œufs par semaine, du lundi 6 avril au dimanche 10 mai
+ok 3 - [T28] S7 : le lot pond 100 × 0,8 × 7 × 0,95 = 532 œufs par semaine, du lundi 6 avril au dimanche 10 mai
+  ---
+  duration_ms: 12.784403
+  type: 'test'
+  ...
+# Subtest: [T28] S7 : l'aliment, 100 × 0,120 × 7 = 84 kg et 50,40 € par semaine, se compte de l'arrivée à la réforme : 6 semaines
+ok 4 - [T28] S7 : l'aliment, 100 × 0,120 × 7 = 84 kg et 50,40 € par semaine, se compte de l'arrivée à la réforme : 6 semaines
+  ---
+  duration_ms: 1.895721
+  type: 'test'
+  ...
+# Subtest: [T28] ponte_nulle_hors_periode : une semaine entamée ne compte que ses jours ; les lots s'additionnent ; un lot supprimé ne compte plus
+ok 5 - [T28] ponte_nulle_hors_periode : une semaine entamée ne compte que ses jours ; les lots s'additionnent ; un lot supprimé ne compte plus
+  ---
+  duration_ms: 0.598908
+  type: 'test'
+  ...
+# Subtest: [T28] chaque niveau de la fourchette se calcule avec les valeurs de ce niveau
+ok 6 - [T28] chaque niveau de la fourchette se calcule avec les valeurs de ce niveau
+  ---
+  duration_ms: 0.238438
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 4 - test/squelette.test.js
+  ---
+  duration_ms: 60.169241
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 5 - test/store.test.js
+  ---
+  duration_ms: 60.110093
+  type: 'test'
+  ...
+1..0
+# Subtest: test/ventes.test.js
+ok 6 - test/ventes.test.js
+  ---
+  duration_ms: 66.476854
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 177.209774
+== Tests de bout en bout (Playwright) ==
+
+Running 1 test using 1 worker
+
+  ✓  1 test/poules.e2e.js:109:1 › [T28] S7 : la liste des lots donne les œufs d'une semaine de ponte et le coût d'une semaine d'aliment (357ms)
+
+  1 passed (1.1s)
+== T28 : vérification verte ==
 ```
