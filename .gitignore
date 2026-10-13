@@ -5,3 +5,4 @@ playwright-report/
 .playwright/
 *.log
 .DS_Store
+.claude/worktrees/
