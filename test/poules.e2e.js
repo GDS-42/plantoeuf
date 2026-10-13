@@ -21,9 +21,11 @@ test("[T26] un lot enregistré dans le navigateur est retrouvé après réouvert
 
 // ---- T27 : panneau de saisie des lots ; « Œufs » parmi les produits d'un débouché (EX-25)
 
-const { choisir } = require("./outils.js");
+// P2 : chaque liste est sur sa page, chaque formulaire s'ouvre dans un tiroir (EX-30, EX-31).
+const { choisir, aller, ouvrir, PAGE_DE } = require("./outils.js");
 
 async function saisirLot(page, champs = {}) {
+  await ouvrir(page, "lots");
   const valeurs = {
     nom: "Lot 1", effectif: "100", arrivee: "2026-03-30", debutPonte: "2026-04-06", reforme: "2026-05-10",
     ponte: "0,8", pertes: "5", aliment: "120", prixAliment: "0,6", prixOeuf: "0,4", ...champs,
@@ -36,6 +38,11 @@ function ligneLot(page, texte) {
   return page.locator("#liste-lots li", { hasText: texte });
 }
 
+// P2 : une valeur de la ligne d'un lot, sous son libellé (« Œufs par semaine de ponte », « Aliment par semaine »).
+function faitDuLot(page, texte, cle) {
+  return ligneLot(page, texte).locator(`[data-fait="${cle}"]`);
+}
+
 test("[T27] un lot de poules se saisit, se liste, se modifie, se supprime et se retrouve après réouverture", async ({ context }) => {
   const page = await context.newPage();
   await page.goto("index.html");
@@ -43,7 +50,7 @@ test("[T27] un lot de poules se saisit, se liste, se modifie, se supprime et se 
   await expect(ligneLot(page, "Lot 1")).toContainText("100 poules");
   await expect(ligneLot(page, "Lot 1")).toContainText("06/04/2026");
   await expect(page.locator("#section-lots .compte")).toHaveText("1");
-  await expect(page.locator('.compte-raccourci[data-objet="lots"]')).toHaveText("1");
+  await expect(page.locator('#navigation .compte-nav[data-objet="lots"]')).toHaveText("1");
 
   await ligneLot(page, "Lot 1").locator('[data-action="modifier"]').click();
   await expect(page.locator("#section-lots")).toHaveAttribute("data-mode", "modification");
@@ -55,6 +62,7 @@ test("[T27] un lot de poules se saisit, se liste, se modifie, se supprime et se 
 
   const reouverte = await context.newPage();
   await reouverte.goto("index.html");
+  await aller(reouverte, "poules");
   await expect(ligneLot(reouverte, "Lot 1")).toContainText("120 poules");
   await ligneLot(reouverte, "Lot 1").locator('[data-action="supprimer"]').click();
   await expect(reouverte.locator("#liste-lots li")).toHaveCount(0);
@@ -74,10 +82,12 @@ test("[T27] des dates qui ne se suivent pas sont refusées avec un message, et r
 
 test("[T27] « Œufs » se choisit comme produit d'un débouché, et le débouché se lit en œufs", async ({ page }) => {
   await page.goto("index.html");
+  await ouvrir(page, "pointsVente");
   await page.locator("#pointVente-nom").fill("marché de Saint-Paul");
   await page.locator("#pointVente-distanceKm").fill("12");
   await page.locator("#pointVente-coutKm").fill("0,4");
   await page.locator("#pointVente-ajouter").click();
+  await ouvrir(page, "debouches");
   await choisir(page, "#debouche-pointVenteId", "marché de Saint-Paul");
   await choisir(page, "#debouche-produitId", "Œufs");
   await page.locator("#debouche-prix").fill("0,5");
@@ -90,12 +100,15 @@ test("[T27] « Œufs » se choisit comme produit d'un débouché, et le débouch
   expect(debouches[0].produitId).toBe("oeufs");
 });
 
-test("[T27] chaque raccourci mène à son panneau, titre visible sous la barre de raccourcis", async ({ page }) => {
+// P2 : la barre de raccourcis vers les panneaux est remplacée par la navigation entre les pages (EX-30).
+test("[T27] chaque lien de la navigation mène au panneau de l'objet, titre visible et non recouvert", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto("index.html");
   for (const objet of ["lots", "debouches", "espaces", "seances"]) {
-    await page.locator(`#raccourcis a[href="#section-${objet}"]`).click();
+    await page.locator(`#navigation a[data-page="${PAGE_DE[objet]}"]`).click();
     const titre = page.locator(`#section-${objet} h2`);
+    // Le panneau peut être plus bas dans sa page (Débouchés, sous Points de vente et Séances) : on y défile.
+    await titre.scrollIntoViewIfNeeded();
     await expect.poll(() => titre.evaluate((h2) => {
       const r = h2.getBoundingClientRect();
       const dessus = document.elementFromPoint(r.left + 4, r.top + r.height / 2);
@@ -109,8 +122,15 @@ test("[T27] chaque raccourci mène à son panneau, titre visible sous la barre d
 test("[T28] S7 : la liste des lots donne les œufs d'une semaine de ponte et le coût d'une semaine d'aliment", async ({ page }) => {
   await page.goto("index.html");
   await saisirLot(page);
-  await expect(ligneLot(page, "Lot 1")).toContainText("532 œufs par semaine de ponte");
-  await expect(ligneLot(page, "Lot 1")).toContainText("aliment 50,4 / 50,4 / 50,4 € par semaine");
+  // P2 : chaque valeur sous son libellé ; une fourchette aux trois valeurs égales s'écrit en un seul nombre.
+  const oeufs = faitDuLot(page, "Lot 1", "oeufs");
+  await expect(oeufs.locator("dt")).toHaveText("Œufs par semaine de ponte");
+  await expect(oeufs.locator("dd")).toHaveText("532");
+  await expect(oeufs.locator(".f-bornes")).toHaveCount(0);
+  const aliment = faitDuLot(page, "Lot 1", "aliment");
+  await expect(aliment.locator("dt")).toHaveText("Aliment par semaine");
+  await expect(aliment.locator("dd")).toHaveText("50,4 €");
+  await expect(aliment.locator(".f-bornes")).toHaveCount(0);
 });
 
 // ---- T29 : l'atelier poules dans le tableau économique (EX-27, scénarios S7 et S9)
@@ -118,6 +138,7 @@ test("[T28] S7 : la liste des lots donne les œufs d'une semaine de ponte et le 
 test("[T29] S7 et S9 : le tableau montre l'atelier poules sous son bandeau, et la marge de la ferme déduit l'aliment", async ({ page }) => {
   await page.goto("index.html");
   await saisirLot(page);
+  await aller(page, "synthese");
   await expect(page.locator("#tableau")).toBeVisible();
   await expect(page.locator('#tableau tbody tr.bandeau-atelier[data-atelier="poules"]')).toContainText(/atelier poules/i);
   const total = async (selecteur) => Number(await page.locator(`${selecteur} td[data-mois="total"] .mediane`).getAttribute("data-valeur"));
@@ -135,6 +156,9 @@ test("[T29] S7 et S9 : le tableau montre l'atelier poules sous son bandeau, et l
 test("[T29] les œufs se comptent en nombres entiers, et la première colonne nomme cultures et atelier", async ({ page }) => {
   await page.goto("index.html");
   await saisirLot(page, { ponte: "0,72", pertes: "8" });
+  await aller(page, "synthese");
+  // P2 (EX-34) : une mesure à la fois ; les nombres d'œufs se lisent en mesure « Volume ».
+  await page.locator('#tableau-mesures button[data-mesure="volume"]').click();
   const cases = page.locator('#tableau tbody tr[data-culture="oeufs"][data-mesure="volume"] td .mediane');
   await expect(cases.first()).toBeVisible();
   for (const texte of await cases.allTextContents()) expect(texte).toMatch(/^(—|[\d\s]+)$/);
@@ -146,22 +170,27 @@ test("[T29] les œufs se comptent en nombres entiers, et la première colonne no
 test("[T30] S8 : les œufs ont leur ligne dans la matrice, et le tableau ne compte que les œufs vendus", async ({ page }) => {
   await page.goto("index.html");
   await saisirLot(page);
+  await ouvrir(page, "pointsVente");
   await page.locator("#pointVente-nom").fill("marché de Saint-Paul");
   await page.locator("#pointVente-distanceKm").fill("12");
   await page.locator("#pointVente-coutKm").fill("0,4");
   await page.locator("#pointVente-ajouter").click();
+  await ouvrir(page, "seances");
   await choisir(page, "#seance-pointVenteId", "marché de Saint-Paul");
   await page.locator("#seance-jour").selectOption("6");
   await page.locator("#seance-debut").fill("2026-05-02");
   await page.locator("#seance-fin").fill("2026-06-27");
   await page.locator("#seance-frais").fill("15");
   await page.locator("#seance-ajouter").click();
+  await ouvrir(page, "debouches");
   await choisir(page, "#debouche-pointVenteId", "marché de Saint-Paul");
   await choisir(page, "#debouche-produitId", "Œufs");
   await page.locator("#debouche-prix").fill("0,5");
   await page.locator("#debouche-volumeParSeance").fill("300");
   await page.locator("#debouche-ajouter").click();
 
+  // Le tableau et la matrice sont sur la page Synthèse.
+  await aller(page, "synthese");
   const volume = page.locator('#tableau tbody tr[data-culture="oeufs"][data-mesure="volume"]');
   await expect(volume.locator("th").last()).toContainText(/vendus/i);
   expect(Number(await volume.locator('td[data-mois="total"] .mediane').getAttribute("data-valeur"))).toBeCloseTo(600, 6);
@@ -178,6 +207,11 @@ test("[T30] S8 : les œufs ont leur ligne dans la matrice, et le tableau ne comp
 test("[T32] la liste des lots compte les œufs en nombres entiers, et l'aide des débouchés parle aussi des œufs", async ({ page }) => {
   await page.goto("index.html");
   await saisirLot(page, { ponte: "0,6 / 0,72 / 0,8", pertes: "8" });
-  await expect(ligneLot(page, "Lot 1")).toContainText("386 / 464 / 515 œufs par semaine de ponte");
-  await expect(page.locator("#section-debouches .aide")).toContainText(/œuf/);
+  // P2 : la fourchette 386 / 464 / 515 s'affiche « 464 386 à 515 » (médiane, puis basse à haute), sous son libellé.
+  const oeufs = faitDuLot(page, "Lot 1", "oeufs");
+  await expect(oeufs.locator("dt")).toHaveText("Œufs par semaine de ponte");
+  await expect(oeufs.locator("dd")).toHaveText("464 386 à 515");
+  // P2 : l'aide du formulaire des débouchés est dans son tiroir.
+  await ouvrir(page, "debouches");
+  await expect(page.locator("#tiroir-debouches .aide")).toContainText(/œuf/);
 });

@@ -702,12 +702,220 @@
   /* ==== fin T35 ==== */
 
   /* ==== T36 — Ferme : lignes des listes, calendrier de culture, poules, sauvegarde ==== */
-  /* ==== fin T36 ==== */
+  /* Jetons des calendriers : la croissance en teinte légère, la récolte en teinte franche ; pour les lots,
+     l'avant-ponte en teinte légère et la ponte en teinte franche (jaune d'œuf). Chaque texte posé sur une
+     teinte a son jeton, au contraste d'au moins 4,5:1. */
+  :root {
+    --cal-croissance: #d5ebdc; --cal-croissance-bord: #a3cfb1; --cal-croissance-texte: #1d5733;
+    --cal-recolte: #2b7a4b; --cal-recolte-texte: #ffffff;
+    --cal-arrivee: #faf0d6; --cal-arrivee-bord: #e8cf8f; --cal-arrivee-texte: #6a4600;
+    --cal-ponte: #e9b949; --cal-ponte-texte: #2b1d00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --cal-croissance: #21392a; --cal-croissance-bord: #3c6b4d; --cal-croissance-texte: #a6e0bc;
+      --cal-recolte: #4caa72; --cal-recolte-texte: #07140c;
+      --cal-arrivee: #352a10; --cal-arrivee-bord: #6b5420; --cal-arrivee-texte: #f1cd7c;
+      --cal-ponte: #d9a640; --cal-ponte-texte: #1f1400;
+    }
+  }
+  :root[data-theme="dark"] {
+    --cal-croissance: #21392a; --cal-croissance-bord: #3c6b4d; --cal-croissance-texte: #a6e0bc;
+    --cal-recolte: #4caa72; --cal-recolte-texte: #07140c;
+    --cal-arrivee: #352a10; --cal-arrivee-bord: #6b5420; --cal-arrivee-texte: #f1cd7c;
+    --cal-ponte: #d9a640; --cal-ponte-texte: #1f1400;
+  }
 
-  /* ---- Sauvegarde */
-  .actions-sauvegarde { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem 1.5rem; padding: 0 1.25rem 1.25rem; }
-  #import-message { margin: 0 1.25rem 1.25rem; padding: 0.6rem 0.8rem; border-radius: var(--rayon-petit); background: var(--accent-doux); color: var(--accent-texte); font-weight: 600; }
+  /* ---- Lignes des listes de la ferme : le titre à gauche, les faits alignés en colonnes d'une ligne à l'autre. */
+  .liste-ferme { container: liste-ferme / inline-size; }
+  .liste-ferme > li { padding-block: 0.9rem; }
+  .liste-ferme .ligne-texte { grid-template-columns: minmax(0, var(--colonne-titre, 15rem)) minmax(0, 1fr); align-items: center; gap: 0.6rem 2rem; }
+  .insecable { white-space: nowrap; }
+  /* La tête d'une ligne : le titre seul sur sa ligne, puis ses puces et son sous-titre. */
+  .liste-ferme .ligne-entete, .liste-ferme .ligne-tete { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.5rem; min-width: 0; }
+  .liste-ferme .ligne-tete > .ligne-entete { display: contents; }
+  .liste-ferme .ligne-titre { flex: 1 0 100%; overflow-wrap: anywhere; }
+  .ligne-titre-second { font-weight: 400; color: var(--encre-douce); }
+  .ligne-sous-titre { color: var(--encre-pale); font-size: 0.875rem; }
+  .liste-ferme .ligne-faits { display: grid; gap: 0.5rem 1.5rem; grid-template-columns: var(--colonnes-faits, repeat(auto-fill, minmax(9rem, 1fr))); }
+  .liste-ferme .ligne-faits > div { align-content: start; }
+  .liste-ferme .ligne-faits dd { overflow-wrap: anywhere; }
+  .liste-ferme .f { white-space: normal; }
+  .liste-ferme .f-mediane, .liste-ferme .f-bornes { white-space: nowrap; }
+  .ligne-note, .ligne-vide { color: var(--encre-pale); }
+  .liste-ferme .ligne-texte > .sur-occupation { grid-column: 1 / -1; }
+  #liste-espaces { --colonnes-faits: 6.5rem minmax(0, 1fr); }
+  #liste-cultures, #liste-varietes { --colonne-titre: 14rem; --colonnes-faits: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr) 4.5rem; }
+  #liste-varietes [data-fait="rendement"] { grid-column: 1; }
+  #liste-varietes [data-fait="prix"] { grid-column: 2; }
+  #liste-varietes [data-fait="recolte"] { grid-column: 3; }
+  #liste-varietes [data-fait="pertes"] { grid-column: 4; }
+  #liste-plantations { --colonnes-faits: 5rem 7rem minmax(0, 15rem) minmax(0, 1fr); }
+  #liste-lots { --colonne-titre: 13rem; --colonnes-faits: minmax(0, 9.5rem) minmax(0, 1fr) minmax(10.5rem, 1.1fr) minmax(0, 1fr); }
+  .puce.bleue { background: var(--bleu-doux); color: var(--bleu-texte); }
+  /* La sur-occupation : une alerte qui se lit, icône et phrase, sous la ligne de l'espace. */
+  .liste-ferme .sur-occupation {
+    display: flex; align-items: flex-start; gap: 0.5rem; justify-self: start;
+    margin: 0.15rem 0 0; padding: 0.45rem 0.75rem; border-radius: var(--rayon-petit);
+    font-size: 0.875rem; line-height: 1.4;
+  }
+  .liste-ferme .sur-occupation .icone { width: 1.1rem; height: 1.1rem; margin-top: 0.05rem; }
+  @container liste-ferme (max-width: 48rem) {
+    .liste-ferme .ligne-texte { grid-template-columns: minmax(0, 1fr); }
+    .liste-ferme .ligne-faits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #liste-varietes .ligne-faits > div { grid-column: auto; }
+  }
+  @container liste-ferme (max-width: 30rem) {
+    .liste-ferme > li { align-items: flex-start; padding-right: 0.5rem; }
+    .liste-ferme .ligne-actions { flex-direction: column; }
+  }
+
+  /* ---- Calendriers : en-tête titré et légendé, une ligne par espace (ou par lot), des barres en deux teintes. */
+  .cal-entete { align-items: flex-start; gap: 0.75rem 2rem; padding-bottom: 0.9rem; }
+  .cal-titres { flex: 1 1 20rem; min-width: 0; }
+  .cal-saison { margin-top: 0.2rem; color: var(--encre-douce); font-size: 0.875rem; }
+  .cal-legende { list-style: none; margin: 0.15rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; color: var(--encre-douce); font-size: 0.8125rem; }
+  .cal-legende li { display: inline-flex; align-items: center; gap: 0.45rem; white-space: nowrap; }
+  .cal-pastille { flex: none; width: 1.15rem; height: 0.75rem; border-radius: 3px; }
+  .cal-pastille-croissance { background: var(--cal-croissance); box-shadow: inset 0 0 0 1px var(--cal-croissance-bord); }
+  .cal-pastille-recolte { background: var(--cal-recolte); }
+  .cal-pastille-arrivee { background: var(--cal-arrivee); box-shadow: inset 0 0 0 1px var(--cal-arrivee-bord); }
+  .cal-pastille-ponte { background: var(--cal-ponte); }
+  .cal-pastille-sur-occupation { background: var(--ambre-doux); box-shadow: inset 0 -3px 0 var(--ambre); }
+  .cal-pastille-aujourdhui { width: 2px; height: 1rem; border-radius: 1px; background: var(--bleu); }
+
+  .cal-racine { padding: 0 1.25rem 1.25rem; }
+  .cal-defilement { overflow-x: auto; overscroll-behavior-x: contain; border: 1px solid var(--trait); border-radius: var(--rayon-petit); }
+  .cal-grille {
+    --col: 9.5rem; --h: 1.6rem; --ecart: 0.375rem; --marge: 0.55rem; --largeur-mois: 4.25rem;
+    position: relative; isolation: isolate;
+    min-width: calc(var(--col) + var(--mois) * var(--largeur-mois));
+  }
+  .cal-ligne { display: grid; grid-template-columns: var(--col) minmax(0, 1fr); border-bottom: 1px solid var(--trait); }
+  .cal-ligne:last-child { border-bottom: 0; }
+  .cal-espace {
+    position: sticky; left: 0; z-index: 3; min-width: 0;
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0.1rem;
+    padding: 0.5rem 0.75rem; background: var(--surface); border-right: 1px solid var(--trait);
+  }
+  .cal-espace-nom { font-size: 0.9rem; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+  .cal-espace-detail { color: var(--encre-pale); font-size: 0.8rem; line-height: 1.3; font-variant-numeric: tabular-nums; }
+  .cal-alerte { margin-top: 0.25rem; padding-inline: 0.45rem; font-size: 0.75rem; }
+  .cal-alerte .icone { width: 0.85rem; height: 0.85rem; }
+  .cal-piste { position: relative; z-index: 1; min-height: calc(2 * var(--marge) + var(--sous-lignes, 1) * var(--h) + (var(--sous-lignes, 1) - 1) * var(--ecart)); }
+  /* L'axe des mois. */
+  .cal-axe { background: var(--surface-douce); border-bottom-color: var(--trait-fort); }
+  .cal-axe .cal-espace { background: var(--surface-douce); color: var(--encre-pale); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+  .cal-piste-mois { min-height: 2.1rem; }
+  .cal-mois { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding-left: 0.55rem; color: var(--encre-douce); font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+  /* Quadrillage des mois et repère du jour, sous les barres. */
+  .cal-quadrillage { position: absolute; z-index: 0; top: 0; bottom: 0; left: var(--col); right: 0; pointer-events: none; }
+  .cal-trait { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--trait); }
+  .cal-aujourdhui { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--bleu); }
+  .cal-aujourdhui::before { content: ""; position: absolute; top: 0.3rem; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--bleu); }
+  /* La sur-occupation, sur toute la hauteur de la ligne de l'espace, aux dates du dépassement. */
+  .cal-sur-occupation {
+    position: absolute; top: 0; bottom: 0;
+    background: color-mix(in srgb, var(--ambre) 16%, transparent);
+    box-shadow: inset 0 3px 0 var(--ambre), inset 0 -3px 0 var(--ambre);
+  }
+  /* Une barre : un bouton, de la mise en place à la fin de la récolte, en deux périodes séparées d'un filet. */
+  .cal-barre {
+    position: absolute; top: calc(var(--marge) + var(--sous-ligne, 0) * (var(--h) + var(--ecart))); height: var(--h);
+    display: flex; padding: 0; border: 0; border-radius: 5px; overflow: hidden;
+    background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+  }
+  .cal-barre:hover { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--encre-pale); }
+  .cal-barre[aria-current="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+  .cal-segment { display: flex; align-items: center; min-width: 0; height: 100%; }
+  .cal-segment:first-child:not(:only-child) { flex-grow: 0; flex-shrink: 0; margin-right: 2px; }
+  .cal-segment:last-child:not(:only-child) { flex: 1 1 0; }
+  .cal-segment:only-child { flex: 1 1 auto; }
+  .cal-croissance { background: var(--cal-croissance); box-shadow: inset 0 0 0 1px var(--cal-croissance-bord); color: var(--cal-croissance-texte); }
+  .cal-recolte { background: var(--cal-recolte); color: var(--cal-recolte-texte); }
+  .cal-arrivee { background: var(--cal-arrivee); box-shadow: inset 0 0 0 1px var(--cal-arrivee-bord); color: var(--cal-arrivee-texte); }
+  .cal-ponte { background: var(--cal-ponte); color: var(--cal-ponte-texte); }
+  .cal-croissance:first-child, .cal-arrivee:first-child { border-radius: 5px 0 0 5px; }
+  .cal-etiquette { flex: none; padding: 0 0.5rem; font-size: 0.8125rem; font-weight: 600; line-height: 1; white-space: nowrap; }
+  .cal-etiquette-second { font-weight: 400; }
+  .cal-etiquette.sans-second .cal-etiquette-second, .cal-etiquette.seul-second .cal-etiquette-nom { display: none; }
+  /* L'infobulle d'une barre : les valeurs en avant, les libellés discrets. */
+  .cal-infobulle {
+    position: fixed; z-index: 30; display: grid; gap: 0.3rem;
+    width: max-content; max-width: min(21rem, calc(100vw - 1rem)); padding: 0.75rem 0.9rem;
+    border: 1px solid var(--trait-fort); border-radius: var(--rayon-petit);
+    background: var(--surface); color: var(--encre); box-shadow: var(--ombre-haute);
+    font-size: 0.875rem; pointer-events: none;
+  }
+  .cal-info-titre { font-size: 0.95rem; font-weight: 650; }
+  .cal-info-second { font-weight: 400; color: var(--encre-douce); }
+  .cal-info-sous-titre { margin-bottom: 0.2rem; color: var(--encre-pale); }
+  .cal-info-ligne { display: flex; justify-content: space-between; align-items: baseline; gap: 1.25rem; }
+  .cal-info-libelle { color: var(--encre-pale); white-space: nowrap; }
+  .cal-info-valeur { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  .cal-info-valeur .f-bornes { font-size: 0.8rem; font-weight: 400; }
+  .cal-info-action { margin-top: 0.3rem; padding-top: 0.45rem; border-top: 1px solid var(--trait); color: var(--accent-texte); font-size: 0.8125rem; font-weight: 600; }
+  @media (max-width: 900px) {
+    .cal-racine { padding-inline: 0.75rem; }
+    .cal-grille { --col: 6.5rem; --largeur-mois: 3.6rem; }
+    .cal-espace { padding-inline: 0.6rem; }
+  }
+
+  /* ---- Tiroir des plantations : ce qu'il faut d'abord (EX-36). */
+  .prealable { display: flex; gap: 0.75rem; padding: 0.9rem 1rem; border-radius: var(--rayon); background: var(--bleu-doux); color: var(--bleu-texte); }
+  .prealable > .icone { margin-top: 0.1rem; }
+  .prealable > div { display: grid; gap: 0.55rem; min-width: 0; }
+  .prealable p { font-weight: 600; }
+  .prealable ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+  .prealable li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.2rem 0.75rem; }
+  .prealable-lien { display: inline-flex; align-items: center; gap: 0.3rem; color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+  .prealable-lien .icone { width: 1rem; height: 1rem; }
+
+  /* ---- Tiroir des plantations : la récolte que donnera la saisie en cours. */
+  .apercu { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.8rem 1rem; border: 1px solid var(--trait); border-radius: var(--rayon); background: var(--accent-doux); color: var(--accent-texte); }
+  .apercu > .icone { margin-top: 0.1rem; }
+  .apercu dl { margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 1.75rem; }
+  .apercu dl > div { display: grid; gap: 0.05rem; }
+  .apercu dt { font-size: 0.8rem; font-weight: 600; }
+  .apercu dd { margin: 0; color: var(--encre); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .apercu .f-bornes { font-weight: 400; }
+
+  /* ---- Page Sauvegarde : exporter, importer, bon à savoir. */
+  .sauvegarde-cartes { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); }
+  .sauvegarde-carte { display: flex; flex-direction: column; gap: 1.15rem; padding: 1.35rem 1.4rem 1.4rem; }
+  .sauvegarde-tete { display: flex; align-items: flex-start; gap: 0.95rem; }
+  .sauvegarde-tete > div { min-width: 0; }
+  .sauvegarde-tete h2 { font-size: 1.1rem; font-weight: 650; }
+  .sauvegarde-tete p { margin-top: 0.3rem; max-width: 62ch; color: var(--encre-douce); }
+  .sauvegarde-icone { display: grid; place-items: center; flex: none; width: 2.6rem; height: 2.6rem; border-radius: 0.75rem; background: var(--accent-doux); color: var(--accent-texte); }
+  .sauvegarde-icone.discrete { background: var(--bleu-doux); color: var(--bleu-texte); }
+  .sauvegarde-contenu { padding: 0.8rem 1rem; border: 1px solid var(--trait); border-radius: var(--rayon-petit); background: var(--surface-douce); }
+  .sauvegarde-contenu-titre { margin-bottom: 0.4rem; color: var(--encre-pale); font-size: 0.8rem; font-weight: 600; }
+  .sauvegarde-comptes { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 1.25rem; }
+  .sauvegarde-comptes li { color: var(--encre-douce); white-space: nowrap; }
+  .sauvegarde-comptes strong { color: var(--encre); font-weight: 650; font-variant-numeric: tabular-nums; }
+  .sauvegarde-actions { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
+  /* Le sélecteur de fichier : le champ natif reste là pour le clavier, son libellé fait le bouton. */
+  .champ-fichier { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; opacity: 0; overflow: hidden; clip-path: inset(50%); }
+  .zone-import { flex: 1 1 auto; display: flex; flex-direction: column; align-items: stretch; }
+  label.choix-fichier {
+    flex: 1 1 auto; min-height: 5.5rem;
+    display: flex; align-items: center; gap: 0.9rem; padding: 1rem 1.1rem;
+    border: 1.5px dashed var(--trait-fort); border-radius: var(--rayon); background: var(--surface-douce);
+    font-size: 1rem; font-weight: 400; cursor: pointer; transition: background-color 120ms, border-color 120ms;
+  }
+  label.choix-fichier:hover, .zone-import.survolee label.choix-fichier { border-color: var(--accent); background: var(--accent-doux); }
+  .champ-fichier:focus-visible + .choix-fichier { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .choix-fichier-icone { display: grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--surface); border: 1px solid var(--trait); color: var(--accent-texte); }
+  .choix-fichier-texte { display: grid; gap: 0.1rem; min-width: 0; }
+  .choix-fichier-action { color: var(--accent-texte); font-weight: 650; }
+  .sauvegarde-format { color: var(--encre-douce); font-size: 0.875rem; }
+  #import-message { display: flex; align-items: flex-start; gap: 0.5rem; margin: 0; padding: 0.65rem 0.85rem; border-radius: var(--rayon-petit); background: var(--accent-doux); color: var(--accent-texte); font-weight: 600; }
+  #import-message .icone { margin-top: 0.05rem; }
   #import-message.erreur { background: var(--rouge-doux); color: var(--rouge-texte); }
+  .sauvegarde-info { padding: 1.15rem 1.4rem; }
+  .sauvegarde-points { margin: 0.45rem 0 0; padding-left: 1.1rem; display: grid; gap: 0.35rem; color: var(--encre-douce); }
+  /* ==== fin T36 ==== */
 
   /* ---- Annonce passagère après un enregistrement */
   .annonce {
@@ -751,6 +959,10 @@
   <symbol id="i-fermer" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-alerte" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4.5M12 17.2v.3"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.8v.3"/></symbol>
+  <symbol id="i-fleche" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-valide" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.2 12.3l2.6 2.6 5-5.4"/></symbol>
+  <symbol id="i-importer" viewBox="0 0 24 24"><path d="M12 14.5v-11"/><path d="M7.5 8L12 3.5 16.5 8"/><path d="M4.5 16.5v2a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2"/></symbol>
+  <symbol id="i-fichier" viewBox="0 0 24 24"><path d="M14 3.5H7.5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V8z"/><path d="M14 3.5V8h4.5"/><path d="M9 13h6M9 16.5h4"/></symbol>
   <symbol id="i-logo" viewBox="0 0 32 32"><path d="M16 4.5c-5 0-9 7.2-9 13.2 0 5.6 3.9 9.8 9 9.8s9-4.2 9-9.8c0-6-4-13.2-9-13.2z" fill="var(--oeuf-doux)" stroke="var(--oeuf)" stroke-width="1.6"/><path d="M16 23.5v-7" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/><path d="M16 17c0-3.2 2-5.1 5.4-5.1 0 3.2-2.1 5.1-5.4 5.1z" fill="var(--accent)" stroke="none"/><path d="M16 18.6c0-2.5-1.7-4-4.4-4 0 2.5 1.7 4 4.4 4z" fill="var(--accent)" stroke="none"/></symbol>
 </svg>
 
@@ -972,6 +1184,9 @@
         <h1 tabindex="-1" data-texte="pages.espaces.titre"></h1>
         <p class="page-description" data-texte="pages.espaces.description"></p>
       </div>
+      <div class="page-actions">
+        <a id="espaces-voir-calendrier" class="bouton discret" href="#plantations"><svg class="icone" aria-hidden="true"><use href="#i-plantations"></use></svg><span data-texte="vueFerme.voirCalendrier"></span></a>
+      </div>
     </header>
     <section id="section-espaces" class="carte panneau" data-objet="espaces">
       <div class="carte-entete">
@@ -983,7 +1198,7 @@
         <svg class="icone" aria-hidden="true"><use href="#i-espaces"></use></svg>
         <p data-texte="espaces.aucun"></p>
       </div>
-      <ul id="liste-espaces" class="liste"></ul>
+      <ul id="liste-espaces" class="liste liste-ferme"></ul>
     </section>
   </section>
 
@@ -1005,7 +1220,7 @@
         <svg class="icone" aria-hidden="true"><use href="#i-cultures"></use></svg>
         <p data-texte="cultures.aucun"></p>
       </div>
-      <ul id="liste-cultures" class="liste"></ul>
+      <ul id="liste-cultures" class="liste liste-ferme"></ul>
     </section>
     <section id="section-varietes" class="carte panneau" data-objet="varietes">
       <div class="carte-entete">
@@ -1017,7 +1232,7 @@
         <svg class="icone" aria-hidden="true"><use href="#i-cultures"></use></svg>
         <p data-texte="varietes.aucun"></p>
       </div>
-      <ul id="liste-varietes" class="liste"></ul>
+      <ul id="liste-varietes" class="liste liste-ferme"></ul>
     </section>
   </section>
 
@@ -1029,8 +1244,15 @@
         <p class="page-description" data-texte="pages.plantations.description"></p>
       </div>
     </header>
-    <section id="carte-calendrier" class="carte" hidden>
-      <div id="calendrier"></div>
+    <section id="carte-calendrier" class="carte cal-carte" aria-labelledby="calendrier-titre" hidden>
+      <div class="carte-entete cal-entete">
+        <div class="cal-titres">
+          <h2 id="calendrier-titre" data-texte="vueFerme.calendrier.titre"></h2>
+          <p id="calendrier-saison" class="cal-saison"></p>
+        </div>
+        <ul id="calendrier-legende" class="cal-legende"></ul>
+      </div>
+      <div id="calendrier" class="cal-racine" role="group" data-texte-aria="vueFerme.calendrier.description"></div>
     </section>
     <section id="section-plantations" class="carte panneau" data-objet="plantations">
       <div class="carte-entete">
@@ -1042,7 +1264,7 @@
         <svg class="icone" aria-hidden="true"><use href="#i-plantations"></use></svg>
         <p data-texte="plantations.aucun"></p>
       </div>
-      <ul id="liste-plantations" class="liste"></ul>
+      <ul id="liste-plantations" class="liste liste-ferme"></ul>
     </section>
   </section>
 
@@ -1110,7 +1332,16 @@
         <svg class="icone" aria-hidden="true"><use href="#i-poules"></use></svg>
         <p data-texte="poules.aucun"></p>
       </div>
-      <ul id="liste-lots" class="liste"></ul>
+      <ul id="liste-lots" class="liste liste-ferme"></ul>
+    </section>
+    <section id="carte-calendrier-lots" class="carte cal-carte cal-lots" aria-labelledby="calendrier-lots-titre" hidden>
+      <div class="carte-entete cal-entete">
+        <div class="cal-titres">
+          <h2 id="calendrier-lots-titre" data-texte="vueFerme.calendrierLots.titre"></h2>
+        </div>
+        <ul id="calendrier-lots-legende" class="cal-legende"></ul>
+      </div>
+      <div id="calendrier-lots" class="cal-racine" role="group" data-texte-aria="vueFerme.calendrierLots.description"></div>
     </section>
   </section>
 
@@ -1122,18 +1353,52 @@
         <p class="page-description" data-texte="pages.sauvegarde.description"></p>
       </div>
     </header>
-    <section id="section-sauvegarde" class="carte panneau">
-      <div class="carte-entete">
-        <h2 data-texte="sauvegarde.titre"></h2>
+    <div class="sauvegarde-cartes">
+      <section id="section-sauvegarde" class="carte panneau sauvegarde-carte" aria-labelledby="sauvegarde-exporter-titre">
+        <div class="sauvegarde-tete">
+          <span class="sauvegarde-icone"><svg class="icone" aria-hidden="true"><use href="#i-sauvegarde"></use></svg></span>
+          <div>
+            <h2 id="sauvegarde-exporter-titre" data-texte="vueFerme.sauvegarde.exporterTitre"></h2>
+            <p data-texte="vueFerme.sauvegarde.exporterTexte"></p>
+          </div>
+        </div>
+        <div class="sauvegarde-contenu">
+          <p class="sauvegarde-contenu-titre" data-texte="vueFerme.sauvegarde.contenu"></p>
+          <ul id="sauvegarde-contenu" class="sauvegarde-comptes"></ul>
+        </div>
+        <div class="sauvegarde-actions">
+          <button id="exporter" type="button" class="bouton principal"><svg class="icone" aria-hidden="true"><use href="#i-sauvegarde"></use></svg><span data-texte="sauvegarde.exporter"></span></button>
+        </div>
+      </section>
+      <section id="section-import" class="carte sauvegarde-carte" aria-labelledby="sauvegarde-importer-titre">
+        <div class="sauvegarde-tete">
+          <span class="sauvegarde-icone"><svg class="icone" aria-hidden="true"><use href="#i-importer"></use></svg></span>
+          <div>
+            <h2 id="sauvegarde-importer-titre" data-texte="vueFerme.sauvegarde.importerTitre"></h2>
+            <p data-texte="vueFerme.sauvegarde.importerTexte"></p>
+          </div>
+        </div>
+        <div id="zone-import" class="sauvegarde-actions zone-import">
+          <input id="importer" class="champ-fichier" type="file" accept=".json,application/json" aria-describedby="importer-format">
+          <label for="importer" class="choix-fichier">
+            <span class="choix-fichier-icone"><svg class="icone" aria-hidden="true"><use href="#i-fichier"></use></svg></span>
+            <span class="choix-fichier-texte">
+              <span class="choix-fichier-action" data-texte="vueFerme.sauvegarde.choisir"></span>
+              <span id="importer-format" class="sauvegarde-format" data-texte="vueFerme.sauvegarde.format"></span>
+            </span>
+          </label>
+        </div>
+        <p id="import-message" role="status" hidden></p>
+      </section>
+    </div>
+    <section class="carte sauvegarde-info" aria-labelledby="sauvegarde-info-titre">
+      <div class="sauvegarde-tete">
+        <span class="sauvegarde-icone discrete"><svg class="icone" aria-hidden="true"><use href="#i-info"></use></svg></span>
+        <div>
+          <h2 id="sauvegarde-info-titre" data-texte="vueFerme.sauvegarde.bonASavoir"></h2>
+          <ul id="sauvegarde-points" class="sauvegarde-points"></ul>
+        </div>
       </div>
-      <p class="carte-corps explication" data-texte="sauvegarde.explication"></p>
-      <div class="actions-sauvegarde">
-        <button id="exporter" type="button" class="bouton principal"><svg class="icone" aria-hidden="true"><use href="#i-sauvegarde"></use></svg><span data-texte="sauvegarde.exporter"></span></button>
-        <label><span data-texte="sauvegarde.importer"></span>
-          <input id="importer" type="file" accept=".json,application/json">
-        </label>
-      </div>
-      <p id="import-message" role="status" hidden></p>
     </section>
   </section>
 </main>
@@ -1252,6 +1517,7 @@
       <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
     </header>
     <div class="tiroir-corps">
+      <div id="plantation-prealable" class="large prealable" hidden></div>
       <label class="large"><span data-texte="plantations.variete"></span>
         <select id="plantation-varieteId" data-champ="varieteId" required></select>
       </label>
@@ -1264,6 +1530,7 @@
       <label><span data-texte="plantations.date"></span>
         <input id="plantation-date" data-champ="date" type="date" required>
       </label>
+      <div id="plantation-apercu" class="large apercu" aria-live="polite" hidden></div>
       <p id="plantation-erreur" class="erreur" role="alert" hidden></p>
     </div>
     <footer class="tiroir-pied">
@@ -1481,6 +1748,7 @@
     saisie.afficher(donnees);
     ventes.afficher(donnees);
     poules.afficher(donnees);
+    sauvegarde.afficher(donnees);
     const tableau = Calc.tableau(donnees);
     UiTableau.afficher(tableau);
     UiSynthese.afficher(tableau, donnees);
