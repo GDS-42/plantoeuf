@@ -268,6 +268,20 @@
     return { mois, lignes, poules, total };
   }
 
+  // P2 (EX-33) : les chiffres clés de la saison, tirés du tableau — chiffre d'affaires (et sa part des
+  // cultures et des œufs), coûts déduits (séances de vente et aliment des poules, chacun et leur somme),
+  // marge de la ferme ; les œufs s'il y a des poules (vendus s'ils ont un débouché, sinon toute la ponte).
+  // Un coût ou une part absents valent null.
+  function chiffresCles(t) {
+    const { ca, couts, aliment, marge } = t.total.total;
+    const cultures = t.lignes.reduce((cumul, ligne) => somme(cumul, ligne.total.ca), fourchetteNulle());
+    const seances = couts.haute > 0 ? couts : null;
+    const atelier = aliment && aliment.haute > 0 ? aliment : null;
+    const total = [seances, atelier].filter(Boolean).reduce(somme, fourchetteNulle());
+    const oeufs = t.poules ? { volume: t.poules.total.volume, vendus: t.poules.aDebouche, effectif: t.poules.effectif, lots: t.poules.lots } : null;
+    return { ca, parts: { cultures, oeufs: t.poules ? t.poules.total.ca : null }, couts: { total, seances, aliment: atelier }, marge, oeufs };
+  }
+
   // ---- Sur-occupation des espaces (EX-06)
 
   // Une plantation occupe son espace du semis ou de la plantation à la fin de sa récolte, incluses.
@@ -669,6 +683,7 @@
     productionSurPeriode,
     productionHebdomadaire,
     tableau,
+    chiffresCles,
     surOccupations,
   };
 });

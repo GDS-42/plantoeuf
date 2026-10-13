@@ -328,6 +328,173 @@
   .graphique { padding: 0 1.25rem 1.25rem; }
 
   /* ==== T34 — Synthèse : chiffres clés, graphique, tableau « Par culture » ==== */
+  /* Jetons de la synthèse. Graphique : vert pour le chiffre d'affaires, bleu pour la marge (paire validée
+     pour les daltonismes et à 3:1 au moins sur la carte, dans les deux thèmes). Teintes des cases : une
+     rampe d'un seul vert, du fond neutre au vert doux ; le texte y garde 4,5:1. */
+  :root {
+    --graphe-ca: #3a8a5a; --graphe-marge: #2f62a6; --graphe-cout: #6b776f;
+    --teinte-1: #f0f7f2; --teinte-2: #e3f0e7; --teinte-3: #d6e9dc; --teinte-4: #c9e2d1; --teinte-5: #bcdbc6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --graphe-ca: #43a36b; --graphe-marge: #5b8cdb; --graphe-cout: #8d9a92;
+      --teinte-1: #19281f; --teinte-2: #1c3125; --teinte-3: #1f3a2b; --teinte-4: #224331; --teinte-5: #254c37;
+    }
+  }
+  :root[data-theme="dark"] {
+    --graphe-ca: #43a36b; --graphe-marge: #5b8cdb; --graphe-cout: #8d9a92;
+    --teinte-1: #19281f; --teinte-2: #1c3125; --teinte-3: #1f3a2b; --teinte-4: #224331; --teinte-5: #254c37;
+  }
+
+  /* Chiffres clés : une tuile par chiffre, la médiane en grand, la fourchette dessous et en repère. */
+  #tuiles { gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14.5rem), 1fr)); }
+  .tuile {
+    display: flex; flex-direction: column; min-width: 0;
+    padding: 1rem 1.15rem 1.1rem;
+    background: var(--surface); border: 1px solid var(--trait); border-radius: var(--rayon); box-shadow: var(--ombre);
+  }
+  .tuile[data-chiffre="ca"] { --tuile-couleur: var(--graphe-ca); }
+  .tuile[data-chiffre="couts"] { --tuile-couleur: var(--graphe-cout); }
+  .tuile[data-chiffre="marge"] { --tuile-couleur: var(--graphe-marge); }
+  .tuile[data-chiffre="oeufs"] { --tuile-couleur: var(--oeuf); }
+  .tuile-titre { display: flex; align-items: center; gap: 0.5rem; color: var(--encre-douce); font: 600 0.875rem/1.3 var(--police); }
+  .tuile-pastille { width: 0.625rem; height: 0.625rem; flex: none; border-radius: 3px; background: var(--tuile-couleur); }
+  .tuile-valeur { margin-top: 0.45rem; font: 700 1.875rem/1.1 var(--police-titre); letter-spacing: -0.02em; white-space: nowrap; }
+  .tuile.negatif .tuile-valeur { color: var(--rouge-texte); }
+  .tuile-bornes { margin-top: 0.3rem; color: var(--encre-pale); font-size: 0.875rem; }
+  .tuile-bornes .basse, .tuile-bornes .haute { color: var(--encre-douce); font-weight: 600; white-space: nowrap; }
+  .tuile-detail { display: grid; gap: 0.2rem; margin: 0.85rem 0 0; padding-top: 0.6rem; border-top: 1px solid var(--trait); font-size: 0.8125rem; }
+  .tuile-detail > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 0.6rem; }
+  .tuile-detail dt { color: var(--encre-douce); }
+  .tuile-detail dd { margin: 0; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .tuile-detail dd .mediane { font-weight: 650; }
+  .tuile-detail .detail-bornes { color: var(--encre-pale); }
+  .tuile-note { margin-top: 0.85rem; padding-top: 0.6rem; border-top: 1px solid var(--trait); color: var(--encre-pale); font-size: 0.8125rem; }
+  .tuile-repere { position: relative; height: 14px; margin-top: 0.75rem; }
+  .tuile-repere > span { position: absolute; }
+  .repere-piste { left: 0; right: 0; top: 5px; height: 4px; border-radius: 2px; background: var(--trait); }
+  .repere-fourchette { top: 3px; height: 8px; min-width: 4px; border-radius: 4px; background: var(--tuile-couleur); opacity: 0.45; }
+  .repere-mediane { top: 0; width: 4px; height: 14px; margin-left: -2px; border-radius: 2px; background: var(--tuile-couleur); box-shadow: 0 0 0 2px var(--surface); }
+  .repere-zero { top: -3px; width: 1px; height: 20px; background: var(--encre-pale); }
+
+  /* Graphique mois par mois. */
+  .graphique-entete { padding-bottom: 0.5rem; }
+  .graphique-resume { margin-top: 0.3rem; max-width: 80ch; color: var(--encre-douce); font-size: 0.9375rem; }
+  #graphique.graphique { padding: 0 1.25rem 1rem; }
+  .legende-graphique { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 1.25rem; margin-bottom: 0.75rem; font-size: 0.875rem; }
+  .cle-legende { display: inline-flex; align-items: center; gap: 0.45rem; color: var(--encre); font-weight: 600; }
+  .legende-lecture { color: var(--encre-pale); font-size: 0.8125rem; }
+  .graphique-zone { position: relative; }
+  .graphique-svg { display: block; overflow: visible; border-radius: var(--rayon-petit); }
+  .graphique-svg:focus-visible { outline-offset: 4px; }
+  .graphique-svg text { font-family: var(--police); }
+  .graduation { fill: var(--encre-pale); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .etiquette-mois { fill: var(--encre-douce); font-size: 13px; font-weight: 500; }
+  .etiquette-annee { fill: var(--encre-pale); font-size: 12px; }
+  .grille-graphique line { stroke: var(--trait); stroke-width: 1; shape-rendering: crispEdges; }
+  .ligne-zero { stroke: var(--encre-pale); stroke-width: 1; shape-rendering: crispEdges; }
+  .surlignage { fill: var(--surface-survol); opacity: 0; transition: opacity 120ms; }
+  .surlignage.actif { opacity: 1; }
+  .fourchette-ca, .cle-fourchette-ca { fill: var(--graphe-ca); fill-opacity: 0.22; }
+  .barre-ca, .cle-barre-ca { fill: var(--graphe-ca); }
+  .bande-marge, .cle-bande-marge { fill: var(--graphe-marge); fill-opacity: 0.13; }
+  .ligne-marge, .cle-ligne-marge { fill: none; stroke: var(--graphe-marge); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .point-marge, .cle-point-marge { fill: var(--graphe-marge); stroke: var(--surface); stroke-width: 2; }
+  .zone-survol { fill: transparent; }
+  .infobulle {
+    position: absolute; z-index: 2; min-width: 14rem; padding: 0.65rem 0.85rem;
+    background: var(--surface); color: var(--encre); border: 1px solid var(--trait-fort); border-radius: var(--rayon-petit);
+    box-shadow: var(--ombre-haute); font-size: 0.875rem; pointer-events: none;
+  }
+  .infobulle.sous-graphique { position: static; min-width: 0; margin-top: 0.5rem; box-shadow: none; background: var(--surface-douce); border-color: var(--trait); }
+  .infobulle-titre { margin-bottom: 0.45rem; font-weight: 700; }
+  .infobulle dl { display: grid; gap: 0.45rem; margin: 0; }
+  .infobulle-ligne { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+  .infobulle dt { display: flex; align-items: center; gap: 0.45rem; color: var(--encre-douce); }
+  .infobulle dd { display: grid; justify-items: end; margin: 0; font-variant-numeric: tabular-nums; }
+  .infobulle dd strong { font-size: 0.9375rem; }
+  .infobulle dd span { color: var(--encre-pale); font-size: 0.8125rem; white-space: nowrap; }
+  .infobulle-cle { flex: none; width: 0.7rem; border-radius: 2px; }
+  .infobulle-cle.cle-ca { height: 0.7rem; background: var(--graphe-ca); }
+  .infobulle-cle.cle-marge { height: 3px; background: var(--graphe-marge); }
+
+  /* Tableau « Par culture » : une mesure à la fois, choisie au-dessus. */
+  #section-tableau .vue-entete { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 0.75rem 2rem; }
+  #section-tableau .vue-titres { flex: 1 1 26rem; display: grid; gap: 0.3rem; min-width: 0; }
+  #section-tableau .legende { max-width: 78ch; }
+  .vue-outils { display: grid; justify-items: end; gap: 0.5rem; }
+  .bascule { display: inline-flex; border: 1px solid var(--trait-fort); border-radius: var(--rayon-petit); background: var(--surface); overflow: hidden; }
+  .bascule button {
+    min-height: 2.25rem; padding: 0.4rem 0.9rem; border: 0; border-left: 1px solid var(--trait-fort);
+    background: transparent; color: var(--encre-douce); font-size: 0.875rem; font-weight: 600; white-space: nowrap; cursor: pointer;
+  }
+  .bascule button:first-child { border-left: 0; }
+  .bascule button:hover { background: var(--surface-survol); color: var(--encre); }
+  .bascule button[aria-pressed="true"] { background: var(--accent-doux); color: var(--accent-texte); }
+  .bascule button:focus-visible { outline-offset: -3px; }
+  .echelle-teinte { display: flex; align-items: center; gap: 0.4rem; color: var(--encre-pale); font-size: 0.75rem; }
+  .echelle-cases { display: inline-flex; gap: 2px; }
+  .echelle-cases i { width: 1rem; height: 0.7rem; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--trait); }
+  .echelle-cases i[data-teinte="1"] { background: var(--teinte-1); }
+  .echelle-cases i[data-teinte="2"] { background: var(--teinte-2); }
+  .echelle-cases i[data-teinte="3"] { background: var(--teinte-3); }
+  .echelle-cases i[data-teinte="4"] { background: var(--teinte-4); }
+  .echelle-cases i[data-teinte="5"] { background: var(--teinte-5); }
+  #tableau-vide .bouton { margin-top: 0.25rem; }
+
+  #tableau { width: 100%; }
+  #tableau th, #tableau td { padding: 0.5rem 0.65rem; vertical-align: middle; }
+  #tableau thead th { padding-block: 0.6rem 0.5rem; vertical-align: bottom; }
+  #tableau .entete-titre { display: block; color: var(--encre-douce); font-size: 0.8125rem; font-weight: 650; }
+  #tableau .entete-unite { display: block; color: var(--encre-pale); font-size: 0.75rem; font-weight: 500; }
+  #tableau thead .col-nom { text-align: left; }
+  #tableau tbody th[scope="row"], #tableau tfoot th[scope="row"] { min-width: 9.5rem; max-width: 14rem; white-space: normal; box-shadow: inset -1px 0 0 var(--trait); }
+  #tableau thead th:first-child { box-shadow: inset -1px 0 0 var(--trait); }
+  #tableau .ligne-nom { display: block; line-height: 1.3; }
+  #tableau .ligne-precision { display: block; color: var(--encre-pale); font-size: 0.75rem; font-weight: 500; }
+  #tableau td { min-width: 4.75rem; }
+  #tableau td .mediane { color: var(--encre); font-size: 0.9375rem; }
+  #tableau td .bornes { font-size: 0.75rem; white-space: nowrap; }
+  #tableau td.nul .mediane { color: var(--encre-pale); }
+  #tableau td.negatif .mediane { color: var(--rouge-texte); }
+  #tableau td[data-teinte="1"] { background: var(--teinte-1); }
+  #tableau td[data-teinte="2"] { background: var(--teinte-2); }
+  #tableau td[data-teinte="3"] { background: var(--teinte-3); }
+  #tableau td[data-teinte="4"] { background: var(--teinte-4); }
+  #tableau td[data-teinte="5"] { background: var(--teinte-5); }
+  #tableau td:not([data-teinte="0"]) .bornes { color: var(--encre-douce); }
+  /* Le total de la saison, figé à droite et mis à part. */
+  #tableau .col-total { position: sticky; right: 0; z-index: 2; min-width: 6.25rem; background: var(--surface-douce); box-shadow: inset 1px 0 0 var(--trait-fort); }
+  #tableau thead .col-total { z-index: 4; }
+  #tableau td.col-total .mediane { font-weight: 700; }
+  #tableau td.col-total .bornes { color: var(--encre-douce); }
+  /* Bandeaux de l'atelier poules et de toute la ferme : leur titre reste à gauche au défilement. */
+  #tableau tr.bandeau-atelier > th, #tableau tr.pied-titre > th { padding-block: 0.4rem; }
+  #tableau tr.bandeau-atelier > th > span, #tableau tr.pied-titre > th > span { position: sticky; left: 0.75rem; display: inline-block; }
+  #tableau tr.pied-titre > th { color: var(--encre-douce); font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; border-top: 1px solid var(--trait-fort); }
+  #tableau tfoot th[scope="row"] { color: var(--encre-douce); font-weight: 600; }
+  #tableau tfoot tr.pied-marge > * { border-top: 1px solid var(--trait-fort); }
+  #tableau tfoot tr.pied-marge th { color: var(--encre); font-weight: 700; }
+  #tableau tfoot tr.pied-marge td .mediane { font-weight: 700; }
+  #tableau tfoot tr:last-child > * { border-bottom: 0; }
+
+  @media (max-width: 600px) {
+    #tuiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+    .tuile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .tuile { padding: 0.85rem 0.9rem 0.95rem; }
+    .tuile-valeur { font-size: 1.4rem; }
+    .tuile-bornes, .tuile-note { font-size: 0.8125rem; }
+    .tuile-detail > div { display: grid; }
+    .tuile-detail dd { white-space: normal; }
+    .vue-outils { justify-items: stretch; width: 100%; }
+    .bascule { width: 100%; }
+    .bascule button { flex: 1 1 auto; padding-inline: 0.5rem; }
+    #section-tableau.vue { padding-inline: 0.85rem; }
+    #tableau th, #tableau td { padding-inline: 0.5rem; }
+    #tableau tbody th[scope="row"], #tableau tfoot th[scope="row"] { min-width: 6.5rem; max-width: 7.5rem; }
+    #tableau td { min-width: 4.5rem; }
+    #tableau .col-total { position: static; }
+  }
   /* ==== fin T34 ==== */
 
   /* ==== T35 — Ventes : offre et demande, points de vente, listes des ventes ==== */
@@ -687,10 +854,15 @@
       </div>
     </section>
 
-    <div id="tuiles" class="tuiles"></div>
+    <section id="tuiles" class="tuiles" data-texte-aria="vueSynthese.chiffres.titre"></section>
 
-    <section id="carte-graphique" class="carte" hidden>
-      <div class="carte-entete"><h2 id="graphique-titre"></h2></div>
+    <section id="carte-graphique" class="carte" aria-labelledby="graphique-titre" hidden>
+      <div class="carte-entete graphique-entete">
+        <div>
+          <h2 id="graphique-titre" data-texte="vueSynthese.graphique.titre"></h2>
+          <p id="graphique-resume" class="graphique-resume"></p>
+        </div>
+      </div>
       <div id="graphique" class="graphique"></div>
     </section>
 
@@ -701,12 +873,32 @@
         <button type="button" role="tab" id="onglet-points" aria-controls="section-points" aria-selected="false" data-texte="projection.pointsVente"></button>
       </div>
       <section id="section-tableau" class="vue" role="tabpanel" aria-labelledby="onglet-tableau">
-        <h2 data-texte="tableau.titre"></h2>
-        <p id="tableau-legende" class="legende" data-texte="tableau.legende"></p>
-        <p id="tableau-vide" class="legende" data-texte="tableau.aucun"></p>
+        <div class="vue-entete">
+          <div class="vue-titres">
+            <h2 id="tableau-titre" data-texte="tableau.titre"></h2>
+            <p id="tableau-legende" class="legende"></p>
+          </div>
+          <div id="tableau-mesures" class="vue-outils">
+            <div class="bascule" role="group" data-texte-aria="vueSynthese.mesures.titre">
+              <button type="button" data-mesure="ca" aria-pressed="true" data-texte="vueSynthese.mesures.ca"></button>
+              <button type="button" data-mesure="marge" aria-pressed="false" data-texte="vueSynthese.mesures.marge"></button>
+              <button type="button" data-mesure="volume" aria-pressed="false" data-texte="vueSynthese.mesures.volume"></button>
+            </div>
+            <p class="echelle-teinte" aria-hidden="true">
+              <span data-texte="vueSynthese.teinte.moins"></span>
+              <span class="echelle-cases"><i data-teinte="1"></i><i data-teinte="2"></i><i data-teinte="3"></i><i data-teinte="4"></i><i data-teinte="5"></i></span>
+              <span data-texte="vueSynthese.teinte.plus"></span>
+            </p>
+          </div>
+        </div>
+        <div id="tableau-vide" class="etat-vide">
+          <svg class="icone" aria-hidden="true"><use href="#i-synthese"></use></svg>
+          <p data-texte="tableau.aucun"></p>
+          <button id="tableau-vide-action" type="button" class="bouton" data-ouvrir="plantations"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span></span></button>
+        </div>
         <div class="defilement" id="tableau-defilement">
           <table id="tableau" class="grille">
-            <caption class="pour-lecteur-d-ecran" data-texte="tableau.legende"></caption>
+            <caption class="pour-lecteur-d-ecran" data-texte="vueSynthese.caption"></caption>
             <thead></thead>
             <tbody></tbody>
             <tfoot></tfoot>

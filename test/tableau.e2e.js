@@ -48,7 +48,7 @@ test("[T05] sans plantation, le tableau annonce qu'aucune récolte n'est prévue
   await expect(page.locator("#tableau")).toBeHidden();
 });
 
-const { ajouterEspace, ajouterPlantation } = require("./outils.js");
+const { aller, modifier, ajouterEspace, ajouterPlantation } = require("./outils.js");
 
 // ---- T06 — EX-05 : le tableau se recalcule à chaque modification du plan, sans autre action.
 
@@ -72,7 +72,7 @@ test("[T06] changer un prix, ajouter ou supprimer une plantation recalcule le ta
   await page.goto("index.html");
   await saisirS2(page);
 
-  await page.locator("#liste-cultures li", { hasText: "courgette" }).locator('[data-action="modifier"]').click();
+  await modifier(page, "cultures", "courgette");
   await page.locator("#culture-prix").fill("4");
   await page.locator("#culture-ajouter").click();
   await expect.poll(() => caMai(page)).toBeCloseTo(168.75 * 4, 6);
@@ -80,8 +80,10 @@ test("[T06] changer un prix, ajouter ou supprimer une plantation recalcule le ta
   await ajouterPlantation(page, { variete: "Black Beauty", espace: "planche 1", surface: 100, date: "2026-03-01" });
   await expect.poll(() => caMai(page)).toBeCloseTo(2 * 168.75 * 4, 6);
 
+  await aller(page, "plantations");
   const supprimer = page.locator('#liste-plantations [data-action="supprimer"]');
   while (await supprimer.count()) await supprimer.first().click();
+  await aller(page, "synthese");
   await expect(page.locator("#tableau")).toBeHidden();
   await expect(page.locator("#tableau-vide")).toBeVisible();
 });

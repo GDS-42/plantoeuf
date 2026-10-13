@@ -3,6 +3,7 @@
 // tableau change, puis exporter et réimporter.
 const fs = require("node:fs");
 const { test, expect } = require("@playwright/test");
+const { aller, modifier } = require("./outils.js");
 
 async function caTotalMedian(page) {
   const valeur = await page.locator('#tableau tfoot tr[data-mesure="ca"] td[data-mois="total"] .mediane').getAttribute("data-valeur");
@@ -10,6 +11,7 @@ async function caTotalMedian(page) {
 }
 
 async function exporter(page) {
+  await aller(page, "sauvegarde");
   const [telechargement] = await Promise.all([page.waitForEvent("download"), page.locator("#exporter").click()]);
   return fs.readFileSync(await telechargement.path(), "utf8");
 }
@@ -28,7 +30,7 @@ test("[T10] parcours de la tranche : ferme d'exemple, plantation modifiée, tabl
   expect(avant).toBeGreaterThan(0);
 
   const courgette = page.locator("#liste-plantations li", { hasText: "Courgette" });
-  await courgette.locator('[data-action="modifier"]').click();
+  await modifier(page, "plantations", "Courgette");
   await page.locator("#plantation-surface").fill("15");
   await page.locator("#plantation-ajouter").click();
   await expect.poll(() => caTotalMedian(page)).toBeLessThan(avant);
@@ -39,6 +41,7 @@ test("[T10] parcours de la tranche : ferme d'exemple, plantation modifiée, tabl
 
   const autre = await browser.newPage();
   await autre.goto("index.html");
+  await aller(autre, "sauvegarde");
   await autre.locator("#importer").setInputFiles({ name: "plantoeuf.json", mimeType: "application/json", buffer: Buffer.from(fichier) });
   await expect(autre.locator("#liste-plantations li")).toHaveCount(10);
   await expect(autre.locator("#liste-plantations li", { hasText: "Courgette" })).toContainText("15 m²");
