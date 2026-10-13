@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : S3 · Sessions consommées : 0 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : S3 · Sessions consommées : 1 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -3193,3 +3193,100 @@ Running 57 tests using 2 workers
 
 - Spec, runbook et tâches (T26 à T32, seuil de 11 sessions) dans `docs/specs/S3/`. Le comptage réel des œufs (SaisieJour du brief) est reporté avec le réel de S1 et S2.
 - Décisions de l'humain du 13/10/2026 : format exporté en version 3 ; la ligne du test `[T08]` et les trois assertions des tests `[T18]` qui fixaient « version 2 » comparent désormais à la version courante, rien d'autre ne change dans ces tests ; l'agent avance seul jusqu'à la livraison, sans poser de question, et consigne ses décisions.
+
+## 13/10/2026 · T26 — Modèle : lots de poules ; format exporté en version 3
+
+- Session 1 / 11 du seuil d'alerte de S3.
+- Modèle : Opus 5.5, effort élevé · **Reprises : 1** · Relecteur : Fable, contexte frais.
+  - 1er passage → **ÉCART** : les nouveaux tests de T26 fixaient « version 3 » en dur, contre la phrase de la spec « Les prochains changements de version ne toucheront plus aucun test ». Reprise : ils comparent à `Store.VERSION` (et vérifient `Store.VERSION >= 3`).
+  - 2e passage → **CONFORME** (modèle du lot, contrainte des dates à l'ajout, à la modification et à l'import, migration 1 → 2 → 3, refus d'une version plus récente, seules les quatre lignes de test autorisées par l'humain changent).
+  - Remarque non bloquante : le store n'impose pas les champs (comme en N1 et N2) ; le panneau de T27 exige les trois dates.
+- Résultat : **vert**. `./verify.sh T26` → exit 0 (4 tests unitaires, 1 de bout en bout) ; `./verify.sh S3` → exit 0 (79 tests unitaires, 58 de bout en bout).
+- Fichiers : `src/store.js` (`lots`, `VERSION = 3`, `MIGRATIONS[2]`, `verifierDates`), `test/poules.test.js`, `test/poules.e2e.js` ; lignes de version de `test/export.e2e.js` (`[T08]`) et `test/ventes.test.js` (`[T18]`), selon la décision de l'humain.
+- Rouge d'abord : 4 tests unitaires et 1 de bout en bout rouges (« Objet absent du modèle : lots »).
+- Commit : « T26 — Modèle : lots de poules ; format exporté en version 3 ».
+
+Preuve (`./verify.sh T26`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 115144 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 76.288047
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 72.503942
+  type: 'test'
+  ...
+# Subtest: [T26] un lot de poules reçoit un UUID et ses dates, et se retrouve après réouverture
+ok 3 - [T26] un lot de poules reçoit un UUID et ses dates, et se retrouve après réouverture
+  ---
+  duration_ms: 11.494426
+  type: 'test'
+  ...
+# Subtest: [T26] un lot refuse une fourchette désordonnée, et des dates hors de l'ordre arrivée, début de ponte, réforme
+ok 4 - [T26] un lot refuse une fourchette désordonnée, et des dates hors de l'ordre arrivée, début de ponte, réforme
+  ---
+  duration_ms: 1.507739
+  type: 'test'
+  ...
+# Subtest: [T26] export puis import restituent les lots à l'identique, supprimés compris
+ok 5 - [T26] export puis import restituent les lots à l'identique, supprimés compris
+  ---
+  duration_ms: 1.19844
+  type: 'test'
+  ...
+# Subtest: [T26] un fichier de version 1 (N1) ou 2 (N2), sans lots, s'importe par migration
+ok 6 - [T26] un fichier de version 1 (N1) ou 2 (N2), sans lots, s'importe par migration
+  ---
+  duration_ms: 0.76551
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 4 - test/squelette.test.js
+  ---
+  duration_ms: 64.458015
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 5 - test/store.test.js
+  ---
+  duration_ms: 90.582039
+  type: 'test'
+  ...
+1..0
+# Subtest: test/ventes.test.js
+ok 6 - test/ventes.test.js
+  ---
+  duration_ms: 65.758173
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 199.84174
+== Tests de bout en bout (Playwright) ==
+
+Running 1 test using 1 worker
+
+  ✓  1 test/poules.e2e.js:12:1 › [T26] un lot enregistré dans le navigateur est retrouvé après réouverture de la page, et part dans l'export (182ms)
+
+  1 passed (892ms)
+== T26 : vérification verte ==
+```

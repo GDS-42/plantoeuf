@@ -69,4 +69,6 @@ Le format exporté passe en version 3 : un fichier de N1 (version 1) ou de N2 (v
 
 ## ✎ Décisions
 
+- T26 · Le store vérifie que les dates d'un lot se suivent (arrivée ≤ début de ponte ≤ réforme, le même jour permis) à l'ajout, à la modification et à l'import ; code d'erreur `dates_desordonnees`. Les tests comparent la version du format à `Store.VERSION` : un prochain objet ne touchera plus aucun test.
+
 ## ✎ Bilan de fin de tranche

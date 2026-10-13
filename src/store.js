@@ -10,7 +10,7 @@
   const CLE = "plantoeuf";
   const APPLICATION = "plantoeuf";
   // Version du format enregistré et exporté. L'import accepte les versions précédentes (MIGRATIONS).
-  const VERSION = 2;
+  const VERSION = 3;
   // EX-08 : délai sans export, en jours, au-delà duquel un rappel s'affiche si des données ont changé.
   const DELAI_RAPPEL_JOURS = 7;
   const JOUR_MS = 24 * 3600 * 1000;
@@ -25,10 +25,15 @@
       seances: fichier.seances || [],
       debouches: fichier.debouches || [],
     }),
+    // Version 3 (S3) : lots de poules.
+    2: (fichier) => ({ ...fichier, version: 3, lots: fichier.lots || [] }),
   };
-  // Les objets du noyau : ceux de N1 (SPEC N1, « Modèle de données du noyau »), puis ceux de N2
-  // (points de vente, séances, débouchés). Un fichier qui n'a pas une liste la reçoit vide.
-  const OBJETS = ["espaces", "cultures", "varietes", "plantations", "pointsVente", "seances", "debouches"];
+  // Les objets du modèle : ceux de N1 (SPEC N1, « Modèle de données du noyau »), ceux de N2
+  // (points de vente, séances, débouchés), puis ceux de S3 (lots de poules). Un fichier qui n'a pas
+  // une liste la reçoit vide.
+  const OBJETS = ["espaces", "cultures", "varietes", "plantations", "pointsVente", "seances", "debouches", "lots"];
+  // Dates d'un enregistrement qui se suivent, dans l'ordre (un même jour est permis).
+  const DATES_ORDONNEES = { lots: ["arrivee", "debutPonte", "reforme"] };
   // Champs tenus par le store, jamais par la saisie.
   const CHAMPS_SYSTEME = ["id", "creeLe", "modifieLe", "supprimeLe"];
 
@@ -52,6 +57,13 @@
     octets[8] = (octets[8] & 0x3f) | 0x80;
     const h = Array.from(octets, (o) => o.toString(16).padStart(2, "0")).join("");
     return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  }
+
+  function verifierDates(objet, enregistrement) {
+    const dates = (DATES_ORDONNEES[objet] || []).map((champ) => enregistrement[champ]).filter(Boolean);
+    if (dates.some((date, i) => i > 0 && date < dates[i - 1])) {
+      throw erreur("dates_desordonnees", "Les dates ne se suivent pas dans l'ordre.");
+    }
   }
 
   // ---- Fourchettes : { basse, mediane, haute }
@@ -124,6 +136,7 @@
         for (const valeur of Object.values(enregistrement)) {
           if (estFourchette(valeur)) fourchette(valeur.basse, valeur.mediane, valeur.haute);
         }
+        verifierDates(objet, enregistrement);
       }
       migre[objet] = liste;
     }
@@ -184,6 +197,7 @@
       const liste = collection(objet);
       const instant = maintenant();
       const enregistrement = { id: nouvelId(), ...saisie(champs), creeLe: instant, modifieLe: instant, supprimeLe: null };
+      verifierDates(objet, enregistrement);
       liste.push(enregistrement);
       enregistrerModification();
       return copie(enregistrement);
@@ -191,7 +205,9 @@
 
     function modifier(objet, id, champs) {
       const enregistrement = trouver(objet, id);
-      Object.assign(enregistrement, saisie(champs), { modifieLe: maintenant() });
+      const propres = saisie(champs);
+      verifierDates(objet, { ...enregistrement, ...propres });
+      Object.assign(enregistrement, propres, { modifieLe: maintenant() });
       enregistrerModification();
       return copie(enregistrement);
     }

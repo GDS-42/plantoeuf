@@ -69,7 +69,7 @@ test("[T18] export puis import restituent points de vente, séances et débouch�
   const { seance } = saisirMarche(source, "c1");
   source.supprimer("seances", seance.id);
   const fichier = JSON.parse(JSON.stringify(source.exporter()));
-  assert.equal(fichier.version, 2);
+  assert.equal(fichier.version, Store.VERSION);
   const cible = Store.ouvrir(stockageEnMemoire());
   cible.importer(fichier);
   for (const objet of ["pointsVente", "seances", "debouches"]) {
@@ -78,14 +78,14 @@ test("[T18] export puis import restituent points de vente, séances et débouch�
 });
 
 test("[T18] le format exporté passe en version 2 ; un fichier de version 1 qui porte déjà des listes de vente les garde", () => {
-  assert.equal(Store.VERSION, 2);
+  assert.ok(Store.VERSION >= 2);
   const source = Store.ouvrir(stockageEnMemoire());
   saisirMarche(source, "c1");
   const fichier = { ...JSON.parse(JSON.stringify(source.exporter())), version: 1 };
   const cible = Store.ouvrir(stockageEnMemoire());
   cible.importer(fichier);
   for (const objet of ["pointsVente", "seances", "debouches"]) assert.equal(cible.lister(objet).length, 1, objet);
-  assert.equal(cible.exporter().version, 2);
+  assert.equal(cible.exporter().version, Store.VERSION);
 });
 
 test("[T18] un fichier exporté avant N2, sans ces listes, s'importe toujours", () => {
