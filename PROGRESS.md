@@ -4420,3 +4420,11 @@ Running 70 tests using 2 workers
   70 passed (23.6s)
 == S3 : vérification verte ==
 ```
+
+## 13/10/2026 · S3 — Proposition à l'humain pour lever l'écart EX-29 (rien n'est appliqué)
+
+- En préparant la correction d'EX-29, un 2e test d'une tranche précédente s'est révélé concerné : `[T14]` P1-S2 (1280 × 720, tableau défilé jusqu'en bas) attend la ligne « Tomate », la dernière culture, dans la zone visible. Avec l'atelier poules sous les cultures, ce test ne passe aujourd'hui qu'**à un pixel près**, et « Tomate » est en réalité cachée sous l'en-tête figé ; ce qu'il protège (la colonne des noms reste visible : on y lit « Œufs ») reste vrai. L'agent n'a pas ajusté la mise en page pour gagner des pixels invisibles.
+- Proposition, vérifiée dans une copie (`./verify.sh S3` → exit 0, 94 tests unitaires, 70 de bout en bout), à appliquer si l'humain l'accepte :
+  1. `[T24]` (`test/ventes.test.js`) : un débouché de l'exemple vend une culture **ou les œufs** (`|| debouche.produitId === Calc.OEUFS`) ;
+  2. `[T14]` P1-S2 (`test/presentation.e2e.js`) : la dernière en-tête de groupe du tableau, quelle qu'elle soit, au lieu de « Tomate » ;
+  3. ferme d'exemple : trois débouchés d'œufs (marché 0,45 à 0,55 € l'œuf, 180 par séance en médiane ; AMAP 0,50 à 0,55 €, 60 ; épicerie 0,35 à 0,45 €, 120) ; les deux assertions de `[T31]` qui figent leur absence s'inversent.

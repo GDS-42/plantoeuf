@@ -71,6 +71,7 @@ Le format exporté passe en version 3 : un fichier de N1 (version 1) ou de N2 (v
 - T27 · Avec un 9e raccourci, la barre de raccourcis passe sur trois lignes et cachait le titre du panneau atteint ; la marge de défilement suit désormais la hauteur réelle de la barre.
 - T31 · Le test `[T24]` de N2 interdit un débouché qui ne vend pas une culture : il bloque les débouchés d'œufs dans la ferme d'exemple demandés par EX-29 (voie prudente, proposition à l'humain).
 - T31 · Le test `[T12]` P1-S1 à 1280 × 720 reste le plus sensible à toute ligne ajoutée au-dessus des cultures dans le tableau.
+- T32 · Le test `[T14]` P1-S2 suppose que la dernière culture est la dernière ligne du tableau ; avec l'atelier poules dessous, il ne passe qu'à un pixel près (la ligne visée est sous l'en-tête figé). Proposition consignée dans PROGRESS.md.
 
 ## ✎ Décisions
 
