@@ -1,0 +1,16 @@
+{
+  "name": "plantoeuf",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Outil libre de planification pour petit maraîcher. Le livrable est un fichier HTML seul ; ce package.json ne porte que les dépendances de développement.",
+  "scripts": {
+    "init": "./init.sh",
+    "build": "./build.sh",
+    "test": "node --test test/",
+    "e2e": "playwright test",
+    "verify": "./verify.sh"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0"
+  }
+}

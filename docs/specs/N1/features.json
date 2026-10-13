@@ -1,0 +1,86 @@
+{
+  "tranche": "N1",
+  "seuil_alerte_sessions": 15,
+  "taches": [
+    {
+      "id": "T01",
+      "exigences": ["EX-01"],
+      "description": "Squelette : src/index.html qui charge store.js et calc.js, un espace créé et retrouvé après réouverture, build.sh et verify.sh fonctionnels avec un test unitaire et un test de bout en bout",
+      "verification": ["./verify.sh T01"],
+      "depend_de": [],
+      "passe": false
+    },
+    {
+      "id": "T02",
+      "exigences": [],
+      "description": "Modèle de données : UUID, dates de création et de modification, suppression logique, fourchette avec l'invariant fourchette_ordonnee",
+      "verification": ["./verify.sh T02"],
+      "depend_de": ["T01"],
+      "passe": false
+    },
+    {
+      "id": "T03",
+      "exigences": ["EX-01"],
+      "description": "Saisie et liste des espaces, cultures, variétés (surcharge des champs numériques de la culture) et plantations",
+      "verification": ["./verify.sh T03"],
+      "depend_de": ["T02"],
+      "passe": false
+    },
+    {
+      "id": "T04",
+      "exigences": ["EX-02", "EX-03"],
+      "description": "Dates de récolte et répartition hebdomadaire uniforme de la production (scénario S1)",
+      "verification": ["./verify.sh T04"],
+      "depend_de": ["T02"],
+      "passe": false
+    },
+    {
+      "id": "T05",
+      "exigences": ["EX-04", "EX-09"],
+      "description": "Tableau économique par culture et par mois, en fourchette basse / médiane / haute, estimation signalée (scénario S2)",
+      "verification": ["./verify.sh T05"],
+      "depend_de": ["T03", "T04"],
+      "passe": false
+    },
+    {
+      "id": "T06",
+      "exigences": ["EX-05"],
+      "description": "Recalcul automatique du tableau à chaque modification du plan",
+      "verification": ["./verify.sh T06"],
+      "depend_de": ["T05"],
+      "passe": false
+    },
+    {
+      "id": "T07",
+      "exigences": ["EX-06"],
+      "description": "Signal de sur-occupation d'un espace, sans blocage (scénario S3)",
+      "verification": ["./verify.sh T07"],
+      "depend_de": ["T04"],
+      "passe": false
+    },
+    {
+      "id": "T08",
+      "exigences": ["EX-07", "EX-08"],
+      "description": "Export et import JSON à l'identique (versionné), rappel d'export après 7 jours de modifications non exportées",
+      "verification": ["./verify.sh T08"],
+      "depend_de": ["T02"],
+      "passe": false
+    },
+    {
+      "id": "T09",
+      "exigences": ["EX-10"],
+      "description": "Ferme d'exemple de 10 plantations (La Réunion) proposée à la première ouverture, effaçable d'un geste",
+      "verification": ["./verify.sh T09"],
+      "depend_de": ["T05"],
+      "passe": false
+    },
+    {
+      "id": "T10",
+      "exigences": ["EX-01", "EX-02", "EX-03", "EX-04", "EX-05", "EX-06", "EX-07", "EX-08", "EX-09", "EX-10"],
+      "description": "Vérification de bout en bout de la tranche, puis revue par un évaluateur séparé restreint à la conformité à la spec",
+      "verification": ["./verify.sh N1"],
+      "depend_de": ["T01", "T02", "T03", "T04", "T05", "T06", "T07", "T08", "T09"],
+      "passe": false
+    }
+  ]
+}
