@@ -24,7 +24,7 @@ test("[T08] EX-07 : Exporter produit un fichier JSON que Importer restaure à l'
   expect(export1.nom).toMatch(/^plantoeuf-\d{4}-\d{2}-\d{2}\.json$/);
   const fichier = JSON.parse(export1.texte);
   expect(fichier.application).toBe("plantoeuf");
-  expect(fichier.version).toBe(1);
+  expect(fichier.version).toBe(2);
   expect(fichier.espaces.find((e) => e.nom === "planche abandonnée").supprimeLe).not.toBeNull();
 
   // Un autre navigateur, vide : l'import y restaure la même ferme.

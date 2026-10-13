@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N2 · Sessions consommées : 6 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : N2 · Sessions consommées : 7 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -2383,4 +2383,105 @@ Running 1 test using 1 worker
 
   1 passed (1.6s)
 == T22 : vérification verte ==
+```
+
+## 13/10/2026 · T18 (reprise) — Format exporté en version 2, migration des fichiers de version 1
+
+- Session 7 / 12 du seuil d'alerte de N2. Reprise décidée par l'humain (voir « Décisions de l'humain sur les questions de N2 ») ; T18 reste passée.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (migration vérifiée sur un vrai export du store de N1 ; le store de N1 refuse un fichier de version 2 avec `import_version`, ferme intacte ; seules les deux lignes de test autorisées changent ; identité export → import → export vérifiée).
+  - Remarque non bloquante : la migration garde les listes de vente qu'un fichier de version 1 porterait déjà (exporté pendant la construction de N2) ; la spec ne décrit que le cas de N1, sans le contredire.
+- Résultat : **vert**. `./verify.sh T18` → exit 0 (10 tests unitaires, 1 de bout en bout) ; `./verify.sh T08` → exit 0 ; `./verify.sh N2` → exit 0 (70 tests unitaires, 53 de bout en bout).
+- Fichiers : `src/store.js` (`VERSION = 2`, `MIGRATIONS[1]`), `test/export.e2e.js` (ligne `[T08]` : version 2, accord de l'humain), `test/ventes.test.js` (ligne `[T18]` : version 2, accord de l'humain ; un test `[T18]` ajouté).
+- Rouge d'abord : 2 tests unitaires rouges (version exportée 1 au lieu de 2).
+- Preuve complémentaire : un export de N2 importé par le store de N1 (`origin/n1`) → « N1 refuse : import_version — Fichier d'une version plus récente. »
+- Commit : « T18 (reprise) — Format exporté en version 2, migration des fichiers de version 1 ».
+
+Preuve (`./verify.sh T18`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 104938 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 70.67372
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 69.704318
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 70.844676
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 59.011312
+  type: 'test'
+  ...
+# Subtest: [T18] points de vente, séances et débouchés reçoivent un UUID et leurs dates, et sont retrouvés après réouverture
+ok 5 - [T18] points de vente, séances et débouchés reçoivent un UUID et leurs dates, et sont retrouvés après réouverture
+  ---
+  duration_ms: 6.702585
+  type: 'test'
+  ...
+# Subtest: [T18] leur suppression est logique
+ok 6 - [T18] leur suppression est logique
+  ---
+  duration_ms: 0.617586
+  type: 'test'
+  ...
+# Subtest: [T18] une fourchette désordonnée y est refusée
+ok 7 - [T18] une fourchette désordonnée y est refusée
+  ---
+  duration_ms: 1.207881
+  type: 'test'
+  ...
+# Subtest: [T18] export puis import restituent points de vente, séances et débouchés à l'identique, supprimés compris
+ok 8 - [T18] export puis import restituent points de vente, séances et débouchés à l'identique, supprimés compris
+  ---
+  duration_ms: 0.645805
+  type: 'test'
+  ...
+# Subtest: [T18] le format exporté passe en version 2 ; un fichier de version 1 qui porte déjà des listes de vente les garde
+ok 9 - [T18] le format exporté passe en version 2 ; un fichier de version 1 qui porte déjà des listes de vente les garde
+  ---
+  duration_ms: 1.642574
+  type: 'test'
+  ...
+# Subtest: [T18] un fichier exporté avant N2, sans ces listes, s'importe toujours
+ok 10 - [T18] un fichier exporté avant N2, sans ces listes, s'importe toujours
+  ---
+  duration_ms: 0.271107
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 160.089651
+== Tests de bout en bout (Playwright) ==
+
+Running 1 test using 1 worker
+
+  ✓  1 test/ventes.e2e.js:5:1 › [T18] dans le fichier ouvert, points de vente, séances et débouchés sont enregistrés, retrouvés et exportés (299ms)
+
+  1 passed (1.0s)
+== T18 : vérification verte ==
 ```

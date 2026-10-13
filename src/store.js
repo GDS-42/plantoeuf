@@ -10,12 +10,22 @@
   const CLE = "plantoeuf";
   const APPLICATION = "plantoeuf";
   // Version du format enregistré et exporté. L'import accepte les versions précédentes (MIGRATIONS).
-  const VERSION = 1;
+  const VERSION = 2;
   // EX-08 : délai sans export, en jours, au-delà duquel un rappel s'affiche si des données ont changé.
   const DELAI_RAPPEL_JOURS = 7;
   const JOUR_MS = 24 * 3600 * 1000;
-  // MIGRATIONS[n] transforme un fichier de version n en version n + 1. Aucune tant que VERSION vaut 1.
-  const MIGRATIONS = {};
+  // MIGRATIONS[n] transforme un fichier de version n en version n + 1.
+  const MIGRATIONS = {
+    // Version 2 (N2) : points de vente, séances et débouchés. Un fichier de N1 n'en a pas ; ceux qu'un
+    // fichier de version 1 porterait déjà (exporté pendant la construction de N2) sont gardés.
+    1: (fichier) => ({
+      ...fichier,
+      version: 2,
+      pointsVente: fichier.pointsVente || [],
+      seances: fichier.seances || [],
+      debouches: fichier.debouches || [],
+    }),
+  };
   // Les objets du noyau : ceux de N1 (SPEC N1, « Modèle de données du noyau »), puis ceux de N2
   // (points de vente, séances, débouchés). Un fichier qui n'a pas une liste la reçoit vide.
   const OBJETS = ["espaces", "cultures", "varietes", "plantations", "pointsVente", "seances", "debouches"];
