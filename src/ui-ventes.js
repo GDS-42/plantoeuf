@@ -48,10 +48,12 @@
       element("th", { scope: "col" }, T.offre.estimation),
       ...od.semaines.map(enteteSemaine)));
     table.tBodies[0].replaceChildren(...od.lignes.flatMap((ligne) => {
-      const unite = T.unitesVente[ligne.unite];
+      const oeufs = ligne.produitId === Calc.OEUFS;
+      const unite = oeufs ? T.poules.uniteOeufs : T.unitesVente[ligne.unite];
+      const nom = oeufs ? T.poules.oeufs : ligne.nom;
       return [
         element("tr", { "data-produit": ligne.produitId, "data-mesure": "offre" },
-          element("th", { rowspan: "2", scope: "rowgroup" }, ligne.nom),
+          element("th", { rowspan: "2", scope: "rowgroup" }, nom),
           element("th", { scope: "row" }, remplir(T.offre.offre, { unite })),
           ...od.semaines.map((lundi) => caseOffre(ligne.semaines[lundi], lundi, unite))),
         element("tr", { "data-produit": ligne.produitId, "data-mesure": "demande" },

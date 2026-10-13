@@ -133,7 +133,7 @@
         depasse: "la production dépasse la demande de {ecart} {unite}",
         manque: "la production manque de {ecart} {unite}",
         equilibre: "la production couvre juste la demande",
-        sans_debouche: "aucun débouché : toute la production se vend au prix de la culture",
+        sans_debouche: "aucun débouché : toute la production se vend à son prix estimé",
       },
       sur: "écart sûr",
       sansDebouche: "sans débouché",

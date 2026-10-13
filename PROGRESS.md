@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : S3 · Sessions consommées : 4 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : S3 · Sessions consommées : 5 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -3561,4 +3561,106 @@ Running 2 tests using 1 worker
 
   2 passed (1.5s)
 == T29 : vérification verte ==
+```
+
+## 13/10/2026 · T30 — Œufs dans les ventes : matrice offre-demande, ventes plafonnées, points de vente
+
+- Session 5 / 11 du seuil d'alerte de S3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME**.
+  - Scénario S8 refait à part : dépasse de 232 (sûr) les semaines du 27 avril et du 4 mai, manque de 300 (sûr) celle du 11 mai ; 600 œufs vendus, 300 € (150 € en avril, 150 € en mai) ; marché : 9 séances, 221,40 € de coûts, résultat 78,60 € ; invariants `vendu_borne`, `sans_lot_comme_n2`, `sans_debouche_comme_n1` vérifiés.
+  - Remarques non bloquantes : la ligne des œufs de la matrice porte `nom` et `unite` nuls, le rendu se fonde sur `Calc.OEUFS` ; `poulesParSemaine` est calculé deux fois par tableau, sans effet mesurable.
+- Résultat : **vert**. `./verify.sh T30` → exit 0 (5 tests unitaires, 1 de bout en bout) ; `./verify.sh S3` → exit 0 (92 tests unitaires, 66 de bout en bout).
+- Fichiers : `src/calc.js` (offre d'œufs dans `offreParSemaine`, débouché `oeufs` actif, ligne des œufs dans `offreDemande`, œufs vendus dans `tableau`), `src/ui-ventes.js` (ligne « Œufs » de la matrice), `src/i18n.js`, `test/poules.test.js`, `test/poules.e2e.js`.
+- Rouge d'abord : 4 tests unitaires et 1 de bout en bout rouges (pas de ligne d'œufs dans la matrice, 0 € au marché). Le test de performance de S3 (ferme de N2 à sa taille limite et 10 lots : environ 0,2 s) a été ajouté vert : il garde l'exigence non fonctionnelle.
+- Commit : « T30 — Œufs dans les ventes : matrice offre-demande, ventes plafonnées, points de vente ».
+
+Preuve (`./verify.sh T30`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 130972 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 85.032161
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 68.012988
+  type: 'test'
+  ...
+# Subtest: [T30] S8 : les œufs dépassent de 232 les semaines du 27 avril et du 4 mai, et manquent de 300 celle du 11 mai, sûrement
+ok 3 - [T30] S8 : les œufs dépassent de 232 les semaines du 27 avril et du 4 mai, et manquent de 300 celle du 11 mai, sûrement
+  ---
+  duration_ms: 11.349795
+  type: 'test'
+  ...
+# Subtest: [T30] S8 : le tableau donne 600 œufs vendus et 300 € de chiffre d'affaires : 150 € en avril, 150 € en mai
+ok 4 - [T30] S8 : le tableau donne 600 œufs vendus et 300 € de chiffre d'affaires : 150 € en avril, 150 € en mai
+  ---
+  duration_ms: 3.373101
+  type: 'test'
+  ...
+# Subtest: [T30] S8 : le marché de Saint-Paul encaisse les œufs dans la vue « Points de vente »
+ok 5 - [T30] S8 : le marché de Saint-Paul encaisse les œufs dans la vue « Points de vente »
+  ---
+  duration_ms: 1.045949
+  type: 'test'
+  ...
+# Subtest: [T30] un débouché d'œufs sans lot ne montre qu'une demande ; un débouché d'œufs supprimé rend les œufs à leur prix de lot
+ok 6 - [T30] un débouché d'œufs sans lot ne montre qu'une demande ; un débouché d'œufs supprimé rend les œufs à leur prix de lot
+  ---
+  duration_ms: 1.1477
+  type: 'test'
+  ...
+# Subtest: [T30] 200 plantations, 10 points de vente, 20 séances, 100 débouchés et 10 lots se calculent en moins d'une seconde
+ok 7 - [T30] 200 plantations, 10 points de vente, 20 séances, 100 débouchés et 10 lots se calculent en moins d'une seconde
+  ---
+  duration_ms: 178.541515
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 4 - test/squelette.test.js
+  ---
+  duration_ms: 61.668999
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 5 - test/store.test.js
+  ---
+  duration_ms: 74.973673
+  type: 'test'
+  ...
+1..0
+# Subtest: test/ventes.test.js
+ok 6 - test/ventes.test.js
+  ---
+  duration_ms: 77.993182
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 293.25922
+== Tests de bout en bout (Playwright) ==
+
+Running 1 test using 1 worker
+
+  ✓  1 test/poules.e2e.js:146:1 › [T30] S8 : les œufs ont leur ligne dans la matrice, et le tableau ne compte que les œufs vendus (737ms)
+
+  1 passed (1.5s)
+== T30 : vérification verte ==
 ```

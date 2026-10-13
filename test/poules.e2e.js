@@ -140,3 +140,35 @@ test("[T29] les œufs se comptent en nombres entiers, et la première colonne no
   for (const texte of await cases.allTextContents()) expect(texte).toMatch(/^(—|[\d\s]+)$/);
   await expect(page.locator("#tableau thead th").first()).toHaveText(/culture ou atelier/i);
 });
+
+// ---- T30 : les œufs dans les ventes (EX-28, scénario S8)
+
+test("[T30] S8 : les œufs ont leur ligne dans la matrice, et le tableau ne compte que les œufs vendus", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirLot(page);
+  await page.locator("#pointVente-nom").fill("marché de Saint-Paul");
+  await page.locator("#pointVente-distanceKm").fill("12");
+  await page.locator("#pointVente-coutKm").fill("0,4");
+  await page.locator("#pointVente-ajouter").click();
+  await choisir(page, "#seance-pointVenteId", "marché de Saint-Paul");
+  await page.locator("#seance-jour").selectOption("6");
+  await page.locator("#seance-debut").fill("2026-05-02");
+  await page.locator("#seance-fin").fill("2026-06-27");
+  await page.locator("#seance-frais").fill("15");
+  await page.locator("#seance-ajouter").click();
+  await choisir(page, "#debouche-pointVenteId", "marché de Saint-Paul");
+  await choisir(page, "#debouche-produitId", "Œufs");
+  await page.locator("#debouche-prix").fill("0,5");
+  await page.locator("#debouche-volumeParSeance").fill("300");
+  await page.locator("#debouche-ajouter").click();
+
+  const volume = page.locator('#tableau tbody tr[data-culture="oeufs"][data-mesure="volume"]');
+  await expect(volume.locator("th").last()).toContainText(/vendus/i);
+  expect(Number(await volume.locator('td[data-mois="total"] .mediane').getAttribute("data-valeur"))).toBeCloseTo(600, 6);
+
+  await page.locator("#onglet-offre").click();
+  const offre = page.locator('#matrice tr[data-produit="oeufs"][data-mesure="offre"]');
+  await expect(offre.locator("th").first()).toHaveText("Œufs");
+  await expect(offre.locator('td[data-semaine="2026-05-04"]')).toHaveAttribute("data-etat", "depasse");
+  await expect(offre.locator('td[data-semaine="2026-05-11"]')).toHaveAttribute("data-etat", "manque");
+});

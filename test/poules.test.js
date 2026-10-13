@@ -202,3 +202,99 @@ test("[T29] les cases de l'atelier et de la ferme restent ordonnées ; la marge 
   proche(marge.basse, ca.basse - aliment.haute);
   proche(marge.haute, ca.haute - aliment.basse);
 });
+
+// ---- T30 : les œufs dans les ventes (EX-28, scénario S8)
+
+// Le marché de Saint-Paul de N2, le samedi du 2 mai au 27 juin, et un débouché œufs : 0,50 € l'œuf, 300 œufs par séance.
+const MARCHE = { id: "pv1", nom: "marché de Saint-Paul", distanceKm: 12, coutKm: f(0.4) };
+const SAMEDI = { id: "s1", pointVenteId: "pv1", jour: 6, debut: "2026-05-02", fin: "2026-06-27", frais: f(15) };
+const DEBOUCHE_OEUFS = { id: "d1", pointVenteId: "pv1", produitId: "oeufs", prix: f(0.5), volumeParSeance: f(300) };
+
+function fermeS8(complements = {}) {
+  return { lots: [LOT], pointsVente: [MARCHE], seances: [SAMEDI], debouches: [DEBOUCHE_OEUFS], ...complements };
+}
+
+function caseOeufs(od, lundi) {
+  return od.lignes.find((l) => l.produitId === Calc.OEUFS).semaines[lundi];
+}
+
+test("[T30] S8 : les œufs dépassent de 232 les semaines du 27 avril et du 4 mai, et manquent de 300 celle du 11 mai, sûrement", () => {
+  const od = Calc.offreDemande(fermeS8());
+  for (const lundi of ["2026-04-27", "2026-05-04"]) {
+    const c = caseOeufs(od, lundi);
+    assert.equal(c.etat, "depasse", lundi);
+    proche(c.ecart, 232, lundi);
+    assert.equal(c.sur, true, lundi);
+  }
+  const manque = caseOeufs(od, "2026-05-11");
+  assert.equal(manque.etat, "manque");
+  proche(manque.ecart, -300);
+  assert.equal(manque.sur, true);
+  // Sans débouché, la ligne des œufs a une offre mais pas de demande.
+  const sans = Calc.offreDemande({ lots: [LOT] });
+  assert.equal(caseOeufs(sans, "2026-04-13").etat, "sans_debouche");
+  procheFourchette(caseOeufs(sans, "2026-04-13").offre, f(532));
+});
+
+test("[T30] S8 : le tableau donne 600 œufs vendus et 300 € de chiffre d'affaires : 150 € en avril, 150 € en mai", () => {
+  const { poules, total } = Calc.tableau(fermeS8());
+  assert.equal(poules.aDebouche, true);
+  procheFourchette(poules.total.volume, f(600));
+  procheFourchette(poules.total.ca, f(300));
+  procheFourchette(poules.mois["2026-04"].ca, f(150));
+  procheFourchette(poules.mois["2026-05"].ca, f(150));
+  procheFourchette(poules.total.aliment, f(302.4));
+  procheFourchette(poules.total.marge, f(300 - 302.4));
+  procheFourchette(total.total.couts, f(221.4));
+  procheFourchette(total.total.marge, f(300 - 221.4 - 302.4));
+});
+
+test("[T30] S8 : le marché de Saint-Paul encaisse les œufs dans la vue « Points de vente »", () => {
+  const [marche] = Calc.pointsDeVente(fermeS8()).points;
+  procheFourchette(marche.total.ca, f(300));
+  procheFourchette(marche.total.resultat, f(300 - 221.4));
+});
+
+test("[T30] un débouché d'œufs sans lot ne montre qu'une demande ; un débouché d'œufs supprimé rend les œufs à leur prix de lot", () => {
+  const sansLot = Calc.offreDemande(fermeS8({ lots: [] }));
+  const c = caseOeufs(sansLot, "2026-05-04");
+  assert.equal(c.etat, "manque");
+  procheFourchette(c.offre, f(0));
+  assert.equal(Calc.tableau(fermeS8({ lots: [] })).poules, null);
+
+  const supprime = Calc.tableau(fermeS8({ debouches: [{ ...DEBOUCHE_OEUFS, supprimeLe: "2026-04-01T08:00:00.000Z" }] }));
+  assert.equal(supprime.poules.aDebouche, false);
+  procheFourchette(supprime.poules.total.ca, f(1064));
+});
+
+test("[T30] 200 plantations, 10 points de vente, 20 séances, 100 débouchés et 10 lots se calculent en moins d'une seconde", () => {
+  const cultures = [];
+  const varietes = [];
+  const plantations = [];
+  for (let c = 0; c < 20; c++) {
+    cultures.push({ ...COURGETTE, id: `c${c}`, nom: `culture ${c}` });
+    varietes.push({ ...BLACK_BEAUTY, id: `v${c}`, cultureId: `c${c}` });
+  }
+  for (let i = 0; i < 200; i++) plantations.push({ ...PLANTATION_S1, id: `p${i}`, varieteId: `v${i % 20}`, date: Calc.ajouterJours("2026-01-05", 3 * i) });
+  const pointsVente = [];
+  const seances = [];
+  const debouches = [];
+  for (let p = 0; p < 10; p++) {
+    pointsVente.push({ ...MARCHE, id: `pv${p}`, nom: `point ${p}` });
+    for (let s = 0; s < 2; s++) seances.push({ ...SAMEDI, id: `s${p}-${s}`, pointVenteId: `pv${p}`, jour: 1 + ((p + s) % 7), debut: "2026-01-01", fin: "2027-06-30" });
+    for (let d = 0; d < 10; d++) {
+      const produitId = d === 0 ? "oeufs" : `c${(p + d) % 20}`;
+      debouches.push({ ...DEBOUCHE_OEUFS, id: `d${p}-${d}`, pointVenteId: `pv${p}`, produitId, prix: f(2 + p / 10), volumeParSeance: f(5, 8, 12) });
+    }
+  }
+  const lots = [];
+  for (let l = 0; l < 10; l++) lots.push({ ...LOT, id: `l${l}`, arrivee: Calc.ajouterJours("2026-01-05", 30 * l), debutPonte: Calc.ajouterJours("2026-02-02", 30 * l), reforme: Calc.ajouterJours("2027-01-31", 30 * l) });
+  const donnees = { cultures, varietes, plantations, pointsVente, seances, debouches, lots };
+  const debut = process.hrtime.bigint();
+  const tableau = Calc.tableau(donnees);
+  Calc.offreDemande(donnees);
+  Calc.pointsDeVente(donnees);
+  const ms = Number(process.hrtime.bigint() - debut) / 1e6;
+  assert.equal(tableau.poules.lots, 10);
+  assert.ok(ms < 1000, `${ms} ms`);
+});

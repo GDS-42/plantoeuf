@@ -204,12 +204,22 @@
       couts.set(mois, somme(couts.get(mois) || fourchetteNulle(), seance.cout));
     }
 
+    // Les œufs avec débouché comptent ce qui se vend (EX-28), sans débouché toute la ponte au prix de l'œuf de son lot.
     const lots = (donnees.lots || []).filter((l) => !l.supprimeLe);
+    const ventesOeufs = ventesParCulture.get(OEUFS);
     const poulesParMois = new Map();
-    for (const [lundi, semaine] of lots.length ? poulesParSemaine(donnees) : []) {
+    const ajouterAuxPoules = (lundi, volume, ca, aliment) => {
       const m = moisDuJeudi(lundi);
       const c = poulesParMois.get(m) || { volume: fourchetteNulle(), ca: fourchetteNulle(), aliment: fourchetteNulle() };
-      poulesParMois.set(m, { volume: somme(c.volume, semaine.oeufs), ca: somme(c.ca, semaine.valeur), aliment: somme(c.aliment, semaine.aliment) });
+      poulesParMois.set(m, { volume: somme(c.volume, volume), ca: somme(c.ca, ca), aliment: somme(c.aliment, aliment) });
+    };
+    const nulle = fourchetteNulle();
+    for (const [lundi, semaine] of lots.length ? poulesParSemaine(donnees) : []) {
+      if (ventesOeufs) ajouterAuxPoules(lundi, nulle, nulle, semaine.aliment);
+      else ajouterAuxPoules(lundi, semaine.oeufs, semaine.valeur, semaine.aliment);
+    }
+    for (const [lundi, vente] of lots.length && ventesOeufs ? ventesOeufs : []) {
+      if (vente.vendu.haute > 0) ajouterAuxPoules(lundi, vente.vendu, vente.ca, nulle);
     }
 
     const tousLesMois = [...[...parCulture.values()].flatMap((c) => [...c.mois.keys()]), ...couts.keys(), ...poulesParMois.keys()].sort();
@@ -238,7 +248,7 @@
       const vide = () => ({ volume: fourchetteNulle(), ca: fourchetteNulle(), aliment: fourchetteNulle() });
       const avecMargeAtelier = (c) => ({ ...c, marge: soustraire(c.ca, c.aliment) });
       const cumul = vide();
-      poules = { lots: lots.length, effectif: lots.reduce((n, l) => n + l.effectif, 0), aDebouche: false, mois: {} };
+      poules = { lots: lots.length, effectif: lots.reduce((n, l) => n + l.effectif, 0), aDebouche: Boolean(ventesOeufs), mois: {} };
       for (const m of mois) {
         const c = poulesParMois.get(m) || vide();
         poules.mois[m] = avecMargeAtelier(c);
@@ -352,6 +362,10 @@
         ajouterDans(offre, culture.id, lundiDe(ajouterJours(semaine.debut, 3)), semaine.volume);
       }
     }
+    // S3 (EX-28) : les œufs de tous les lots forment un produit de plus.
+    for (const [lundi, semaine] of poulesParSemaine(donnees)) {
+      if (semaine.oeufs.haute > 0) ajouterDans(offre, OEUFS, lundi, semaine.oeufs);
+    }
     return offre;
   }
 
@@ -360,7 +374,7 @@
     const pointsParId = new Map(pointsVente.filter((p) => !p.supprimeLe).map((p) => [p.id, p]));
     const culturesActives = new Set(cultures.filter((c) => !c.supprimeLe).map((c) => c.id));
     return debouches
-      .filter((d) => !d.supprimeLe && pointsParId.has(d.pointVenteId) && culturesActives.has(d.produitId))
+      .filter((d) => !d.supprimeLe && pointsParId.has(d.pointVenteId) && (culturesActives.has(d.produitId) || d.produitId === OEUFS))
       .map((debouche) => ({ debouche, pointVente: pointsParId.get(debouche.pointVenteId) }));
   }
 
@@ -588,16 +602,19 @@
     const semaines = lundis.length ? semainesEntre(lundis[0], lundis[lundis.length - 1]) : [];
     const cultures = (donnees.cultures || []).filter((c) => !c.supprimeLe && (offre.has(c.id) || demande.has(c.id)))
       .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+    // Les œufs viennent après les cultures ; leur nom et leur unité sont des textes de l'interface.
+    const produits = cultures.map((c) => ({ produitId: c.id, nom: c.nom, unite: c.unite }));
+    if (offre.has(OEUFS) || demande.has(OEUFS)) produits.push({ produitId: OEUFS, nom: null, unite: null });
 
-    const lignes = cultures.map((culture) => {
-      const ligne = { produitId: culture.id, nom: culture.nom, unite: culture.unite, semaines: {} };
+    const lignes = produits.map(({ produitId, nom, unite }) => {
+      const ligne = { produitId, nom, unite, semaines: {} };
       for (const lundi of semaines) {
-        const o = (offre.get(culture.id) && offre.get(culture.id).get(lundi)) || fourchetteNulle();
-        if (!demande.has(culture.id)) {
+        const o = (offre.get(produitId) && offre.get(produitId).get(lundi)) || fourchetteNulle();
+        if (!demande.has(produitId)) {
           ligne.semaines[lundi] = { offre: o, demande: null, ecart: null, etat: "sans_debouche", sur: false };
           continue;
         }
-        const d = demande.get(culture.id).get(lundi) || fourchetteNulle();
+        const d = demande.get(produitId).get(lundi) || fourchetteNulle();
         const ecart = o.mediane - d.mediane;
         const etat = Math.abs(ecart) < PRECISION ? "equilibre" : ecart > 0 ? "depasse" : "manque";
         const sur = etat === "depasse" ? o.basse > d.haute + PRECISION : etat === "manque" ? o.haute < d.basse - PRECISION : false;
