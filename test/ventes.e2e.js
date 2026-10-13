@@ -1,6 +1,7 @@
 // Tranche N2 — points de vente, séances et débouchés, dans le fichier ouvert.
 const fs = require("node:fs");
 const { test, expect } = require("@playwright/test");
+const { aller, ouvrir, modifier } = require("./outils.js");
 
 test("[T18] dans le fichier ouvert, points de vente, séances et débouchés sont enregistrés, retrouvés et exportés", async ({ context }) => {
   const page = await context.newPage();
@@ -15,6 +16,7 @@ test("[T18] dans le fichier ouvert, points de vente, séances et débouchés son
 
   const reouverte = await context.newPage();
   await reouverte.goto("index.html");
+  await aller(reouverte, "sauvegarde");
   const [telechargement] = await Promise.all([reouverte.waitForEvent("download"), reouverte.locator("#exporter").click()]);
   const fichier = JSON.parse(fs.readFileSync(await telechargement.path(), "utf8"));
   expect(fichier.pointsVente.map((p) => p.nom)).toEqual(["marché de Saint-Paul"]);
@@ -27,11 +29,13 @@ test("[T18] dans le fichier ouvert, points de vente, séances et débouchés son
 const { choisir, saisirS2 } = require("./outils.js");
 
 async function saisirMarche(page) {
+  await ouvrir(page, "pointsVente");
   await page.locator("#pointVente-nom").fill("marché de Saint-Paul");
   await page.locator("#pointVente-distanceKm").fill("12");
   await page.locator("#pointVente-coutKm").fill("0,4");
   await page.locator("#pointVente-ajouter").click();
 
+  await ouvrir(page, "seances");
   await choisir(page, "#seance-pointVenteId", "marché de Saint-Paul");
   await page.locator("#seance-jour").selectOption("6");
   await page.locator("#seance-debut").fill("2026-05-02");
@@ -39,6 +43,7 @@ async function saisirMarche(page) {
   await page.locator("#seance-frais").fill("15");
   await page.locator("#seance-ajouter").click();
 
+  await ouvrir(page, "debouches");
   await choisir(page, "#debouche-pointVenteId", "marché de Saint-Paul");
   await choisir(page, "#debouche-produitId", "courgette");
   await page.locator("#debouche-prix").fill("2,5");
@@ -63,7 +68,8 @@ test("[T19] points de vente, séances et débouchés se saisissent, se listent e
   await expect(ligne(page, "pointsVente", "marché de Saint-Paul")).toContainText("12 km");
   await expect(ligne(page, "seances", "marché de Saint-Paul")).toContainText("samedi");
   await expect(ligne(page, "seances", "marché de Saint-Paul")).toContainText("02/05/2026");
-  await expect(ligne(page, "debouches", "courgette")).toContainText("15 / 20 / 25");
+  await expect(ligne(page, "debouches", "courgette")).toContainText("20 kg par séance");
+  await expect(ligne(page, "debouches", "courgette")).toContainText("15 à 25");
   for (const [objet, nombre] of [["pointsVente", "1"], ["seances", "1"], ["debouches", "1"]]) {
     await expect(page.locator(`#section-${objet}.panneau .compte`)).toHaveText(nombre);
   }
@@ -88,7 +94,7 @@ test("[T19] un point de vente se modifie, une séance se supprime logiquement", 
   await saisirS2(page);
   await saisirMarche(page);
 
-  await ligne(page, "pointsVente", "marché de Saint-Paul").locator('[data-action="modifier"]').click();
+  await modifier(page, "pointsVente", "marché de Saint-Paul");
   await expect(page.locator("#section-pointsVente")).toHaveAttribute("data-mode", "modification");
   await page.locator("#pointVente-distanceKm").fill("15");
   await page.locator("#pointVente-ajouter").click();
@@ -107,6 +113,7 @@ test("[T19] un point de vente se modifie, une séance se supprime logiquement", 
 
 test("[T19] une fourchette désordonnée est refusée avec un message, sans rien enregistrer", async ({ page }) => {
   await page.goto("index.html");
+  await ouvrir(page, "pointsVente");
   await page.locator("#pointVente-nom").fill("marché");
   await page.locator("#pointVente-distanceKm").fill("5");
   await page.locator("#pointVente-coutKm").fill("0,5 / 0,3 / 0,6");
@@ -132,6 +139,7 @@ test("[T21] S4 : la vue « Offre et demande » montre, semaine par semaine, où 
   await page.goto("index.html");
   await saisirS2(page);
   await saisirMarche(page);
+  await aller(page, "synthese");
   await expect(page.locator("#tableau")).toBeVisible();
   await page.locator("#onglet-offre").click();
   await expect(page.locator("#section-offre")).toBeVisible();
@@ -156,6 +164,7 @@ test("[T21] EX-09 : offre et demande s'affichent en fourchette, signalées comme
   await page.goto("index.html");
   await saisirS2(page);
   await saisirMarche(page);
+  await aller(page, "synthese");
   await page.locator("#onglet-offre").click();
   const demande = page.locator('#matrice tbody tr[data-mesure="demande"]').first();
   await expect(demande.locator("th")).toContainText(/estim/i);
@@ -171,6 +180,7 @@ test("[T22] S4 et S6 : le tableau donne le volume vendu, et la marge de la ferme
   await page.goto("index.html");
   await saisirS2(page);
   await saisirMarche(page);
+  await aller(page, "synthese");
 
   const volume = page.locator('#tableau tbody tr[data-mesure="volume"]', { hasText: "courgette" });
   await expect(volume.locator("th").last()).toContainText(/vendu/i);
@@ -188,17 +198,18 @@ test("[T23] S6 : la vue « Points de vente » donne, par mois, les séances, le 
   await page.goto("index.html");
   await saisirS2(page);
   await saisirMarche(page);
+  await aller(page, "synthese");
   await page.locator("#onglet-points").click();
   await expect(page.locator("#section-points")).toBeVisible();
   await expect(page.locator("#tableau")).toBeHidden();
 
   const valeur = async (mesure) => Number(await page.locator(`#points tr[data-mesure="${mesure}"] td[data-mois="total"] .mediane`).getAttribute("data-valeur"));
-  await expect(page.locator('#points tbody th[rowspan]')).toContainText("marché de Saint-Paul");
+  await expect(page.locator('#points tbody tr[data-mesure="resultat"] th')).toContainText("marché de Saint-Paul");
   await expect(page.locator('#points tr[data-mesure="seances"] td[data-mois="total"]')).toHaveText("9");
   expect(await valeur("ca")).toBeCloseTo(400, 6);
   expect(await valeur("couts")).toBeCloseTo(221.4, 6);
   expect(await valeur("resultat")).toBeCloseTo(178.6, 6);
-  await expect(page.locator('#points tr[data-mesure="resultat"] th')).toContainText(/estim/i);
+  await expect(page.locator("#points thead th").first()).toContainText(/estim/i);
 });
 
 test("[T23] un résultat arrondi à zéro s'affiche comme zéro, sans signe moins", async ({ page }) => {
