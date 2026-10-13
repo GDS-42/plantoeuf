@@ -55,20 +55,41 @@
   .defilement { flex: 1; min-height: 0; overflow: auto; background: var(--surface); border: 1px solid var(--trait); border-radius: 10px; }
   #tableau-vide { margin: 0; }
 
-  /* Saisie */
-  .volet-saisie section { margin-top: 1rem; }
-  .volet-saisie h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-  form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; margin-bottom: 0.75rem; padding: 0.75rem; background: var(--surface-douce); border: 1px solid var(--trait); border-radius: 8px; }
-  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; }
-  input, select, button { font: inherit; padding: 0.3rem 0.5rem; }
-  input[type="number"] { width: 7rem; }
-  .aide { flex-basis: 100%; margin: 0; font-size: 0.875rem; color: var(--encre-douce); }
-  .erreur { flex-basis: 100%; margin: 0; color: var(--erreur); font-weight: 600; }
+  /* Saisie : un panneau par objet (EX-12) */
+  .raccourcis { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 -1rem; padding: 0.7rem 1rem; background: var(--fond); border-bottom: 1px solid var(--trait); }
+  .raccourcis a { padding: 0.2rem 0.65rem; border: 1px solid var(--trait-fort); border-radius: 999px; background: var(--surface); color: var(--encre); font-size: 0.875rem; text-decoration: none; }
+  .raccourcis a:hover { border-color: var(--accent); color: var(--accent-fonce); }
+  .compte-raccourci { color: var(--encre-douce); }
+  .panneau { margin-top: 1rem; background: var(--surface); border: 1px solid var(--trait); border-radius: 10px; scroll-margin-top: 3.5rem; }
+  .panneau-entete { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.75rem 1rem 0.5rem; }
+  .panneau-entete h2 { font-size: 1.1rem; }
+  .compte { min-width: 1.6rem; padding: 0 0.45rem; border-radius: 999px; background: var(--accent-doux); color: var(--accent-fonce); font-size: 0.875rem; font-weight: 600; text-align: center; }
+  .mode-modification { margin-left: auto; padding: 0.05rem 0.5rem; border-radius: 4px; background: var(--alerte-fond); color: var(--alerte-texte); font-size: 0.875rem; font-weight: 600; }
+  .panneau[data-mode="modification"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .panneau form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem 0.75rem; margin: 0; padding: 0.75rem 1rem; background: var(--surface-douce); border-top: 1px solid var(--trait); border-bottom: 1px solid var(--trait); }
+  .panneau form > .aide, .panneau form > .erreur, .panneau form > .boutons { grid-column: 1 / -1; }
+  .boutons { display: flex; gap: 0.5rem; }
+  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; color: var(--encre); }
+  input, select { font: inherit; padding: 0.35rem 0.5rem; border: 1px solid var(--trait-fort); border-radius: 6px; background: var(--surface); color: var(--encre); min-width: 0; }
+  input[type="number"], input[type="date"], select { width: 100%; box-sizing: border-box; }
+  button { font: inherit; padding: 0.35rem 0.8rem; border: 1px solid var(--trait-fort); border-radius: 6px; background: var(--surface); color: var(--encre); cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.principal { background: var(--accent); border-color: var(--accent); color: #ffffff; font-weight: 600; }
+  button.principal:hover { background: var(--accent-fonce); }
+  .aide { margin: 0; font-size: 0.875rem; color: var(--encre-douce); }
+  .erreur { margin: 0; color: var(--erreur); font-weight: 600; }
+  .vide { margin: 0; padding: 0.6rem 1rem; color: var(--encre-douce); font-size: 0.875rem; }
   ul.liste { list-style: none; padding: 0; margin: 0; }
-  ul.liste li { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid var(--trait); }
-  ul.liste li span.resume { flex: 1 1 16rem; }
+  ul.liste li { display: flex; flex-wrap: wrap; gap: 0.4rem 0.5rem; align-items: center; padding: 0.45rem 1rem; border-bottom: 1px solid var(--trait); }
+  ul.liste li:last-child { border-bottom: 0; }
+  ul.liste li span.resume { flex: 1 1 14rem; }
+  ul.liste li button { padding: 0.2rem 0.6rem; font-size: 0.875rem; }
+  ul.liste li button[data-action="supprimer"] { color: var(--erreur); }
+  ul.liste li[aria-current="true"] { background: var(--accent-doux); box-shadow: inset 4px 0 0 var(--accent); }
   .sur-occupation { margin-left: 0.5rem; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: var(--alerte-texte); background: var(--alerte-fond); }
-  #import-message { font-weight: 600; color: var(--accent-fonce); }
+  .explication { margin: 0; padding: 0 1rem 0.75rem; color: var(--encre-douce); font-size: 0.875rem; }
+  .actions-sauvegarde { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 0 1rem 0.75rem; }
+  #import-message { margin: 0; padding: 0 1rem 0.75rem; font-weight: 600; color: var(--accent-fonce); }
   #import-message.erreur { color: var(--erreur); }
 
   /* Tableau économique */
@@ -108,14 +129,6 @@
     <h1 data-texte="marque"></h1>
     <span data-texte="sousTitre"></span>
   </div>
-  <nav>
-    <a href="#section-tableau" data-texte="tableau.titre"></a>
-    <a href="#section-espaces" data-texte="espaces.titre"></a>
-    <a href="#section-cultures" data-texte="cultures.titre"></a>
-    <a href="#section-varietes" data-texte="varietes.titre"></a>
-    <a href="#section-plantations" data-texte="plantations.titre"></a>
-    <a href="#section-sauvegarde" data-texte="sauvegarde.titre"></a>
-  </nav>
 </header>
 
 <div id="proposition-exemple" class="bandeau exemple" hidden>
@@ -135,8 +148,19 @@
 
 <div class="volets">
 <div class="volet-saisie" id="volet-saisie">
-  <section id="section-espaces">
-    <h2 data-texte="espaces.titre"></h2>
+  <nav id="raccourcis" class="raccourcis" data-texte-aria="panneaux.raccourcis">
+    <a href="#section-espaces"><span data-texte="espaces.titre"></span> <span class="compte-raccourci" data-objet="espaces"></span></a>
+    <a href="#section-cultures"><span data-texte="cultures.titre"></span> <span class="compte-raccourci" data-objet="cultures"></span></a>
+    <a href="#section-varietes"><span data-texte="varietes.titre"></span> <span class="compte-raccourci" data-objet="varietes"></span></a>
+    <a href="#section-plantations"><span data-texte="plantations.titre"></span> <span class="compte-raccourci" data-objet="plantations"></span></a>
+    <a href="#section-sauvegarde"><span data-texte="sauvegarde.titre"></span></a>
+  </nav>
+  <section id="section-espaces" class="panneau" data-objet="espaces">
+    <div class="panneau-entete">
+      <h2 data-texte="espaces.titre"></h2>
+      <span class="compte">0</span>
+      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
+    </div>
     <form id="form-espace" data-objet="espaces">
       <label><span data-texte="espaces.nom"></span>
         <input id="espace-nom" data-champ="nom" required>
@@ -147,16 +171,22 @@
       <label><span data-texte="espaces.type"></span>
         <select id="espace-type" data-champ="type" data-options="typesEspace"></select>
       </label>
-      <button id="espace-ajouter" type="submit" data-texte="espaces.ajouter"></button>
-      <button id="espace-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      <div class="boutons">
+        <button id="espace-ajouter" type="submit" class="principal" data-texte="espaces.ajouter"></button>
+        <button id="espace-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      </div>
       <p id="espace-erreur" class="erreur" role="alert" hidden></p>
     </form>
-    <p id="espaces-vide" data-texte="espaces.aucun"></p>
+    <p id="espaces-vide" class="vide" data-texte="espaces.aucun"></p>
     <ul id="liste-espaces" class="liste"></ul>
   </section>
 
-  <section id="section-cultures">
-    <h2 data-texte="cultures.titre"></h2>
+  <section id="section-cultures" class="panneau" data-objet="cultures">
+    <div class="panneau-entete">
+      <h2 data-texte="cultures.titre"></h2>
+      <span class="compte">0</span>
+      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
+    </div>
     <form id="form-culture" data-objet="cultures">
       <label><span data-texte="cultures.nom"></span>
         <input id="culture-nom" data-champ="nom" required>
@@ -183,16 +213,22 @@
         <input id="culture-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any" required>
       </label>
       <p class="aide" data-texte="cultures.aideFourchette"></p>
-      <button id="culture-ajouter" type="submit" data-texte="cultures.ajouter"></button>
-      <button id="culture-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      <div class="boutons">
+        <button id="culture-ajouter" type="submit" class="principal" data-texte="cultures.ajouter"></button>
+        <button id="culture-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      </div>
       <p id="culture-erreur" class="erreur" role="alert" hidden></p>
     </form>
-    <p id="cultures-vide" data-texte="cultures.aucun"></p>
+    <p id="cultures-vide" class="vide" data-texte="cultures.aucun"></p>
     <ul id="liste-cultures" class="liste"></ul>
   </section>
 
-  <section id="section-varietes">
-    <h2 data-texte="varietes.titre"></h2>
+  <section id="section-varietes" class="panneau" data-objet="varietes">
+    <div class="panneau-entete">
+      <h2 data-texte="varietes.titre"></h2>
+      <span class="compte">0</span>
+      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
+    </div>
     <form id="form-variete" data-objet="varietes">
       <label><span data-texte="varietes.nom"></span>
         <input id="variete-nom" data-champ="nom" required>
@@ -216,16 +252,22 @@
         <input id="variete-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any">
       </label>
       <p class="aide"><span data-texte="varietes.aide"></span> <span data-texte="cultures.aideFourchette"></span></p>
-      <button id="variete-ajouter" type="submit" data-texte="varietes.ajouter"></button>
-      <button id="variete-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      <div class="boutons">
+        <button id="variete-ajouter" type="submit" class="principal" data-texte="varietes.ajouter"></button>
+        <button id="variete-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      </div>
       <p id="variete-erreur" class="erreur" role="alert" hidden></p>
     </form>
-    <p id="varietes-vide" data-texte="varietes.aucun"></p>
+    <p id="varietes-vide" class="vide" data-texte="varietes.aucun"></p>
     <ul id="liste-varietes" class="liste"></ul>
   </section>
 
-  <section id="section-plantations">
-    <h2 data-texte="plantations.titre"></h2>
+  <section id="section-plantations" class="panneau" data-objet="plantations">
+    <div class="panneau-entete">
+      <h2 data-texte="plantations.titre"></h2>
+      <span class="compte">0</span>
+      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
+    </div>
     <form id="form-plantation" data-objet="plantations">
       <label><span data-texte="plantations.variete"></span>
         <select id="plantation-varieteId" data-champ="varieteId" required></select>
@@ -239,25 +281,27 @@
       <label><span data-texte="plantations.date"></span>
         <input id="plantation-date" data-champ="date" type="date" required>
       </label>
-      <button id="plantation-ajouter" type="submit" data-texte="plantations.ajouter"></button>
-      <button id="plantation-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      <div class="boutons">
+        <button id="plantation-ajouter" type="submit" class="principal" data-texte="plantations.ajouter"></button>
+        <button id="plantation-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      </div>
       <p id="plantation-erreur" class="erreur" role="alert" hidden></p>
     </form>
-    <p id="plantations-vide" data-texte="plantations.aucun"></p>
+    <p id="plantations-vide" class="vide" data-texte="plantations.aucun"></p>
     <ul id="liste-plantations" class="liste"></ul>
   </section>
 
-  <section id="section-sauvegarde">
-    <h2 data-texte="sauvegarde.titre"></h2>
-    <p data-texte="sauvegarde.explication"></p>
-    <p>
-      <button id="exporter" type="button" data-texte="sauvegarde.exporter"></button>
-    </p>
-    <p>
+  <section id="section-sauvegarde" class="panneau">
+    <div class="panneau-entete">
+      <h2 data-texte="sauvegarde.titre"></h2>
+    </div>
+    <p class="explication" data-texte="sauvegarde.explication"></p>
+    <div class="actions-sauvegarde">
+      <button id="exporter" type="button" class="principal" data-texte="sauvegarde.exporter"></button>
       <label><span data-texte="sauvegarde.importer"></span>
         <input id="importer" type="file" accept=".json,application/json">
       </label>
-    </p>
+    </div>
     <p id="import-message" role="status" hidden></p>
   </section>
 </div>

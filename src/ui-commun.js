@@ -57,10 +57,14 @@
     return a.nom.localeCompare(b.nom, "fr");
   }
 
-  // Textes de la page (attributs data-texte) et options fixes des listes déroulantes (data-options).
+  // Textes de la page (data-texte), libellés pour lecteur d'écran (data-texte-aria) et options fixes
+  // des listes déroulantes (data-options).
   function traduire(racine) {
     racine.querySelectorAll("[data-texte]").forEach((el) => {
       el.textContent = texte(el.dataset.texte);
+    });
+    racine.querySelectorAll("[data-texte-aria]").forEach((el) => {
+      el.setAttribute("aria-label", texte(el.dataset.texteAria));
     });
     racine.querySelectorAll("select[data-options]").forEach((select) => {
       for (const [valeur, libelle] of Object.entries(T[select.dataset.options])) {

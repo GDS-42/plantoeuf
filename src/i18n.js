@@ -18,6 +18,11 @@
       choisir: "— choisir —",
       supprime: "(supprimé)",
     },
+    panneaux: {
+      raccourcis: "Aller à un panneau de saisie",
+      modification: "Modification en cours",
+      compte: "{nombre} élément(s) enregistré(s)",
+    },
     espaces: {
       titre: "Espaces",
       nom: "Nom de l'espace",

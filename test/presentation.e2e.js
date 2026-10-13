@@ -83,3 +83,63 @@ test("[T12] sous 1100 px de large, une seule colonne, la projection en premier",
   const debordement = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(debordement).toBeLessThanOrEqual(0);
 });
+
+// ---- T13 — EX-12, EX-15 : panneaux de saisie titrés, mode modification signalé.
+
+test("[T13] EX-12 : chaque objet a son panneau titré, avec le nombre d'éléments actifs, et tous ses champs visibles", async ({ page }) => {
+  await chargerExemple(page);
+  const attendus = { espaces: "5", cultures: "7", varietes: "7", plantations: "10" };
+  for (const [objet, nombre] of Object.entries(attendus)) {
+    const panneau = page.locator(`#section-${objet}`);
+    await expect(panneau).toHaveClass(/\bpanneau\b/);
+    await expect(panneau.locator("h2")).toBeVisible();
+    await expect(panneau.locator(".compte")).toHaveText(nombre);
+    for (const champ of await panneau.locator("form [data-champ]").all()) await expect(champ).toBeVisible();
+  }
+  await expect(page.locator("#section-sauvegarde")).toHaveClass(/\bpanneau\b/);
+  await expect(page.locator("#section-sauvegarde h2")).toBeVisible();
+});
+
+test("[T13] le nombre d'éléments d'un panneau suit les ajouts et les suppressions", async ({ page }) => {
+  await page.goto("index.html");
+  const compte = page.locator("#section-espaces .compte");
+  await expect(compte).toHaveText("0");
+  await page.locator("#espace-nom").fill("planche 1");
+  await page.locator("#espace-surface").fill("30");
+  await page.locator("#espace-ajouter").click();
+  await expect(compte).toHaveText("1");
+  await page.locator('#liste-espaces [data-action="supprimer"]').click();
+  await expect(compte).toHaveText("0");
+});
+
+test("[T13] EX-15 : le panneau et l'élément modifiés sont signalés jusqu'à l'enregistrement", async ({ page }) => {
+  await chargerExemple(page);
+  const ligne = page.locator("#liste-plantations li", { hasText: "Courgette" });
+  await ligne.locator('[data-action="modifier"]').click();
+  await expect(page.locator("#section-plantations")).toHaveAttribute("data-mode", "modification");
+  await expect(ligne).toHaveAttribute("aria-current", "true");
+  await expect(page.locator('#volet-saisie li[aria-current="true"]')).toHaveCount(1);
+
+  await page.locator("#plantation-surface").fill("20");
+  await page.locator("#plantation-ajouter").click();
+  await expect(page.locator("#section-plantations")).not.toHaveAttribute("data-mode", "modification");
+  await expect(page.locator('#volet-saisie li[aria-current="true"]')).toHaveCount(0);
+});
+
+test("[T13] EX-15 : … ou jusqu'à l'annulation", async ({ page }) => {
+  await chargerExemple(page);
+  await page.locator("#liste-cultures li", { hasText: "Tomate" }).locator('[data-action="modifier"]').click();
+  await expect(page.locator("#section-cultures")).toHaveAttribute("data-mode", "modification");
+  await page.locator("#culture-annuler").click();
+  await expect(page.locator("#section-cultures")).not.toHaveAttribute("data-mode", "modification");
+  await expect(page.locator('#volet-saisie li[aria-current="true"]')).toHaveCount(0);
+});
+
+test("[T13] une barre de raccourcis mène à chaque panneau de saisie", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await chargerExemple(page);
+  for (const objet of ["plantations", "espaces", "sauvegarde", "varietes", "cultures"]) {
+    await page.locator(`#raccourcis a[href="#section-${objet}"]`).click();
+    await expect(page.locator(`#section-${objet} h2`)).toBeInViewport();
+  }
+});

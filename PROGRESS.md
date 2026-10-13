@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : P1 · Sessions consommées : 2 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
+Tranche en cours : P1 · Sessions consommées : 3 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
 
 ---
 
@@ -1242,4 +1242,71 @@ Running 5 tests using 1 worker
 
   5 passed (3.6s)
 == T12 : vérification verte ==
+```
+
+## 13/10/2026 · T13 — Panneaux de saisie titrés, mode modification signalé
+
+- Session 3 / 9 du seuil d'alerte de P1.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Résultat : **vert**. `./verify.sh T13` → exit 0 (5 tests) ; `./verify.sh P1` → exit 0 (48 tests unitaires, 37 de bout en bout dont les 26 de N1 inchangés).
+- Fichiers : `src/index.html` (panneaux, barre de raccourcis dans le volet de saisie, boutons regroupés, styles), `src/ui-saisie.js` (nombre d'éléments, mode modification), `src/ui-commun.js` (libellés pour lecteur d'écran), `src/i18n.js`, `test/presentation.e2e.js`.
+- Rouge d'abord : les 5 tests `[T13]` rouges (classe `panneau`, compte, `data-mode`, `aria-current` et raccourcis absents).
+- Commit : « T13 — Panneaux de saisie titrés avec leur nombre d'éléments, mode modification signalé ».
+
+Preuve (`./verify.sh T13`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 72111 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 74.706174
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 79.561981
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 88.700226
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 67.853959
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 156.423869
+== Tests de bout en bout (Playwright) ==
+
+Running 5 tests using 1 worker
+
+  ✓  1 test/presentation.e2e.js:89:1 › [T13] EX-12 : chaque objet a son panneau titré, avec le nombre d'éléments actifs, et tous ses champs visibles (393ms)
+  ✓  2 test/presentation.e2e.js:103:1 › [T13] le nombre d'éléments d'un panneau suit les ajouts et les suppressions (247ms)
+  ✓  3 test/presentation.e2e.js:115:1 › [T13] EX-15 : le panneau et l'élément modifiés sont signalés jusqu'à l'enregistrement (331ms)
+  ✓  4 test/presentation.e2e.js:129:1 › [T13] EX-15 : … ou jusqu'à l'annulation (303ms)
+  ✓  5 test/presentation.e2e.js:138:1 › [T13] une barre de raccourcis mène à chaque panneau de saisie (474ms)
+
+  5 passed (2.5s)
+== T13 : vérification verte ==
 ```

@@ -49,12 +49,24 @@
     return morceaux.join(" · ");
   }
 
-  function afficherListe(objet, enregistrements, resume) {
+  // Liste d'un panneau ; enEdition : identifiant de l'élément en cours de modification (EX-15).
+  function afficherListe(objet, enregistrements, resume, enEdition) {
     document.getElementById(`${objet}-vide`).hidden = enregistrements.length > 0;
-    document.getElementById(`liste-${objet}`).replaceChildren(...enregistrements.map((e) => element("li", { "data-id": e.id },
-      element("span", { class: "resume" }, ...[].concat(resume(e))),
-      element("button", { type: "button", "data-action": "modifier" }, T.commun.modifier),
-      element("button", { type: "button", "data-action": "supprimer" }, T.commun.supprimer))));
+    document.getElementById(`liste-${objet}`).replaceChildren(...enregistrements.map((e) => {
+      const li = element("li", { "data-id": e.id },
+        element("span", { class: "resume" }, ...[].concat(resume(e))),
+        element("button", { type: "button", "data-action": "modifier" }, T.commun.modifier),
+        element("button", { type: "button", "data-action": "supprimer" }, T.commun.supprimer));
+      if (e.id === enEdition) li.setAttribute("aria-current", "true");
+      return li;
+    }));
+    // EX-12 : le nombre d'éléments actifs, dans le titre du panneau et dans la barre de raccourcis.
+    const compte = document.querySelector(`#section-${objet} .compte`);
+    compte.textContent = String(enregistrements.length);
+    compte.setAttribute("aria-label", remplir(T.panneaux.compte, { nombre: enregistrements.length }));
+    document.querySelectorAll(`.compte-raccourci[data-objet="${objet}"]`).forEach((el) => {
+      el.textContent = String(enregistrements.length);
+    });
   }
 
   // ---- Listes déroulantes
@@ -97,9 +109,22 @@
     zone.hidden = !message;
   }
 
+  // EX-15 : le panneau et l'élément en cours de modification se signalent.
+  function signalerEdition(formulaire, id) {
+    const panneau = formulaire.closest(".panneau");
+    if (id) panneau.dataset.mode = "modification";
+    else delete panneau.dataset.mode;
+    panneau.querySelector(".mode-modification").hidden = !id;
+    panneau.querySelectorAll("ul.liste li").forEach((li) => {
+      if (li.dataset.id === id) li.setAttribute("aria-current", "true");
+      else li.removeAttribute("aria-current");
+    });
+  }
+
   function quitterEdition(formulaire) {
     formulaire.reset();
     delete formulaire.dataset.id;
+    signalerEdition(formulaire, null);
     boutonValider(formulaire).textContent = texte(boutonValider(formulaire).dataset.texte);
     formulaire.querySelector(".annuler").hidden = true;
     montrerErreur(formulaire, null);
@@ -109,6 +134,7 @@
     quitterEdition(formulaire);
     ecrireFormulaire(formulaire, enregistrement);
     formulaire.dataset.id = enregistrement.id;
+    signalerEdition(formulaire, enregistrement.id);
     boutonValider(formulaire).textContent = T.commun.enregistrer;
     formulaire.querySelector(".annuler").hidden = false;
     formulaire.scrollIntoView({ block: "nearest" });
@@ -183,10 +209,11 @@
       plantations.sort((a, b) => a.date.localeCompare(b.date) || libellePlantation(a).localeCompare(libellePlantation(b), "fr"));
 
       const surOccupations = Calc.surOccupations(donnees);
-      afficherListe("espaces", espaces, (e) => resumeEspace(e, surOccupations[e.id]));
-      afficherListe("cultures", cultures, resumeCulture);
-      afficherListe("varietes", varietes, (v) => resumeVariete(v, toutesCultures));
-      afficherListe("plantations", plantations, libellePlantation);
+      const enEdition = (objet) => formulaires[objet] && formulaires[objet].dataset.id;
+      afficherListe("espaces", espaces, (e) => resumeEspace(e, surOccupations[e.id]), enEdition("espaces"));
+      afficherListe("cultures", cultures, resumeCulture, enEdition("cultures"));
+      afficherListe("varietes", varietes, (v) => resumeVariete(v, toutesCultures), enEdition("varietes"));
+      afficherListe("plantations", plantations, libellePlantation, enEdition("plantations"));
 
       remplirChoix(document.getElementById("variete-cultureId"), cultures.map((c) => ({ valeur: c.id, libelle: c.nom })));
       remplirChoix(document.getElementById("plantation-varieteId"), varietes.map((v) => ({ valeur: v.id, libelle: libelleVariete(v) })));
