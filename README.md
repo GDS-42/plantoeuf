@@ -6,7 +6,7 @@ Outil libre de planification pour petit maraîcher : espaces, cultures, plantati
 
 ## Pour un agent de code
 
-Lire dans l'ordre : `AGENTS.md`, `docs/specs/N1/RUNBOOK.md`, `PROGRESS.md`. Puis suivre la routine de session du runbook : une tâche non passée de `docs/specs/N1/features.json`, test d'abord, preuve, commit.
+Lire dans l'ordre : `AGENTS.md`, `docs/specs/N1/RUNBOOK.md`, `PROGRESS.md`. Puis suivre la routine de session du runbook : une tâche non passée de `docs/specs/N1/features.json`, test d'abord, preuve, commit. En session orchestratrice, suivre `docs/ORCHESTRATION.md` : sous-agents par modèle, évaluateur séparé.
 
 ## Pour un humain
 

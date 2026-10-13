@@ -41,13 +41,18 @@ Une ferme fictive de 10 plantations donne un tableau CA / marge par culture et p
 7. Faire un commit atomique.
 8. Mettre à jour `PROGRESS.md` et le champ `passe` de `features.json`.
 
+## Mode orchestré (sous-agents par modèle)
+
+Si la session est orchestratrice, elle suit `docs/ORCHESTRATION.md` : elle lit `features.json`, lance chaque tâche prête dans un sous-agent avec le `modele` et l'`effort` indiqués, au plus `parallelisme_max` à la fois et seulement si leurs `fichiers` sont disjoints, fait relire par l'évaluateur (`evaluateur`) les tâches marquées `relecture`, fusionne et commite. Chaque sous-agent suit la routine ci-dessus. Chaque sous-agent lancé compte pour une session du seuil d'alerte.
+
 ## Conditions d'arrêt — s'arrêter et demander si
 
 - une exigence paraît fausse ou contredit un test ;
 - une modification de test, de spec, de modèle de données ou de dépendance semble nécessaire ;
 - deux tentatives de correction successives échouent ;
 - un objet absent du modèle de données paraît nécessaire ;
-- le seuil d'alerte de la tranche est atteint, ou le contexte dépasse environ 60 %.
+- le seuil d'alerte de la tranche est atteint, ou le contexte dépasse environ 60 % ;
+- en mode orchestré, une fusion de worktree ne passe pas en rebase propre.
 
 ## Idempotence et retour arrière
 

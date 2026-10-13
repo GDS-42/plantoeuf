@@ -43,6 +43,7 @@ Cible à terme : application web installable et synchronisée (ADR-001).
 - Test d'abord (rouge), implémentation (vert), refactor, preuve collée dans `PROGRESS.md`, commit atomique.
 - L'agent ne modifie dans `features.json` que le champ `passe`, et dans `RUNBOOK.md` que les sections marquées ✎.
 - Seuil d'alerte de la tranche atteint : s'arrêter et rendre compte, ne rien décider.
+- Mode orchestré : `docs/ORCHESTRATION.md`. Chaque tâche de `features.json` porte son `modele`, son `effort`, ses `fichiers` et s'il faut une `relecture` ; l'évaluateur est toujours un autre modèle que le générateur.
 
 ## Limites
 
