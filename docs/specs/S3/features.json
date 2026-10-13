@@ -1,0 +1,177 @@
+{
+  "tranche": "S3",
+  "seuil_alerte_sessions": 11,
+  "parallelisme_max": 1,
+  "evaluateur": {
+    "modele": "fable",
+    "effort": "high"
+  },
+  "taches": [
+    {
+      "id": "T26",
+      "exigences": [
+        "EX-25"
+      ],
+      "description": "Modèle : lots de poules dans le store, avec UUID, dates et suppression logique ; format exporté en version 3, un fichier de version 1 ou 2 s'importe par migration ; export et import à l'identique",
+      "verification": [
+        "./verify.sh T26"
+      ],
+      "depend_de": [],
+      "fichiers": [
+        "src/store.js",
+        "test/poules.test.js",
+        "test/poules.e2e.js",
+        "test/export.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T27",
+      "exigences": [
+        "EX-25"
+      ],
+      "description": "Panneau de saisie des lots de poules : ajouter, modifier, supprimer, retrouver après réouverture ; « Œufs » dans le choix du produit d'un débouché (maquette sur le canevas de design d'abord)",
+      "verification": [
+        "./verify.sh T27"
+      ],
+      "depend_de": [
+        "T26"
+      ],
+      "fichiers": [
+        "src/ui-poules.js",
+        "src/ui-ventes.js",
+        "src/index.html",
+        "src/i18n.js",
+        "test/poules.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T28",
+      "exigences": [
+        "EX-26"
+      ],
+      "description": "Ponte et aliment par semaine, en fourchette, pour chaque lot et pour la ferme (scénario S7, semaines)",
+      "verification": [
+        "./verify.sh T28"
+      ],
+      "depend_de": [
+        "T26"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "test/poules.test.js",
+        "test/poules.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T29",
+      "exigences": [
+        "EX-27"
+      ],
+      "description": "Atelier poules dans le tableau économique : œufs, chiffre d'affaires, coût de l'aliment et marge par mois ; aliment déduit de la marge de la ferme ; synthèse (scénarios S7 et S9)",
+      "verification": [
+        "./verify.sh T29"
+      ],
+      "depend_de": [
+        "T28"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "src/ui-tableau.js",
+        "src/index.html",
+        "src/i18n.js",
+        "test/poules.test.js",
+        "test/poules.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T30",
+      "exigences": [
+        "EX-28"
+      ],
+      "description": "Œufs dans les ventes : ligne de la matrice offre-demande, ventes plafonnées par la demande au meilleur prix, chiffre d'affaires par point de vente (scénario S8)",
+      "verification": [
+        "./verify.sh T30"
+      ],
+      "depend_de": [
+        "T29"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "src/ui-ventes.js",
+        "src/i18n.js",
+        "test/poules.test.js",
+        "test/poules.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T31",
+      "exigences": [
+        "EX-29"
+      ],
+      "description": "Ferme d'exemple : un lot de poules réunionnais et des débouchés pour ses œufs, effaçables avec le reste de l'exemple",
+      "verification": [
+        "./verify.sh T31"
+      ],
+      "depend_de": [
+        "T27",
+        "T30"
+      ],
+      "fichiers": [
+        "src/exemple.js",
+        "test/poules.test.js",
+        "test/exemple-poules.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T32",
+      "exigences": [
+        "EX-25",
+        "EX-26",
+        "EX-27",
+        "EX-28",
+        "EX-29"
+      ],
+      "description": "Vérification de bout en bout de la tranche, puis revue par l'évaluateur séparé, restreinte à la conformité à la spec",
+      "verification": [
+        "./verify.sh S3"
+      ],
+      "depend_de": [
+        "T26",
+        "T27",
+        "T28",
+        "T29",
+        "T30",
+        "T31"
+      ],
+      "fichiers": [],
+      "modele": "fable",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    }
+  ]
+}

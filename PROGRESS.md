@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N2 · Sessions consommées : 10 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : S3 · Sessions consommées : 0 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -3186,3 +3186,10 @@ Running 57 tests using 2 workers
   57 passed (20.1s)
 == N2 : vérification verte ==
 ```
+
+---
+
+# Tranche S3 — Poules pondeuses, second atelier de la projection
+
+- Spec, runbook et tâches (T26 à T32, seuil de 11 sessions) dans `docs/specs/S3/`. Le comptage réel des œufs (SaisieJour du brief) est reporté avec le réel de S1 et S2.
+- Décisions de l'humain du 13/10/2026 : format exporté en version 3 ; la ligne du test `[T08]` et les trois assertions des tests `[T18]` qui fixaient « version 2 » comparent désormais à la version courante, rien d'autre ne change dans ces tests ; l'agent avance seul jusqu'à la livraison, sans poser de question, et consigne ses décisions.
