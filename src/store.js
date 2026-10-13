@@ -16,8 +16,9 @@
   const JOUR_MS = 24 * 3600 * 1000;
   // MIGRATIONS[n] transforme un fichier de version n en version n + 1. Aucune tant que VERSION vaut 1.
   const MIGRATIONS = {};
-  // Les objets du noyau en N1 (SPEC, « Modèle de données du noyau »).
-  const OBJETS = ["espaces", "cultures", "varietes", "plantations"];
+  // Les objets du noyau : ceux de N1 (SPEC N1, « Modèle de données du noyau »), puis ceux de N2
+  // (points de vente, séances, débouchés). Un fichier qui n'a pas une liste la reçoit vide.
+  const OBJETS = ["espaces", "cultures", "varietes", "plantations", "pointsVente", "seances", "debouches"];
   // Champs tenus par le store, jamais par la saisie.
   const CHAMPS_SYSTEME = ["id", "creeLe", "modifieLe", "supprimeLe"];
 

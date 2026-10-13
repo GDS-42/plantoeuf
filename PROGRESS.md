@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N2 · Sessions consommées : 0 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : N2 · Sessions consommées : 1 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -1822,3 +1822,96 @@ Running 45 tests using 2 workers
 
 - Spec, runbook et tâches (T18 à T25, seuil de 12 sessions) dans `docs/specs/N2/`.
 - Deux questions posées à l'humain sans réponse à ce jour (version du format exporté, nom de la liste des points de vente) : l'agent avance avec la voie qui ne modifie aucun test (version 1 conservée, liste `pointsVente`), consignée dans la spec ; la voie plus propre (version 2 avec migration, `pointsDeVente`) attend son accord.
+
+## 13/10/2026 · T18 — Modèle : points de vente, séances, débouchés
+
+- Session 1 / 12 du seuil d'alerte de N2.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (noms et champs conformes à la spec, version 1 conservée, `pointsDeVente` toujours refusé, invariants de N1 tenus). Observation : une ferme qui ne contient que des points de vente n'est plus « vide » pour la proposition de l'exemple, ce qui est cohérent.
+- Résultat : **vert**. `./verify.sh T18` → exit 0 (5 tests unitaires, 1 de bout en bout) ; `./verify.sh N2` → exit 0 (53 tests unitaires, 46 de bout en bout).
+- Fichiers : `src/store.js` (trois listes de plus), `test/ventes.test.js`, `test/ventes.e2e.js`.
+- Rouge d'abord : 5 tests unitaires rouges et le test de bout en bout rouge (« Objet absent du modèle : pointsVente »).
+- Commit : « T18 — Modèle : points de vente, séances et débouchés dans le store ».
+
+Preuve (`./verify.sh T18`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 75619 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 75.780234
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 75.527244
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 76.405279
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 69.475225
+  type: 'test'
+  ...
+# Subtest: [T18] points de vente, séances et débouchés reçoivent un UUID et leurs dates, et sont retrouvés après réouverture
+ok 5 - [T18] points de vente, séances et débouchés reçoivent un UUID et leurs dates, et sont retrouvés après réouverture
+  ---
+  duration_ms: 7.672554
+  type: 'test'
+  ...
+# Subtest: [T18] leur suppression est logique
+ok 6 - [T18] leur suppression est logique
+  ---
+  duration_ms: 0.648923
+  type: 'test'
+  ...
+# Subtest: [T18] une fourchette désordonnée y est refusée
+ok 7 - [T18] une fourchette désordonnée y est refusée
+  ---
+  duration_ms: 0.79574
+  type: 'test'
+  ...
+# Subtest: [T18] export puis import restituent points de vente, séances et débouchés à l'identique, supprimés compris
+ok 8 - [T18] export puis import restituent points de vente, séances et débouchés à l'identique, supprimés compris
+  ---
+  duration_ms: 0.941916
+  type: 'test'
+  ...
+# Subtest: [T18] un fichier exporté avant N2, sans ces listes, s'importe toujours
+ok 9 - [T18] un fichier exporté avant N2, sans ces listes, s'importe toujours
+  ---
+  duration_ms: 0.312851
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 169.295226
+== Tests de bout en bout (Playwright) ==
+
+Running 1 test using 1 worker
+
+  ✓  1 test/ventes.e2e.js:5:1 › [T18] dans le fichier ouvert, points de vente, séances et débouchés sont enregistrés, retrouvés et exportés (296ms)
+
+  1 passed (929ms)
+== T18 : vérification verte ==
+```
