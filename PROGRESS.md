@@ -2280,3 +2280,9 @@ Running 1 test using 1 worker
   1 passed (1.6s)
 == T22 : vérification verte ==
 ```
+
+## 13/10/2026 · Décisions de l'humain sur les questions de N2
+
+- **Marge de la ferme, et toute différence de fourchettes** : du pire au meilleur (basse = CA bas − coûts hauts ; haute = CA haut − coûts bas). Règle ajoutée à `docs/specs/N2/SPEC.md` (« Différence de fourchettes ») ; elle lève la contradiction relevée par le relecteur de T22.
+- **Format exporté** : version 2, avec migration des fichiers de version 1. L'humain accepte que la ligne du test `[T08]` qui exige « version 1 » passe à 2, ainsi que celle du test `[T18]`. Travail fait en reprise de T18. Le nom de la liste reste `pointsVente`.
+- **Écart d'une case de la matrice** : un seul nombre (écart des médianes), le cadre portant la sûreté ; exception à « jamais un chiffre seul » consignée dans la spec.

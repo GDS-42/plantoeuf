@@ -57,7 +57,7 @@ La ferme d'exemple vend sur des marchés réunionnais : la vue « Offre et deman
 
 ## Idempotence et retour arrière
 
-Le format exporté reste en version 1 : un fichier de N1 s'importe dans N2 (les nouvelles listes y sont vides). Chaque tâche se défait par `git revert`.
+Le format exporté passe en version 2 (décision de l'humain du 13/10/2026) : un fichier de N1, en version 1, s'importe dans N2 par migration (les nouvelles listes y sont vides). Chaque tâche se défait par `git revert`.
 
 ## ✎ Journal de progression
 

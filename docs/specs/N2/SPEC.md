@@ -2,6 +2,7 @@
 
 Liens : `docs/BRIEF.md` (tranche N2), `docs/specs/N1/SPEC.md`, `docs/specs/P1/SPEC.md`
 Statut : **rédigée par l'agent** le 13/10/2026 à la demande de GDS-42. Lecture seule pour l'agent une fois la tranche commencée.
+Modifiée le 13/10/2026 sur décision de l'humain : différence de fourchettes, version du format exporté, écart de la matrice (voir Points tranchés).
 
 ## Objectif
 
@@ -31,6 +32,7 @@ Chaque enregistrement porte, comme en N1, un UUID, ses dates de création et de 
 - **Mois** : une semaine compte entière, ses ventes comme le coût de ses séances, dans le mois de son jeudi (le jour du milieu). Rattacher chaque vente au mois de sa séance pourrait donner une fourchette désordonnée pour un mois quand une semaine est à cheval sur deux mois ; la règle du jeudi garde chaque case ordonnée.
 - **Marge** : celle d'une culture reste égale à son chiffre d'affaires ; celle de la ferme = chiffre d'affaires − coûts des séances (charges de N3 à venir).
 - **Fourchettes** : basse, médiane et haute se calculent chacune avec les valeurs basses, médianes ou hautes. Pour un point de vente pris seul, la fourchette va du cas le moins favorable pour lui (production basse, sa demande basse, demande haute des débouchés servis avant lui) au plus favorable (production haute, sa demande haute, demande basse des débouchés servis avant lui), la médiane restant celle du calcul médian ; ces fourchettes-là ne s'additionnent pas d'un point de vente à l'autre.
+- **Différence de fourchettes** (marge de la ferme, résultat d'un point de vente, et toute marge à venir) : elle va du pire au meilleur — basse = basse du premier terme − haute du second ; haute = haute du premier terme − basse du second ; médiane = différence des médianes. Elle reste ainsi ordonnée (`fourchette_ordonnee`), ce que la soustraction niveau par niveau ne garantit pas (un mois avec des séances et sans vente : CA 0 €, coûts 22 / 25 / 27 € donneraient −22 / −25 / −27 €).
 
 ## Exigences
 
@@ -89,7 +91,7 @@ Fonctionnalité: Vendre ce qu'on produit
 
 ## Fichiers et interfaces
 
-- `src/store.js` : trois listes de plus ; le format exporté reste en version 1 (voir Points tranchés).
+- `src/store.js` : trois listes de plus ; le format exporté passe en version 2, et un fichier de version 1 s'importe par migration (voir Points tranchés).
 - `src/calc.js` : séances datées, coûts, offre et demande par semaine, ventes, tableau par point de vente.
 - `src/ui-ventes.js` : panneau de saisie des points de vente, séances et débouchés ; vue « Offre et demande » ; vue « Points de vente ».
 - `src/ui-tableau.js` : ligne des coûts des séances et marge de la ferme.
@@ -97,11 +99,12 @@ Fonctionnalité: Vendre ce qu'on produit
 
 ## Points tranchés le 13/10/2026 (par l'agent, l'humain ayant demandé d'avancer sauf blocage réel)
 
-- **Version du format exporté : 1, inchangée.** Les trois listes s'ajoutent ; un fichier exporté par N1, sans elles, s'importe toujours. Passer en version 2 obligerait à modifier le test `[T08]`, qui exige « version 1 » — ce que l'agent ne fait pas sans accord. Risque accepté : un ancien `plantoeuf.html` (N1) qui importerait un fichier de N2 perdrait les points de vente sans prévenir. Proposé à l'humain : version 2 avec migration, et la ligne du test adaptée.
-- **Nom de la liste : `pointsVente`.** Le test `[T02]` prend `pointsDeVente` comme exemple d'objet refusé ; ce nom reste donc refusé. Proposé à l'humain : renommer en `pointsDeVente` avec la version 2 et changer l'exemple du test.
+- **Version du format exporté : 2** (décision de l'humain du 13/10/2026, qui remplace le choix initial de l'agent de garder la version 1). Un fichier de version 1 (N1) s'importe par migration : ses trois listes de vente y sont vides. Un ancien `plantoeuf.html` (N1) refuse un fichier de version 2 au lieu de perdre les points de vente sans prévenir. La ligne du test `[T08]` qui exigeait « version 1 » et celle du test `[T18]` qui reprenait ce choix passent à 2, avec l'accord de l'humain.
+- **Nom de la liste : `pointsVente`.** Le test `[T02]` prend `pointsDeVente` comme exemple d'objet refusé ; ce nom reste donc refusé. Proposé à l'humain : renommer en `pointsDeVente` avec la version 2 et changer l'exemple du test ; non retenu le 13/10/2026, le nom reste `pointsVente`.
 - Une culture sans débouché se vend comme en N1 : on peut décrire ses points de vente petit à petit sans voir chuter le chiffre d'affaires des autres cultures.
 - Les séances sont régulières (une par jour de la semaine et par période) ; annuler une séance précise viendra plus tard.
 - Interface : trois panneaux de saisie de plus, après les plantations (Points de vente, Séances, Débouchés), sur le modèle des autres. Le volet de projection gagne des onglets : « Par culture » (le tableau économique, affiché à l'ouverture), « Offre et demande », « Points de vente ».
+- **Écart d'une case de la matrice** : il s'affiche en un seul nombre, l'écart des médianes, et un cadre signale qu'il est sûr ; exception à « jamais un chiffre seul » d'AGENTS.md, décidée par l'humain le 13/10/2026 pour la lisibilité.
 - Dans le tableau économique, la ligne de volume d'une culture vendue à des points de vente donne le volume **vendu** ; le pied du tableau ajoute le coût des séances entre le chiffre d'affaires et la marge de la ferme.
 
 ## [À CLARIFIER]
