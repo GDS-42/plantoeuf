@@ -1,0 +1,178 @@
+{
+  "tranche": "P1",
+  "seuil_alerte_sessions": 9,
+  "parallelisme_max": 1,
+  "evaluateur": {
+    "modele": "fable",
+    "effort": "high"
+  },
+  "taches": [
+    {
+      "id": "T11",
+      "exigences": [],
+      "description": "Rendu découpé en modules src/ui-*.js sans changement de comportement : les tests de N1 restent verts sans modification ; verify.sh reconnaît les tranches P et S",
+      "verification": [
+        "./verify.sh T11",
+        "./verify.sh N1"
+      ],
+      "depend_de": [],
+      "fichiers": [
+        "src/index.html",
+        "src/ui-commun.js",
+        "src/ui-saisie.js",
+        "src/ui-tableau.js",
+        "src/ui-sauvegarde.js",
+        "verify.sh",
+        "AGENTS.md",
+        "test/presentation.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T12",
+      "exigences": [
+        "EX-11",
+        "EX-16"
+      ],
+      "description": "Deux volets : panneaux de saisie à gauche, projection toujours visible à droite ; aucun défilement horizontal de la page à partir de 1280 px (scénario P1-S1)",
+      "verification": [
+        "./verify.sh T12"
+      ],
+      "depend_de": [
+        "T11"
+      ],
+      "fichiers": [
+        "src/index.html",
+        "src/i18n.js",
+        "test/presentation.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T13",
+      "exigences": [
+        "EX-12",
+        "EX-15"
+      ],
+      "description": "Panneaux de saisie distincts et titrés, avec le nombre d'éléments actifs ; panneau et élément en cours de modification signalés",
+      "verification": [
+        "./verify.sh T13"
+      ],
+      "depend_de": [
+        "T12"
+      ],
+      "fichiers": [
+        "src/index.html",
+        "src/ui-saisie.js",
+        "src/i18n.js",
+        "test/presentation.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T14",
+      "exigences": [
+        "EX-13",
+        "EX-14"
+      ],
+      "description": "Tableau lisible : mois et cultures figés pendant le défilement ; synthèse du chiffre d'affaires de la saison en tête, en fourchette (scénarios P1-S2, P1-S3)",
+      "verification": [
+        "./verify.sh T14"
+      ],
+      "depend_de": [
+        "T12"
+      ],
+      "fichiers": [
+        "src/index.html",
+        "src/ui-tableau.js",
+        "src/i18n.js",
+        "test/presentation.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T15",
+      "exigences": [
+        "EX-16"
+      ],
+      "description": "Lisibilité : texte courant d'au moins 14 px, mentions secondaires d'au moins 12 px, contraste d'au moins 4,5:1, focus clavier visible",
+      "verification": [
+        "./verify.sh T15"
+      ],
+      "depend_de": [
+        "T13",
+        "T14"
+      ],
+      "fichiers": [
+        "src/index.html",
+        "test/presentation.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T16",
+      "exigences": [
+        "EX-11",
+        "EX-12",
+        "EX-13",
+        "EX-14",
+        "EX-15",
+        "EX-16"
+      ],
+      "description": "Vérification de bout en bout de la tranche, puis revue par l'évaluateur séparé, restreinte à la conformité à la spec",
+      "verification": [
+        "./verify.sh P1"
+      ],
+      "depend_de": [
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15"
+      ],
+      "fichiers": [],
+      "modele": "fable",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T17",
+      "exigences": [
+        "EX-17"
+      ],
+      "description": "Captures d'écran à 1366 × 768 et 1920 × 1080, ferme d'exemple chargée, envoyées à l'humain qui valide la présentation",
+      "verification": [
+        "validation humaine"
+      ],
+      "depend_de": [
+        "T16"
+      ],
+      "fichiers": [],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    }
+  ],
+  "mode": "simple",
+  "modele_minimum": {
+    "modele": "opus",
+    "effort": "high"
+  }
+}

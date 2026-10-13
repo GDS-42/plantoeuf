@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N1 · Sessions consommées : 10 / 15 (seuil d'alerte)
+Tranche en cours : P1 · Sessions consommées : 0 / 9 (seuil d'alerte) · N1 terminée en 10 / 15
 
 ---
 
@@ -1101,3 +1101,15 @@ Running 26 tests using 2 workers
   26 passed (9.6s)
 == N1 : vérification verte ==
 ```
+
+## 13/10/2026 · Sécurisation de N1 et pull request
+
+- Demande de l'humain : un commit par tâche de T02 à T09, `passe` à `true`, relectures Fable de T02, T04, T05 et T08, T10, bilan de fin de tranche, pull request vers `main`. Tout cela était déjà fait et poussé : un commit par tâche de T01 à T09 ; T10 en deux commits (le test de parcours, poussé pendant l'évaluation, puis la clôture après le verdict) ; relectures et bilan consignés ci-dessus et dans le runbook de N1.
+- `main` contenait déjà T01, fusionné par la PR #1. Les commits T02 à T10 ont été rejoués au-dessus de `main` (contenu identique : diff vide avec l'état d'avant ; `./verify.sh N1` → exit 0, 48 tests unitaires et 26 de bout en bout), puis poussés.
+- Pull request #2 ouverte de la branche `n1` vers `main` : https://github.com/GDS-42/plantoeuf/pull/2. La suite du travail continue sur la branche de développement.
+
+---
+
+# Tranche P1 — Présentation
+
+Ordre retenu pour la suite, choisi par l'agent comme le plus sûr : **P1** (présentation : réorganiser le rendu sous la protection des tests de N1 avant d'y ajouter quoi que ce soit), puis **N2** (points de vente et séances, comme le prévoit le BRIEF), puis **S3** (atelier poules, dont les œufs passent par les points de vente). Chaque tranche a sa spec, son runbook et son seuil dans `docs/specs/<tranche>/`.
