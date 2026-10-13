@@ -155,7 +155,7 @@
   .contenu { grid-area: contenu; position: relative; overflow-y: auto; scroll-padding-top: 1rem; }
   .bandeau {
     display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem;
-    margin: 1rem clamp(1rem, 3vw, 2.5rem) 0; padding: 0.75rem 1rem;
+    margin: 1rem auto 0; width: calc(100% - 2 * clamp(1rem, 3vw, 2.5rem)); max-width: calc(92rem - 2 * clamp(1rem, 3vw, 2.5rem)); padding: 0.75rem 1rem;
     border-radius: var(--rayon); border: 1px solid transparent;
     background: var(--ambre-doux); color: var(--ambre-texte);
   }
@@ -164,7 +164,7 @@
   .bandeau.exemple { background: var(--bleu-doux); color: var(--bleu-texte); }
 
   /* ---- Pages */
-  .page { max-width: 92rem; padding: 1.75rem clamp(1rem, 3vw, 2.5rem) 3rem; display: grid; gap: 1.25rem; align-content: start; }
+  .page { max-width: 92rem; margin-inline: auto; padding: 1.75rem clamp(1rem, 3vw, 2.5rem) 3rem; display: grid; gap: 1.25rem; align-content: start; }
   .page-entete { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem 2rem; }
   .page-entete > div { flex: 1 1 28rem; min-width: 0; }
   .page-entete h1 { font-size: 1.65rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.015em; }
