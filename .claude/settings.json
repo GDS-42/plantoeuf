@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./init.sh)",
+      "Bash(./build.sh)",
+      "Bash(./verify.sh *)",
+      "Bash(node --test *)",
+      "Bash(npx playwright test *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git fetch origin *)",
+      "Bash(git pull origin *)",
+      "Bash(git push -u origin ccr-997aaccf-xva49c)",
+      "Bash(sha1sum *)",
+      "Bash(wc *)",
+      "mcp__Vercel__create_deployment",
+      "mcp__Vercel__get_deployment",
+      "mcp__Vercel__list_deployments",
+      "mcp__Vercel__list_deployment_files",
+      "mcp__Vercel__list_deployment_events",
+      "mcp__Vercel__get_deployment_file_contents",
+      "mcp__Vercel__get_project",
+      "mcp__Vercel__list_projects",
+      "mcp__Vercel__web_fetch_vercel_url"
+    ]
+  }
+}
