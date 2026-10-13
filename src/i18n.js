@@ -15,8 +15,80 @@
       supprimer: "Supprimer",
       enregistrer: "Enregistrer les modifications",
       annuler: "Annuler",
+      fermer: "Fermer",
       choisir: "— choisir —",
       supprime: "(supprimé)",
+    },
+    // P2 : navigation entre les pages (EX-30).
+    navigation: {
+      titre: "Pages de l'outil",
+      ferme: "Ma ferme",
+      ventes: "Ventes",
+      atelier: "Atelier",
+      donnees: "Données",
+    },
+    pages: {
+      synthese: {
+        nav: "Synthèse",
+        titre: "Synthèse de la saison",
+        description: "Ce que votre saison peut rapporter, mois par mois. Chaque chiffre est une estimation : une valeur médiane, entre une valeur basse et une valeur haute.",
+      },
+      espaces: {
+        nav: "Espaces",
+        titre: "Espaces",
+        description: "Les planches, tunnels et serres où vous cultivez, avec leur surface.",
+      },
+      cultures: {
+        nav: "Cultures",
+        titre: "Cultures et variétés",
+        description: "Ce que vous cultivez : rendement, prix, durée de récolte. Une variété reprend les valeurs de sa culture, sauf celles que vous changez.",
+      },
+      plantations: {
+        nav: "Plantations",
+        titre: "Plantations",
+        description: "Quoi, où, quand et sur quelle surface. Le calendrier montre l'occupation de chaque espace et la période de récolte.",
+      },
+      ventes: {
+        nav: "Ventes",
+        titre: "Ventes",
+        description: "Vos points de vente, leurs jours de vente et ce que chacun peut prendre à chaque séance.",
+      },
+      poules: {
+        nav: "Poules",
+        titre: "Poules pondeuses",
+        description: "Vos lots de poules : dates, ponte, aliment et prix de l'œuf.",
+      },
+      sauvegarde: {
+        nav: "Sauvegarde",
+        titre: "Sauvegarde",
+        description: "Vos données restent dans ce navigateur. Gardez-en une copie dans un fichier.",
+      },
+    },
+    // P2 : formulaires ouverts dans un tiroir (EX-31). « ajouter » : bouton qui ouvre le tiroir et titre du tiroir.
+    tiroirs: {
+      espaces: { ajouter: "Ajouter un espace", modifier: "Modifier l'espace" },
+      cultures: { ajouter: "Ajouter une culture", modifier: "Modifier la culture" },
+      varietes: { ajouter: "Ajouter une variété", modifier: "Modifier la variété" },
+      plantations: { ajouter: "Ajouter une plantation", modifier: "Modifier la plantation" },
+      pointsVente: { ajouter: "Ajouter un point de vente", modifier: "Modifier le point de vente" },
+      seances: { ajouter: "Ajouter une séance", modifier: "Modifier la séance" },
+      debouches: { ajouter: "Ajouter un débouché", modifier: "Modifier le débouché" },
+      lots: { ajouter: "Ajouter un lot de poules", modifier: "Modifier le lot de poules" },
+    },
+    annonces: {
+      ajoute: "Ajouté.",
+      enregistre: "Modifications enregistrées.",
+      supprime: "Supprimé.",
+    },
+    // P2 : accueil d'une ferme sans plantation (EX-36). Les étapes se suivent : une plantation demande un espace et une variété.
+    accueil: {
+      titre: "Préparez votre saison",
+      texte: "Trois étapes suffisent pour voir ce que votre saison peut rapporter. Les ventes et les poules sont facultatives.",
+      etapes: {
+        espaces: { titre: "Vos espaces", texte: "Planches, tunnels, serres : où vous cultivez, et sur quelle surface." },
+        cultures: { titre: "Vos cultures et variétés", texte: "Rendement, prix et durée de récolte de chaque culture." },
+        plantations: { titre: "Vos plantations", texte: "Quelle variété, sur quel espace, à quelle date." },
+      },
     },
     panneaux: {
       raccourcis: "Aller à un panneau de saisie",
@@ -152,6 +224,8 @@
     },
     synthese: {
       titre: "Chiffre d'affaires estimé de la saison",
+      ca: "Chiffre d'affaires estimé",
+      marge: "Marge estimée",
       entre: "entre",
       et: "et",
       vide: "—",
@@ -177,7 +251,7 @@
       total: "Total",
       ferme: "Toute la ferme",
       aucun: "Aucune récolte ni ponte prévue : ajoutez des plantations ou un lot de poules pour voir le tableau.",
-      euros: "{valeur} €",
+      euros: "{valeur}\u00a0€",
       nul: "—",
     },
     exemple: {
@@ -196,6 +270,10 @@
       rappel: "Vos dernières modifications n'ont pas été exportées depuis {jours} jours ou plus. Le navigateur peut effacer ses données : pensez à exporter.",
       rappelExporter: "Exporter maintenant",
     },
+    // P2 — textes propres à chaque chantier (T34 synthèse, T35 ventes, T36 ferme).
+    vueSynthese: {},
+    vueVentes: {},
+    vueFerme: {},
     // Morceaux des lignes de liste.
     resume: {
       surface: "{valeur} m²",

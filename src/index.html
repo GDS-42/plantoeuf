@@ -5,206 +5,719 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>plantoeuf</title>
 <style>
+  /* P2 — une application à pages : barre du haut (synthèse de la saison), barre latérale de navigation,
+     une page à la fois ; les formulaires s'ouvrent dans un tiroir à droite. Couleurs du maraîchage :
+     vert feuille pour l'action, jaune d'œuf pour l'atelier poules, bleu et ambre pour l'offre et la demande. */
   :root {
-    --fond: #f3f5f1;
+    --fond: #f4f6f3;
     --surface: #ffffff;
-    --surface-douce: #f8faf7;
-    --encre: #1b2620;
-    --encre-douce: #4a564e;
-    --trait: #dce2da;
-    --trait-fort: #b3beb5;
-    --accent: #2e6a3e;
-    --accent-fonce: #1f4d2b;
-    --accent-doux: #e6f0e7;
-    --barre: #1e3a2a;
-    --barre-douce: #d3e3d6;
-    --alerte-fond: #fff1d6;
-    --alerte-texte: #6b3a00;
-    --info-fond: #e5eef8;
-    --info-texte: #1d3f6e;
-    --erreur: #a12a1a;
-    --entete-tableau: #eaf0e8;
-    --atelier-fond: #f6f0e2;
-    --atelier-texte: #5a4a1f;
-    --atelier-surface: #fffcf5;
-    --largeur-saisie: 30rem;
+    --surface-douce: #f7f9f6;
+    --surface-survol: #eef3ed;
+    --encre: #17211b;
+    --encre-douce: #48564d;
+    --encre-pale: #5b695f;
+    --trait: #e1e7df;
+    --trait-fort: #c6d0c7;
+    --accent: #2b7a4b;
+    --accent-fonce: #1f5c37;
+    --accent-doux: #e2f0e6;
+    --accent-texte: #1d5733;
+    --sur-accent: #ffffff;
+    --oeuf: #c78a12;
+    --oeuf-doux: #fbf0d7;
+    --oeuf-texte: #6a4600;
+    --bleu: #2f62a6;
+    --bleu-doux: #e4edf9;
+    --bleu-texte: #1c4682;
+    --ambre: #b45309;
+    --ambre-doux: #fcefdf;
+    --ambre-texte: #7a3500;
+    --rouge: #b42318;
+    --rouge-doux: #fcebe9;
+    --rouge-texte: #8e1b12;
+    --voile: rgb(15 23 18 / 0.38);
+    --ombre: 0 1px 2px rgb(16 24 20 / 0.06), 0 1px 1px rgb(16 24 20 / 0.03);
+    --ombre-haute: 0 18px 48px rgb(16 24 20 / 0.18), 0 2px 6px rgb(16 24 20 / 0.08);
+    --rayon: 12px;
+    --rayon-petit: 8px;
+    --police: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Roboto, Arial, sans-serif;
+    --police-titre: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Roboto, Arial, sans-serif;
+    --largeur-nav: 15rem;
+    --hauteur-barre: 4.25rem;
+    color-scheme: light;
   }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --fond: #0f1511; --surface: #161e19; --surface-douce: #1b241e; --surface-survol: #212c25;
+      --encre: #e6ece7; --encre-douce: #b5c1b9; --encre-pale: #a0ada5; --trait: #29342d; --trait-fort: #3a473f;
+      --accent: #5dbb82; --accent-fonce: #7fd0a0; --accent-doux: #1b3325; --accent-texte: #8fd8ab; --sur-accent: #07140c;
+      --oeuf: #e0a83a; --oeuf-doux: #33290f; --oeuf-texte: #f1cd7c;
+      --bleu: #6f9ee0; --bleu-doux: #18263b; --bleu-texte: #a9c6f0;
+      --ambre: #e3934a; --ambre-doux: #352313; --ambre-texte: #f3bd86;
+      --rouge: #ef7a6e; --rouge-doux: #3a1a17; --rouge-texte: #f6aaa2;
+      --voile: rgb(0 0 0 / 0.55); --ombre: 0 1px 2px rgb(0 0 0 / 0.4); --ombre-haute: 0 18px 48px rgb(0 0 0 / 0.55);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --fond: #0f1511; --surface: #161e19; --surface-douce: #1b241e; --surface-survol: #212c25;
+    --encre: #e6ece7; --encre-douce: #b5c1b9; --encre-pale: #a0ada5; --trait: #29342d; --trait-fort: #3a473f;
+    --accent: #5dbb82; --accent-fonce: #7fd0a0; --accent-doux: #1b3325; --accent-texte: #8fd8ab; --sur-accent: #07140c;
+    --oeuf: #e0a83a; --oeuf-doux: #33290f; --oeuf-texte: #f1cd7c;
+    --bleu: #6f9ee0; --bleu-doux: #18263b; --bleu-texte: #a9c6f0;
+    --ambre: #e3934a; --ambre-doux: #352313; --ambre-texte: #f3bd86;
+    --rouge: #ef7a6e; --rouge-doux: #3a1a17; --rouge-texte: #f6aaa2;
+    --voile: rgb(0 0 0 / 0.55); --ombre: 0 1px 2px rgb(0 0 0 / 0.4); --ombre-haute: 0 18px 48px rgb(0 0 0 / 0.55);
+    color-scheme: dark;
+  }
+
+  /* ---- Base */
+  *, *::before, *::after { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
-    margin: 0; display: flex; flex-direction: column;
-    background: var(--fond); color: var(--encre);
-    font: 15px/1.45 "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    margin: 0;
+    background: var(--fond);
+    color: var(--encre);
+    font: 15px/1.5 var(--police);
+    -webkit-font-smoothing: antialiased;
   }
-  h1, h2 { margin: 0; }
-
-  /* Barre du haut */
-  .barre { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.6rem 1.25rem; background: var(--barre); color: #ffffff; }
-  .marque { display: flex; align-items: baseline; gap: 0.6rem; }
-  .marque h1 { font-size: 1.3rem; }
-  .marque span { color: var(--barre-douce); font-size: 0.95rem; }
-  .synthese { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; }
-  .synthese-titre { color: var(--barre-douce); font-size: 0.8rem; }
-  .synthese-valeur { font-variant-numeric: tabular-nums; }
-  .synthese .mediane { font-size: 1.25rem; font-weight: 700; }
-  .synthese-bornes { margin-left: 0.4rem; color: var(--barre-douce); font-size: 0.875rem; }
+  h1, h2, h3 { margin: 0; font-family: var(--police-titre); text-wrap: balance; }
+  p { margin: 0; }
+  button, input, select { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
   .pour-lecteur-d-ecran { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .icone { width: 1.25rem; height: 1.25rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* Bandeaux d'information et d'alerte */
-  .bandeau { flex: none; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; padding: 0.5rem 1.25rem; background: var(--alerte-fond); color: var(--alerte-texte); border-bottom: 1px solid var(--trait); }
-  .bandeau.exemple { background: var(--info-fond); color: var(--info-texte); }
-  .bandeau > span { flex: 1 1 20rem; }
+  /* Focus clavier toujours visible (EX-16). */
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  h1:focus-visible, h1:focus { outline: none; }
 
-  /* Deux volets : la saisie à gauche, la projection à droite, chacun avec son défilement (EX-11) */
-  .volets { flex: 1; min-height: 0; display: flex; }
-  .volet-saisie { flex: none; width: var(--largeur-saisie); overflow-y: auto; border-right: 1px solid var(--trait); padding: 0 1rem 2rem; box-sizing: border-box; }
-  .volet-projection { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 0.9rem 1.25rem 1rem; }
-  #section-tableau, #section-offre, #section-points { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 0.4rem; }
-  .onglets { flex: none; display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.7rem; border-bottom: 1px solid var(--trait-fort); }
-  .onglets button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 0.4rem 0.8rem; color: var(--encre-douce); font-weight: 600; }
-  .onglets button[aria-selected="true"] { border-bottom-color: var(--accent); color: var(--accent-fonce); }
-  .onglets button:hover { color: var(--encre); }
-  .defilement { flex: 1; min-height: 0; overflow: auto; background: var(--surface); border: 1px solid var(--trait); border-radius: 10px; }
-  #tableau-vide { margin: 0; }
+  /* ---- Coquille : barre du haut, navigation, contenu */
+  .app {
+    height: 100%;
+    display: grid;
+    grid-template-columns: var(--largeur-nav) minmax(0, 1fr);
+    grid-template-rows: var(--hauteur-barre) minmax(0, 1fr);
+    grid-template-areas: "barre barre" "nav contenu";
+  }
+  .barre {
+    grid-area: barre;
+    display: flex; align-items: center; gap: 1.5rem;
+    padding-inline: 1.25rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--trait);
+    z-index: 5;
+  }
+  .marque { display: flex; align-items: center; gap: 0.6rem; color: var(--encre); text-decoration: none; }
+  .marque-logo { width: 2.1rem; height: 2.1rem; flex: none; }
+  .marque-nom { font: 700 1.2rem/1 var(--police-titre); letter-spacing: -0.01em; }
+  .marque-sous-titre { display: block; margin-top: 0.15rem; color: var(--encre-pale); font-size: 0.8rem; line-height: 1; }
 
-  /* Saisie : un panneau par objet (EX-12) */
-  .raccourcis { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 -1rem; padding: 0.7rem 1rem; background: var(--fond); border-bottom: 1px solid var(--trait); }
-  .raccourcis a { padding: 0.2rem 0.65rem; border: 1px solid var(--trait-fort); border-radius: 999px; background: var(--surface); color: var(--encre); font-size: 0.875rem; text-decoration: none; }
-  .raccourcis a:hover { border-color: var(--accent); color: var(--accent-fonce); }
-  .compte-raccourci { color: var(--encre-douce); }
-  .panneau { margin-top: 1rem; background: var(--surface); border: 1px solid var(--trait); border-radius: 10px; scroll-margin-top: calc(var(--hauteur-raccourcis, 3.5rem) + 0.75rem); }
-  .panneau-entete { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.75rem 1rem 0.5rem; }
-  .panneau-entete h2 { font-size: 1.1rem; }
-  .compte { min-width: 1.6rem; padding: 0 0.45rem; border-radius: 999px; background: var(--accent-doux); color: var(--accent-fonce); font-size: 0.875rem; font-weight: 600; text-align: center; }
-  .mode-modification { margin-left: auto; padding: 0.05rem 0.5rem; border-radius: 4px; background: var(--alerte-fond); color: var(--alerte-texte); font-size: 0.875rem; font-weight: 600; }
-  .panneau[data-mode="modification"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
-  .panneau form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem 0.75rem; margin: 0; padding: 0.75rem 1rem; background: var(--surface-douce); border-top: 1px solid var(--trait); border-bottom: 1px solid var(--trait); }
-  .panneau form > .aide, .panneau form > .erreur, .panneau form > .boutons { grid-column: 1 / -1; }
-  .boutons { display: flex; gap: 0.5rem; }
-  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; color: var(--encre); }
-  input, select { font: inherit; padding: 0.35rem 0.5rem; border: 1px solid var(--trait-fort); border-radius: 6px; background: var(--surface); color: var(--encre); min-width: 0; }
-  input[type="number"], input[type="date"], select { width: 100%; box-sizing: border-box; }
-  button { font: inherit; padding: 0.35rem 0.8rem; border: 1px solid var(--trait-fort); border-radius: 6px; background: var(--surface); color: var(--encre); cursor: pointer; }
-  button:hover { border-color: var(--accent); }
-  button.principal { background: var(--accent); border-color: var(--accent); color: #ffffff; font-weight: 600; }
-  button.principal:hover { background: var(--accent-fonce); }
-  .aide { margin: 0; font-size: 0.875rem; color: var(--encre-douce); }
-  .erreur { margin: 0; color: var(--erreur); font-weight: 600; }
-  .vide { margin: 0; padding: 0.6rem 1rem; color: var(--encre-douce); font-size: 0.875rem; }
-  ul.liste { list-style: none; padding: 0; margin: 0; }
-  ul.liste li { display: flex; flex-wrap: wrap; gap: 0.4rem 0.5rem; align-items: center; padding: 0.45rem 1rem; border-bottom: 1px solid var(--trait); }
+  /* Synthèse de la saison, toujours en tête (EX-14). */
+  .saison { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+  .indicateur {
+    display: grid; grid-template-columns: auto; row-gap: 0.05rem;
+    padding: 0.35rem 0.85rem; border-radius: var(--rayon-petit);
+    min-width: 0;
+  }
+  .indicateur + .indicateur { border-left: 1px solid var(--trait); border-radius: 0; }
+  .indicateur-titre { color: var(--encre-pale); font-size: 0.8rem; line-height: 1.2; white-space: nowrap; }
+  .indicateur-valeur { display: flex; align-items: baseline; gap: 0.5rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .indicateur-valeur .mediane { font: 700 1.25rem/1.25 var(--police-titre); letter-spacing: -0.01em; }
+  .indicateur-bornes { color: var(--encre-pale); font-size: 0.8rem; }
+  .indicateur.negatif .mediane { color: var(--rouge-texte); }
+
+  .navigation {
+    grid-area: nav;
+    overflow-y: auto;
+    padding: 1rem 0.75rem 1.5rem;
+    border-right: 1px solid var(--trait);
+    background: var(--fond);
+  }
+  .navigation ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.15rem; }
+  .navigation-groupe { margin: 1.1rem 0.6rem 0.35rem; color: var(--encre-pale); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .navigation a {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0.5rem 0.65rem; border-radius: var(--rayon-petit);
+    color: var(--encre-douce); font-weight: 500; text-decoration: none;
+  }
+  .navigation a:hover { background: var(--surface-survol); color: var(--encre); }
+  .navigation a[aria-current="page"] { background: var(--accent-doux); color: var(--accent-texte); font-weight: 600; }
+  .compte-nav {
+    margin-left: auto; min-width: 1.6rem; padding: 0 0.4rem; border-radius: 999px;
+    color: var(--encre-pale); font-size: 0.8rem; text-align: center; font-variant-numeric: tabular-nums;
+  }
+  .navigation a[aria-current="page"] .compte-nav { color: var(--accent-texte); }
+  .compte-nav:empty { display: none; }
+  .pastille-alerte { margin-left: auto; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--ambre); }
+
+  .contenu { grid-area: contenu; overflow-y: auto; scroll-padding-top: 1rem; }
+  .bandeau {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem;
+    margin: 1rem clamp(1rem, 3vw, 2.5rem) 0; padding: 0.75rem 1rem;
+    border-radius: var(--rayon); border: 1px solid transparent;
+    background: var(--ambre-doux); color: var(--ambre-texte);
+  }
+  .bandeau > .icone { width: 1.35rem; height: 1.35rem; }
+  .bandeau > span { flex: 1 1 18rem; }
+  .bandeau.exemple { background: var(--bleu-doux); color: var(--bleu-texte); }
+
+  /* ---- Pages */
+  .page { max-width: 92rem; padding: 1.75rem clamp(1rem, 3vw, 2.5rem) 3rem; display: grid; gap: 1.25rem; align-content: start; }
+  .page-entete { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem 2rem; }
+  .page-entete > div { flex: 1 1 28rem; min-width: 0; }
+  .page-entete h1 { font-size: 1.65rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.015em; }
+  .page-description { margin-top: 0.35rem; max-width: 68ch; color: var(--encre-douce); }
+  .page-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .colonnes { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); align-items: start; }
+
+  /* ---- Cartes et panneaux */
+  .carte { background: var(--surface); border: 1px solid var(--trait); border-radius: var(--rayon); box-shadow: var(--ombre); min-width: 0; }
+  .carte-entete { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; padding: 1rem 1.25rem; }
+  .carte-entete h2 { font-size: 1.05rem; font-weight: 650; }
+  .carte-entete .bouton { margin-left: auto; }
+  .carte-entete + .liste, .carte-entete + .etat-vide { border-top: 1px solid var(--trait); }
+  .carte-corps { padding: 0 1.25rem 1.25rem; }
+  .compte {
+    min-width: 1.7rem; padding: 0.05rem 0.5rem; border-radius: 999px;
+    background: var(--surface-survol); color: var(--encre-douce);
+    font-size: 0.8rem; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums;
+  }
+  .panneau[data-mode="modification"] { border-color: var(--accent); }
+
+  /* ---- Boutons */
+  .bouton {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+    min-height: 2.5rem; padding: 0.45rem 0.95rem;
+    border: 1px solid var(--trait-fort); border-radius: var(--rayon-petit);
+    background: var(--surface); color: var(--encre);
+    font-weight: 600; line-height: 1.2; cursor: pointer; white-space: nowrap;
+    transition: background-color 120ms, border-color 120ms;
+  }
+  .bouton:hover { background: var(--surface-survol); }
+  .bouton.principal { background: var(--accent); border-color: var(--accent); color: var(--sur-accent); }
+  .bouton.principal:hover { background: var(--accent-fonce); border-color: var(--accent-fonce); }
+  .bouton.discret { border-color: transparent; background: transparent; color: var(--accent-texte); }
+  .bouton.discret:hover { background: var(--accent-doux); }
+  .bouton .icone { width: 1.1rem; height: 1.1rem; }
+  .bandeau .bouton { border-color: currentColor; background: transparent; color: inherit; }
+  .bouton-icone {
+    display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem; flex: none;
+    border: 1px solid transparent; border-radius: var(--rayon-petit);
+    background: transparent; color: var(--encre-pale); cursor: pointer;
+  }
+  .bouton-icone:hover { background: var(--surface-survol); color: var(--encre); }
+  .bouton-icone[data-action="supprimer"]:hover { background: var(--rouge-doux); color: var(--rouge-texte); }
+
+  /* ---- Listes : une ligne par élément, ses actions à droite */
+  ul.liste { list-style: none; margin: 0; padding: 0; }
+  ul.liste li {
+    display: flex; align-items: center; gap: 0.75rem 1.25rem;
+    padding: 0.8rem 0.75rem 0.8rem 1.25rem;
+    border-bottom: 1px solid var(--trait);
+  }
   ul.liste li:last-child { border-bottom: 0; }
-  ul.liste li span.resume { flex: 1 1 14rem; }
-  ul.liste li button { padding: 0.2rem 0.6rem; font-size: 0.875rem; }
-  ul.liste li button[data-action="supprimer"] { color: var(--erreur); }
-  ul.liste li[aria-current="true"] { background: var(--accent-doux); box-shadow: inset 4px 0 0 var(--accent); }
-  .sur-occupation { margin-left: 0.5rem; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: var(--alerte-texte); background: var(--alerte-fond); }
-  .explication { margin: 0; padding: 0 1rem 0.75rem; color: var(--encre-douce); font-size: 0.875rem; }
-  .actions-sauvegarde { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 0 1rem 0.75rem; }
-  #import-message { margin: 0; padding: 0 1rem 0.75rem; font-weight: 600; color: var(--accent-fonce); }
-  #import-message.erreur { color: var(--erreur); }
+  ul.liste li:hover { background: var(--surface-douce); }
+  ul.liste li[aria-current="true"] { background: var(--accent-doux); box-shadow: inset 3px 0 0 var(--accent); }
+  .ligne-texte { flex: 1 1 auto; min-width: 0; display: grid; gap: 0.35rem; }
+  .ligne-entete { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.5rem; }
+  .ligne-titre { font-weight: 650; }
+  .ligne-faits { display: flex; flex-wrap: wrap; gap: 0.35rem 1.75rem; margin: 0; }
+  .ligne-faits > div { display: grid; gap: 0.05rem; min-width: 0; }
+  .ligne-faits dt { color: var(--encre-pale); font-size: 0.8rem; }
+  .ligne-faits dd { margin: 0; font-variant-numeric: tabular-nums; }
 
-  /* Tableau économique : mois figés en haut, culture et estimation à gauche, total à droite (EX-13) */
-  .volet-projection h2 { font-size: 1.15rem; }
-  .legende { margin: 0; color: var(--encre-douce); font-size: 0.875rem; }
-  table.grille { --col-culture: 8.5rem; --col-mesure: 9.5rem; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.875rem; font-variant-numeric: tabular-nums; }
-  .grille th, .grille td { border-right: 1px solid var(--trait); border-bottom: 1px solid var(--trait); padding: 0.3rem 0.55rem; vertical-align: top; background: var(--surface); }
-  .grille thead th { position: sticky; top: 0; z-index: 3; background: var(--entete-tableau); font-weight: 600; text-align: right; white-space: nowrap; border-bottom-color: var(--trait-fort); }
-  .grille thead th:nth-child(1), .grille thead th:nth-child(2) { text-align: left; white-space: normal; z-index: 4; }
-  .grille thead th:nth-child(1), .grille tbody th[rowspan], .grille tfoot th[rowspan] { position: sticky; left: 0; width: var(--col-culture); min-width: var(--col-culture); max-width: var(--col-culture); box-sizing: border-box; }
-  .grille thead th:nth-child(2), .grille tbody th:not([rowspan]):not([colspan]), .grille tfoot th:not([rowspan]) { position: sticky; left: var(--col-culture); width: var(--col-mesure); min-width: var(--col-mesure); max-width: var(--col-mesure); box-sizing: border-box; box-shadow: 1px 0 0 var(--trait-fort); }
-  .grille tbody th, .grille tfoot th { z-index: 2; text-align: left; font-weight: normal; color: var(--encre); }
-  .grille th[rowspan] { font-weight: 600; }
-  .grille tbody tr[data-mesure="marge"] > *, .grille tfoot tr:last-child > * { border-bottom-color: var(--trait-fort); }
-  .grille td { text-align: right; white-space: nowrap; min-width: 5.5rem; }
-  .grille tr.bandeau-atelier > th { padding: 0.3rem 0.55rem; background: var(--surface-douce); color: var(--encre-douce); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; border-bottom-color: var(--trait-fort); }
-  .grille tr.bandeau-atelier > th > span { position: sticky; left: 0.55rem; }
-  .grille tr.bandeau-atelier[data-atelier="poules"] > th { background: var(--atelier-fond); color: var(--atelier-texte); }
-  .grille tbody tr[data-culture="oeufs"] > * { background: var(--atelier-surface); }
+  /* Une fourchette lisible : la médiane en évidence, la basse et la haute à côté. */
+  .f { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .f-mediane { font-weight: 600; }
+  .f-bornes { color: var(--encre-pale); font-size: 0.85em; }
+  .ligne-actions { display: flex; gap: 0.15rem; margin-left: auto; }
+  .resume { overflow-wrap: anywhere; }
+  .sur-occupation { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.15rem 0.55rem; border-radius: 999px; background: var(--ambre-doux); color: var(--ambre-texte); font-size: 0.85rem; font-weight: 600; }
+
+  /* États vides : ce que la liste contiendra, et le geste suivant (EX-36). */
+  .etat-vide { display: grid; justify-items: center; gap: 0.75rem; padding: 2.25rem 1.25rem; text-align: center; color: var(--encre-douce); }
+  .etat-vide > .icone { width: 2.25rem; height: 2.25rem; padding: 0.55rem; box-sizing: content-box; border-radius: 50%; background: var(--accent-doux); color: var(--accent-texte); }
+  .etat-vide p { max-width: 46ch; }
+
+  /* ---- Puces */
+  .puce { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0.55rem; border-radius: 999px; background: var(--surface-survol); color: var(--encre-douce); font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+  .puce.verte { background: var(--accent-doux); color: var(--accent-texte); }
+  .puce.oeuf { background: var(--oeuf-doux); color: var(--oeuf-texte); }
+  .puce.alerte { background: var(--ambre-doux); color: var(--ambre-texte); }
+
+  /* ---- Tiroir : le formulaire d'ajout ou de modification (EX-31) */
+  dialog.tiroir {
+    margin: 0 0 0 auto; padding: 0; border: 0;
+    width: min(32rem, 100vw); max-width: 100vw; height: 100%; max-height: 100%;
+    background: var(--surface); color: var(--encre);
+    box-shadow: var(--ombre-haute);
+  }
+  dialog.tiroir[open] { animation: tiroir-entree 180ms ease-out; }
+  dialog.tiroir::backdrop { background: var(--voile); }
+  @keyframes tiroir-entree { from { transform: translateX(2rem); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { dialog.tiroir[open] { animation: none; } }
+  .tiroir form { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+  .tiroir-entete { display: flex; align-items: center; gap: 0.75rem; padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--trait); }
+  .tiroir-entete h2 { font-size: 1.2rem; font-weight: 700; }
+  .tiroir-entete .bouton-icone { margin-left: auto; }
+  .tiroir-corps { overflow-y: auto; padding: 1.25rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-content: start; }
+  .tiroir-corps > .large, .tiroir-corps > .aide, .tiroir-corps > .erreur { grid-column: 1 / -1; }
+  .tiroir-pied { display: flex; justify-content: flex-end; gap: 0.6rem; padding: 1rem 1.25rem; border-top: 1px solid var(--trait); background: var(--surface-douce); }
+
+  /* ---- Champs */
+  label { display: grid; gap: 0.35rem; align-content: start; font-size: 0.9rem; font-weight: 600; color: var(--encre); }
+  input, select {
+    width: 100%; min-width: 0; min-height: 2.5rem; padding: 0.45rem 0.7rem;
+    border: 1px solid var(--trait-fort); border-radius: var(--rayon-petit);
+    background: var(--surface); color: var(--encre); font-weight: 400;
+  }
+  input:hover, select:hover { border-color: var(--encre-pale); }
+  input[type="file"] { padding: 0.4rem; }
+  .aide { color: var(--encre-douce); font-size: 0.875rem; font-weight: 400; }
+  .erreur { padding: 0.6rem 0.8rem; border-radius: var(--rayon-petit); background: var(--rouge-doux); color: var(--rouge-texte); font-weight: 600; }
+
+  /* ---- Accueil d'une ferme vide (EX-36) */
+  .accueil { padding: 1.5rem; display: grid; gap: 1.25rem; }
+  .accueil h2 { font-size: 1.35rem; }
+  .accueil > p { color: var(--encre-douce); max-width: 70ch; }
+  .etapes { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+  .etape { display: grid; grid-template-columns: auto 1fr; gap: 0.35rem 0.85rem; align-content: start; padding: 1rem; border: 1px solid var(--trait); border-radius: var(--rayon); background: var(--surface-douce); }
+  .etape-numero { grid-row: span 3; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--surface); border: 1px solid var(--trait-fort); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .etape[data-fait="true"] .etape-numero { background: var(--accent); border-color: var(--accent); color: var(--sur-accent); }
+  .etape h3 { font-size: 1rem; }
+  .etape p { color: var(--encre-douce); font-size: 0.9rem; }
+  .etape .bouton { justify-self: start; margin-top: 0.4rem; }
+  .accueil-exemple { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; padding: 1rem 1.1rem; border-radius: var(--rayon); background: var(--bleu-doux); color: var(--bleu-texte); }
+  .accueil-exemple > span { flex: 1 1 22rem; }
+  .accueil-exemple .bouton { border-color: currentColor; background: transparent; color: inherit; }
+
+  /* ---- Projection : onglets et tableaux */
+  .onglets { display: flex; flex-wrap: wrap; gap: 0.25rem; padding: 0.35rem; margin: 1rem 1.25rem 0; border-radius: var(--rayon-petit); background: var(--surface-survol); width: fit-content; max-width: calc(100% - 2.5rem); }
+  .onglets button { border: 0; border-radius: 6px; padding: 0.45rem 0.9rem; background: transparent; color: var(--encre-douce); font-weight: 600; cursor: pointer; }
+  .onglets button:hover { color: var(--encre); }
+  .onglets button[aria-selected="true"] { background: var(--surface); color: var(--encre); box-shadow: var(--ombre); }
+  .vue { display: grid; gap: 0.75rem; padding: 1rem 1.25rem 1.25rem; min-width: 0; }
+  .vue h2 { font-size: 1.05rem; }
+  .legende { color: var(--encre-douce); font-size: 0.875rem; max-width: 95ch; }
+  .defilement { overflow: auto; max-height: min(70vh, 44rem); border: 1px solid var(--trait); border-radius: var(--rayon-petit); background: var(--surface); }
+
+  table.grille { min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+  .grille th, .grille td { padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--trait); background: var(--surface); vertical-align: top; }
+  .grille thead th { position: sticky; top: 0; z-index: 3; background: var(--surface-douce); color: var(--encre-douce); font-size: 0.8rem; font-weight: 600; text-align: right; white-space: nowrap; border-bottom-color: var(--trait-fort); }
+  .grille thead th:first-child { text-align: left; left: 0; z-index: 4; }
+  .grille tbody th, .grille tfoot th { position: sticky; left: 0; z-index: 2; text-align: left; font-weight: 600; }
+  .grille td { text-align: right; white-space: nowrap; }
   .grille td .mediane { display: block; font-weight: 600; }
-  .grille td .bornes { display: block; font-size: 0.8rem; color: var(--encre-douce); }
-  .grille td.nul .mediane { color: var(--encre-douce); font-weight: 400; }
+  .grille td .bornes { display: block; color: var(--encre-pale); font-size: 0.8rem; }
+  .grille td.nul .mediane { color: var(--encre-pale); font-weight: 400; }
   .grille td.nul .bornes { display: none; }
   .grille tfoot th, .grille tfoot td { background: var(--surface-douce); }
-  .grille tfoot tr:first-child > * { border-top: 2px solid var(--trait-fort); }
-  /* La colonne Total reste au bord droit pendant que les mois défilent : le chiffre de la saison reste sous les yeux. */
-  #tableau thead th:last-child, #tableau td[data-mois="total"] { position: sticky; right: 0; z-index: 2; box-shadow: -1px 0 0 var(--trait-fort); }
-  #tableau thead th:last-child { z-index: 4; }
-
-  /* Offre et demande : la case d'offre se colore selon l'écart avec la demande (EX-20) */
-  .grille td.etat-depasse { background: var(--info-fond); }
-  .grille td.etat-manque { background: var(--alerte-fond); }
-  .grille td[data-sur="true"] { box-shadow: inset 0 0 0 2px var(--encre-douce); }
+  .grille tr.bandeau-atelier > th { background: var(--oeuf-doux); color: var(--oeuf-texte); font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .grille td.etat-depasse { background: var(--bleu-doux); }
+  .grille td.etat-manque { background: var(--ambre-doux); }
+  .grille td[data-sur="true"] { box-shadow: inset 0 0 0 2px var(--encre-pale); }
   .grille td .ecart { display: block; font-size: 0.8rem; font-weight: 600; }
-  .grille td.etat-depasse .ecart { color: var(--info-texte); }
-  .grille td.etat-manque .ecart { color: var(--alerte-texte); }
+  .grille td.etat-depasse .ecart { color: var(--bleu-texte); }
+  .grille td.etat-manque .ecart { color: var(--ambre-texte); }
 
-  /* Écran étroit : une seule colonne, la projection en premier */
-  @media (max-width: 1099px) {
-    body { display: block; height: auto; }
-    .volets { flex-direction: column; }
-    .volet-projection { order: -1; }
-    .volet-saisie { width: auto; overflow: visible; border-right: 0; }
-    .defilement { max-height: 70vh; }
+  /* ---- Synthèse : tuiles et graphique (rendus par ui-synthese.js) */
+  .tuiles { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+  .graphique { padding: 0 1.25rem 1.25rem; }
+
+  /* ==== T34 — Synthèse : chiffres clés, graphique, tableau « Par culture » ==== */
+  /* ==== fin T34 ==== */
+
+  /* ==== T35 — Ventes : offre et demande, points de vente, listes des ventes ==== */
+  /* ==== fin T35 ==== */
+
+  /* ==== T36 — Ferme : lignes des listes, calendrier de culture, poules, sauvegarde ==== */
+  /* ==== fin T36 ==== */
+
+  /* ---- Sauvegarde */
+  .actions-sauvegarde { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem 1.5rem; padding: 0 1.25rem 1.25rem; }
+  #import-message { margin: 0 1.25rem 1.25rem; padding: 0.6rem 0.8rem; border-radius: var(--rayon-petit); background: var(--accent-doux); color: var(--accent-texte); font-weight: 600; }
+  #import-message.erreur { background: var(--rouge-doux); color: var(--rouge-texte); }
+
+  /* ---- Annonce passagère après un enregistrement */
+  .annonce {
+    position: fixed; left: 50%; bottom: 1.5rem; z-index: 20; transform: translateX(-50%);
+    padding: 0.65rem 1.1rem; border-radius: 999px;
+    background: var(--encre); color: var(--fond); font-weight: 600; box-shadow: var(--ombre-haute);
   }
 
-  /* Focus clavier toujours visible (EX-16) ; à l'intérieur des zones qui défilent, pour ne pas être rogné. */
-  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  .volet-saisie:focus-visible, .defilement:focus-visible { outline-offset: -3px; }
-
-  [hidden] { display: none !important; }
+  /* ---- Écran étroit : navigation en ruban sous la barre, une colonne */
+  @media (max-width: 900px) {
+    .app { display: block; height: auto; }
+    .barre { flex-wrap: wrap; gap: 0.5rem 1rem; padding-block: 0.75rem; }
+    .saison { margin-left: 0; width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .indicateur { padding-inline: 0.75rem; }
+    .indicateur:first-child { padding-left: 0; }
+    .indicateur-valeur { flex-wrap: wrap; row-gap: 0; }
+    .indicateur-bornes { white-space: normal; }
+    .navigation { position: sticky; top: 0; z-index: 4; display: flex; gap: 0.25rem; overflow-x: auto; padding: 0.5rem; border-right: 0; border-bottom: 1px solid var(--trait); }
+    .navigation ul { display: flex; gap: 0.25rem; }
+    .navigation-groupe { display: none; }
+    .navigation a { white-space: nowrap; }
+    .contenu { overflow: visible; }
+    .tiroir-corps { grid-template-columns: minmax(0, 1fr); }
+  }
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" hidden>
+  <symbol id="i-synthese" viewBox="0 0 24 24"><path d="M4 4v16h16"/><path d="M8.5 16v-5"/><path d="M13 16V7"/><path d="M17.5 16v-3"/></symbol>
+  <symbol id="i-espaces" viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17"/></symbol>
+  <symbol id="i-cultures" viewBox="0 0 24 24"><path d="M12 21v-9"/><path d="M12 12c0-4.2 2.8-6.8 7.5-6.8 0 4.3-2.9 6.8-7.5 6.8z"/><path d="M12 14.5c0-3.3-2.3-5.4-6-5.4 0 3.4 2.3 5.4 6 5.4z"/></symbol>
+  <symbol id="i-plantations" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M16 3v4M8 3v4M3.5 10h17"/><path d="M7.5 14h4M7.5 17h7"/></symbol>
+  <symbol id="i-ventes" viewBox="0 0 24 24"><path d="M4.5 10h15l-1.6 9.2a1.5 1.5 0 0 1-1.5 1.3H7.6a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M8.5 10l3.5-6 3.5 6"/><path d="M10 14v3M14 14v3"/></symbol>
+  <symbol id="i-poules" viewBox="0 0 24 24"><path d="M12 3c-3.6 0-6.5 5.2-6.5 9.6 0 4.2 2.9 8.4 6.5 8.4s6.5-4.2 6.5-8.4C18.5 8.2 15.6 3 12 3z"/></symbol>
+  <symbol id="i-sauvegarde" viewBox="0 0 24 24"><path d="M12 3.5v11"/><path d="M7.5 10l4.5 4.5 4.5-4.5"/><path d="M4.5 16.5v2a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-crayon" viewBox="0 0 24 24"><path d="M4 20h4.2L19.4 8.8a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8z"/><path d="M13.5 6.5l4 4"/></symbol>
+  <symbol id="i-corbeille" viewBox="0 0 24 24"><path d="M4.5 7h15"/><path d="M9.5 7V4.5h5V7"/><path d="M6.5 7l.9 12.2a1.5 1.5 0 0 0 1.5 1.3h6.2a1.5 1.5 0 0 0 1.5-1.3L17.5 7"/><path d="M10.5 11v6M13.5 11v6"/></symbol>
+  <symbol id="i-fermer" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-alerte" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4.5M12 17.2v.3"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.8v.3"/></symbol>
+  <symbol id="i-logo" viewBox="0 0 32 32"><path d="M16 4.5c-5 0-9 7.2-9 13.2 0 5.6 3.9 9.8 9 9.8s9-4.2 9-9.8c0-6-4-13.2-9-13.2z" fill="var(--oeuf-doux)" stroke="var(--oeuf)" stroke-width="1.6"/><path d="M16 23.5v-7" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/><path d="M16 17c0-3.2 2-5.1 5.4-5.1 0 3.2-2.1 5.1-5.4 5.1z" fill="var(--accent)" stroke="none"/><path d="M16 18.6c0-2.5-1.7-4-4.4-4 0 2.5 1.7 4 4.4 4z" fill="var(--accent)" stroke="none"/></symbol>
+</svg>
+
+<div class="app">
 <header class="barre">
-  <div class="marque">
-    <h1 data-texte="marque"></h1>
-    <span data-texte="sousTitre"></span>
-  </div>
-  <div id="synthese" class="synthese" aria-live="polite">
-    <span class="synthese-titre" data-texte="synthese.titre"></span>
-    <span class="synthese-valeur">
-      <span class="mediane" data-valeur="0"></span>
-      <span class="synthese-bornes"><span data-texte="synthese.entre"></span> <span class="basse" data-valeur="0"></span> <span data-texte="synthese.et"></span> <span class="haute" data-valeur="0"></span></span>
-    </span>
+  <a class="marque" href="#synthese">
+    <svg class="marque-logo" aria-hidden="true" focusable="false"><use href="#i-logo"></use></svg>
+    <span><span class="marque-nom" data-texte="marque"></span><span class="marque-sous-titre" data-texte="sousTitre"></span></span>
+  </a>
+  <div class="saison" aria-live="polite">
+    <div id="synthese" class="indicateur">
+      <span class="indicateur-titre" data-texte="synthese.ca"></span>
+      <span class="indicateur-valeur">
+        <span class="mediane" data-valeur="0"></span>
+        <span class="indicateur-bornes"><span data-texte="synthese.entre"></span> <span class="basse" data-valeur="0"></span> <span data-texte="synthese.et"></span> <span class="haute" data-valeur="0"></span></span>
+      </span>
+    </div>
+    <div id="synthese-marge" class="indicateur">
+      <span class="indicateur-titre" data-texte="synthese.marge"></span>
+      <span class="indicateur-valeur">
+        <span class="mediane" data-valeur="0"></span>
+        <span class="indicateur-bornes"><span data-texte="synthese.entre"></span> <span class="basse" data-valeur="0"></span> <span data-texte="synthese.et"></span> <span class="haute" data-valeur="0"></span></span>
+      </span>
+    </div>
   </div>
 </header>
 
-<div id="proposition-exemple" class="bandeau exemple" hidden>
-  <span id="proposition-texte"></span>
-  <button id="charger-exemple" type="button" data-texte="exemple.charger"></button>
+<nav id="navigation" class="navigation" data-texte-aria="navigation.titre">
+  <ul>
+    <li><a href="#synthese" data-page="synthese"><svg class="icone" aria-hidden="true"><use href="#i-synthese"></use></svg><span data-texte="pages.synthese.nav"></span></a></li>
+  </ul>
+  <p class="navigation-groupe" data-texte="navigation.ferme"></p>
+  <ul>
+    <li><a href="#espaces" data-page="espaces"><svg class="icone" aria-hidden="true"><use href="#i-espaces"></use></svg><span data-texte="pages.espaces.nav"></span><span class="compte-nav" data-objet="espaces"></span></a></li>
+    <li><a href="#cultures" data-page="cultures"><svg class="icone" aria-hidden="true"><use href="#i-cultures"></use></svg><span data-texte="pages.cultures.nav"></span><span class="compte-nav" data-objet="cultures"></span></a></li>
+    <li><a href="#plantations" data-page="plantations"><svg class="icone" aria-hidden="true"><use href="#i-plantations"></use></svg><span data-texte="pages.plantations.nav"></span><span class="compte-nav" data-objet="plantations"></span></a></li>
+  </ul>
+  <p class="navigation-groupe" data-texte="navigation.ventes"></p>
+  <ul>
+    <li><a href="#ventes" data-page="ventes"><svg class="icone" aria-hidden="true"><use href="#i-ventes"></use></svg><span data-texte="pages.ventes.nav"></span><span class="compte-nav" data-objet="pointsVente"></span></a></li>
+  </ul>
+  <p class="navigation-groupe" data-texte="navigation.atelier"></p>
+  <ul>
+    <li><a href="#poules" data-page="poules"><svg class="icone" aria-hidden="true"><use href="#i-poules"></use></svg><span data-texte="pages.poules.nav"></span><span class="compte-nav" data-objet="lots"></span></a></li>
+  </ul>
+  <p class="navigation-groupe" data-texte="navigation.donnees"></p>
+  <ul>
+    <li><a href="#sauvegarde" data-page="sauvegarde"><svg class="icone" aria-hidden="true"><use href="#i-sauvegarde"></use></svg><span data-texte="pages.sauvegarde.nav"></span><span id="pastille-sauvegarde" class="pastille-alerte" hidden></span></a></li>
+  </ul>
+</nav>
+
+<main id="contenu" class="contenu">
+  <div id="bandeau-exemple" class="bandeau exemple" hidden>
+    <svg class="icone" aria-hidden="true"><use href="#i-info"></use></svg>
+    <span data-texte="exemple.chargee"></span>
+    <button id="effacer-exemple" type="button" class="bouton" data-texte="exemple.effacer"></button>
+  </div>
+  <div id="rappel-export" class="bandeau" role="alert" hidden>
+    <svg class="icone" aria-hidden="true"><use href="#i-alerte"></use></svg>
+    <span id="rappel-texte"></span>
+    <button id="rappel-exporter" type="button" class="bouton" data-texte="sauvegarde.rappelExporter"></button>
+  </div>
+
+  <!-- ==== Page Synthèse ==== -->
+  <section id="page-synthese" class="page" data-page="synthese" hidden>
+    <header class="page-entete">
+      <div>
+        <h1 tabindex="-1" data-texte="pages.synthese.titre"></h1>
+        <p class="page-description" data-texte="pages.synthese.description"></p>
+      </div>
+    </header>
+
+    <section id="accueil" class="carte accueil" hidden>
+      <div>
+        <h2 data-texte="accueil.titre"></h2>
+      </div>
+      <p data-texte="accueil.texte"></p>
+      <ol class="etapes">
+        <li class="etape" data-etape="espaces">
+          <span class="etape-numero">1</span>
+          <h3 data-texte="accueil.etapes.espaces.titre"></h3>
+          <p data-texte="accueil.etapes.espaces.texte"></p>
+          <button type="button" class="bouton" data-ouvrir="espaces"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.espaces.ajouter"></span></button>
+        </li>
+        <li class="etape" data-etape="cultures">
+          <span class="etape-numero">2</span>
+          <h3 data-texte="accueil.etapes.cultures.titre"></h3>
+          <p data-texte="accueil.etapes.cultures.texte"></p>
+          <button type="button" class="bouton" data-ouvrir="cultures"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.cultures.ajouter"></span></button>
+        </li>
+        <li class="etape" data-etape="plantations">
+          <span class="etape-numero">3</span>
+          <h3 data-texte="accueil.etapes.plantations.titre"></h3>
+          <p data-texte="accueil.etapes.plantations.texte"></p>
+          <button type="button" class="bouton" data-ouvrir="plantations"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.plantations.ajouter"></span></button>
+        </li>
+      </ol>
+      <div id="proposition-exemple" class="accueil-exemple" hidden>
+        <span id="proposition-texte"></span>
+        <button id="charger-exemple" type="button" class="bouton" data-texte="exemple.charger"></button>
+      </div>
+    </section>
+
+    <div id="tuiles" class="tuiles"></div>
+
+    <section id="carte-graphique" class="carte" hidden>
+      <div class="carte-entete"><h2 id="graphique-titre"></h2></div>
+      <div id="graphique" class="graphique"></div>
+    </section>
+
+    <section id="carte-projection" class="carte">
+      <div class="onglets" role="tablist" data-texte-aria="projection.onglets">
+        <button type="button" role="tab" id="onglet-tableau" aria-controls="section-tableau" aria-selected="true" data-texte="projection.parCulture"></button>
+        <button type="button" role="tab" id="onglet-offre" aria-controls="section-offre" aria-selected="false" data-texte="projection.offreDemande"></button>
+        <button type="button" role="tab" id="onglet-points" aria-controls="section-points" aria-selected="false" data-texte="projection.pointsVente"></button>
+      </div>
+      <section id="section-tableau" class="vue" role="tabpanel" aria-labelledby="onglet-tableau">
+        <h2 data-texte="tableau.titre"></h2>
+        <p id="tableau-legende" class="legende" data-texte="tableau.legende"></p>
+        <p id="tableau-vide" class="legende" data-texte="tableau.aucun"></p>
+        <div class="defilement" id="tableau-defilement">
+          <table id="tableau" class="grille">
+            <caption class="pour-lecteur-d-ecran" data-texte="tableau.legende"></caption>
+            <thead></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+          </table>
+        </div>
+      </section>
+      <section id="section-offre" class="vue" role="tabpanel" aria-labelledby="onglet-offre" hidden>
+        <h2 data-texte="offre.titre"></h2>
+        <p id="matrice-legende" class="legende" data-texte="offre.legende"></p>
+        <p id="matrice-vide" class="legende" data-texte="offre.aucun"></p>
+        <div class="defilement" id="matrice-defilement">
+          <table id="matrice" class="grille">
+            <caption class="pour-lecteur-d-ecran" data-texte="offre.legende"></caption>
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+      <section id="section-points" class="vue" role="tabpanel" aria-labelledby="onglet-points" hidden>
+        <h2 data-texte="points.titre"></h2>
+        <p id="points-legende" class="legende" data-texte="points.legende"></p>
+        <p id="points-vide" class="legende" data-texte="points.aucun"></p>
+        <div class="defilement" id="points-defilement">
+          <table id="points" class="grille">
+            <caption class="pour-lecteur-d-ecran" data-texte="points.legende"></caption>
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </section>
+
+  <!-- ==== Page Espaces ==== -->
+  <section id="page-espaces" class="page" data-page="espaces" hidden>
+    <header class="page-entete">
+      <div>
+        <h1 tabindex="-1" data-texte="pages.espaces.titre"></h1>
+        <p class="page-description" data-texte="pages.espaces.description"></p>
+      </div>
+    </header>
+    <section id="section-espaces" class="carte panneau" data-objet="espaces">
+      <div class="carte-entete">
+        <h2 data-texte="espaces.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton principal" data-ouvrir="espaces"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.espaces.ajouter"></span></button>
+      </div>
+      <div id="espaces-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-espaces"></use></svg>
+        <p data-texte="espaces.aucun"></p>
+      </div>
+      <ul id="liste-espaces" class="liste"></ul>
+    </section>
+  </section>
+
+  <!-- ==== Page Cultures et variétés ==== -->
+  <section id="page-cultures" class="page" data-page="cultures" hidden>
+    <header class="page-entete">
+      <div>
+        <h1 tabindex="-1" data-texte="pages.cultures.titre"></h1>
+        <p class="page-description" data-texte="pages.cultures.description"></p>
+      </div>
+    </header>
+    <section id="section-cultures" class="carte panneau" data-objet="cultures">
+      <div class="carte-entete">
+        <h2 data-texte="cultures.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton principal" data-ouvrir="cultures"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.cultures.ajouter"></span></button>
+      </div>
+      <div id="cultures-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-cultures"></use></svg>
+        <p data-texte="cultures.aucun"></p>
+      </div>
+      <ul id="liste-cultures" class="liste"></ul>
+    </section>
+    <section id="section-varietes" class="carte panneau" data-objet="varietes">
+      <div class="carte-entete">
+        <h2 data-texte="varietes.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton" data-ouvrir="varietes"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.varietes.ajouter"></span></button>
+      </div>
+      <div id="varietes-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-cultures"></use></svg>
+        <p data-texte="varietes.aucun"></p>
+      </div>
+      <ul id="liste-varietes" class="liste"></ul>
+    </section>
+  </section>
+
+  <!-- ==== Page Plantations ==== -->
+  <section id="page-plantations" class="page" data-page="plantations" hidden>
+    <header class="page-entete">
+      <div>
+        <h1 tabindex="-1" data-texte="pages.plantations.titre"></h1>
+        <p class="page-description" data-texte="pages.plantations.description"></p>
+      </div>
+    </header>
+    <section id="carte-calendrier" class="carte" hidden>
+      <div id="calendrier"></div>
+    </section>
+    <section id="section-plantations" class="carte panneau" data-objet="plantations">
+      <div class="carte-entete">
+        <h2 data-texte="plantations.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton principal" data-ouvrir="plantations"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.plantations.ajouter"></span></button>
+      </div>
+      <div id="plantations-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-plantations"></use></svg>
+        <p data-texte="plantations.aucun"></p>
+      </div>
+      <ul id="liste-plantations" class="liste"></ul>
+    </section>
+  </section>
+
+  <!-- ==== Page Ventes ==== -->
+  <section id="page-ventes" class="page" data-page="ventes" hidden>
+    <header class="page-entete">
+      <div>
+        <h1 tabindex="-1" data-texte="pages.ventes.titre"></h1>
+        <p class="page-description" data-texte="pages.ventes.description"></p>
+      </div>
+    </header>
+    <section id="section-pointsVente" class="carte panneau" data-objet="pointsVente">
+      <div class="carte-entete">
+        <h2 data-texte="pointsVente.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton principal" data-ouvrir="pointsVente"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.pointsVente.ajouter"></span></button>
+      </div>
+      <div id="pointsVente-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-ventes"></use></svg>
+        <p data-texte="pointsVente.aucun"></p>
+      </div>
+      <ul id="liste-pointsVente" class="liste"></ul>
+    </section>
+    <section id="section-seances" class="carte panneau" data-objet="seances">
+      <div class="carte-entete">
+        <h2 data-texte="seances.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton" data-ouvrir="seances"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.seances.ajouter"></span></button>
+      </div>
+      <div id="seances-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-plantations"></use></svg>
+        <p data-texte="seances.aucun"></p>
+      </div>
+      <ul id="liste-seances" class="liste"></ul>
+    </section>
+    <section id="section-debouches" class="carte panneau" data-objet="debouches">
+      <div class="carte-entete">
+        <h2 data-texte="debouches.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton" data-ouvrir="debouches"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.debouches.ajouter"></span></button>
+      </div>
+      <div id="debouches-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-ventes"></use></svg>
+        <p data-texte="debouches.aucun"></p>
+      </div>
+      <ul id="liste-debouches" class="liste"></ul>
+    </section>
+  </section>
+
+  <!-- ==== Page Poules ==== -->
+  <section id="page-poules" class="page" data-page="poules" hidden>
+    <header class="page-entete">
+      <div>
+        <h1 tabindex="-1" data-texte="pages.poules.titre"></h1>
+        <p class="page-description" data-texte="pages.poules.description"></p>
+      </div>
+    </header>
+    <section id="section-lots" class="carte panneau" data-objet="lots">
+      <div class="carte-entete">
+        <h2 data-texte="poules.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton principal" data-ouvrir="lots"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.lots.ajouter"></span></button>
+      </div>
+      <div id="lots-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-poules"></use></svg>
+        <p data-texte="poules.aucun"></p>
+      </div>
+      <ul id="liste-lots" class="liste"></ul>
+    </section>
+  </section>
+
+  <!-- ==== Page Sauvegarde ==== -->
+  <section id="page-sauvegarde" class="page" data-page="sauvegarde" hidden>
+    <header class="page-entete">
+      <div>
+        <h1 tabindex="-1" data-texte="pages.sauvegarde.titre"></h1>
+        <p class="page-description" data-texte="pages.sauvegarde.description"></p>
+      </div>
+    </header>
+    <section id="section-sauvegarde" class="carte panneau">
+      <div class="carte-entete">
+        <h2 data-texte="sauvegarde.titre"></h2>
+      </div>
+      <p class="carte-corps explication" data-texte="sauvegarde.explication"></p>
+      <div class="actions-sauvegarde">
+        <button id="exporter" type="button" class="bouton principal"><svg class="icone" aria-hidden="true"><use href="#i-sauvegarde"></use></svg><span data-texte="sauvegarde.exporter"></span></button>
+        <label><span data-texte="sauvegarde.importer"></span>
+          <input id="importer" type="file" accept=".json,application/json">
+        </label>
+      </div>
+      <p id="import-message" role="status" hidden></p>
+    </section>
+  </section>
+</main>
 </div>
 
-<div id="bandeau-exemple" class="bandeau exemple" hidden>
-  <span data-texte="exemple.chargee"></span>
-  <button id="effacer-exemple" type="button" data-texte="exemple.effacer"></button>
-</div>
-
-<div id="rappel-export" class="bandeau" role="alert" hidden>
-  <span id="rappel-texte"></span>
-  <button id="rappel-exporter" type="button" data-texte="sauvegarde.rappelExporter"></button>
-</div>
-
-<div class="volets">
-<div class="volet-saisie" id="volet-saisie">
-  <nav id="raccourcis" class="raccourcis" data-texte-aria="panneaux.raccourcis">
-    <a href="#section-espaces"><span data-texte="espaces.titre"></span> <span class="compte-raccourci" data-objet="espaces"></span></a>
-    <a href="#section-cultures"><span data-texte="cultures.titre"></span> <span class="compte-raccourci" data-objet="cultures"></span></a>
-    <a href="#section-varietes"><span data-texte="varietes.titre"></span> <span class="compte-raccourci" data-objet="varietes"></span></a>
-    <a href="#section-plantations"><span data-texte="plantations.titre"></span> <span class="compte-raccourci" data-objet="plantations"></span></a>
-    <a href="#section-pointsVente"><span data-texte="pointsVente.titre"></span> <span class="compte-raccourci" data-objet="pointsVente"></span></a>
-    <a href="#section-seances"><span data-texte="seances.titre"></span> <span class="compte-raccourci" data-objet="seances"></span></a>
-    <a href="#section-debouches"><span data-texte="debouches.titre"></span> <span class="compte-raccourci" data-objet="debouches"></span></a>
-    <a href="#section-lots"><span data-texte="poules.titre"></span> <span class="compte-raccourci" data-objet="lots"></span></a>
-    <a href="#section-sauvegarde"><span data-texte="sauvegarde.titre"></span></a>
-  </nav>
-  <section id="section-espaces" class="panneau" data-objet="espaces">
-    <div class="panneau-entete">
-      <h2 data-texte="espaces.titre"></h2>
-      <span class="compte">0</span>
-      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
-    </div>
-    <form id="form-espace" data-objet="espaces">
-      <label><span data-texte="espaces.nom"></span>
+<!-- ==== Tiroirs de saisie (EX-31) ==== -->
+<dialog id="tiroir-espaces" class="tiroir" aria-labelledby="tiroir-espaces-titre">
+  <form id="form-espace" data-objet="espaces">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-espaces-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
+      <label class="large"><span data-texte="espaces.nom"></span>
         <input id="espace-nom" data-champ="nom" required>
       </label>
       <label><span data-texte="espaces.surface"></span>
@@ -213,23 +726,22 @@
       <label><span data-texte="espaces.type"></span>
         <select id="espace-type" data-champ="type" data-options="typesEspace"></select>
       </label>
-      <div class="boutons">
-        <button id="espace-ajouter" type="submit" class="principal" data-texte="espaces.ajouter"></button>
-        <button id="espace-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-      </div>
       <p id="espace-erreur" class="erreur" role="alert" hidden></p>
-    </form>
-    <p id="espaces-vide" class="vide" data-texte="espaces.aucun"></p>
-    <ul id="liste-espaces" class="liste"></ul>
-  </section>
-
-  <section id="section-cultures" class="panneau" data-objet="cultures">
-    <div class="panneau-entete">
-      <h2 data-texte="cultures.titre"></h2>
-      <span class="compte">0</span>
-      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
     </div>
-    <form id="form-culture" data-objet="cultures">
+    <footer class="tiroir-pied">
+      <button id="espace-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="espace-ajouter" type="submit" class="bouton principal" data-texte="espaces.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="tiroir-cultures" class="tiroir" aria-labelledby="tiroir-cultures-titre">
+  <form id="form-culture" data-objet="cultures">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-cultures-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
       <label><span data-texte="cultures.nom"></span>
         <input id="culture-nom" data-champ="nom" required>
       </label>
@@ -238,6 +750,9 @@
       </label>
       <label><span data-texte="cultures.unite"></span>
         <select id="culture-unite" data-champ="unite" data-options="unitesVente"></select>
+      </label>
+      <label><span data-texte="cultures.pertes"></span>
+        <input id="culture-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any" required>
       </label>
       <label><span data-texte="cultures.rendement"></span>
         <input id="culture-rendement" data-champ="rendement" data-format="fourchette" required>
@@ -251,33 +766,30 @@
       <label><span data-texte="cultures.semainesRecolte"></span>
         <input id="culture-semainesRecolte" data-champ="semainesRecolte" data-format="nombre" type="number" min="1" step="1" required>
       </label>
-      <label><span data-texte="cultures.pertes"></span>
-        <input id="culture-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any" required>
-      </label>
       <p class="aide" data-texte="cultures.aideFourchette"></p>
-      <div class="boutons">
-        <button id="culture-ajouter" type="submit" class="principal" data-texte="cultures.ajouter"></button>
-        <button id="culture-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-      </div>
       <p id="culture-erreur" class="erreur" role="alert" hidden></p>
-    </form>
-    <p id="cultures-vide" class="vide" data-texte="cultures.aucun"></p>
-    <ul id="liste-cultures" class="liste"></ul>
-  </section>
-
-  <section id="section-varietes" class="panneau" data-objet="varietes">
-    <div class="panneau-entete">
-      <h2 data-texte="varietes.titre"></h2>
-      <span class="compte">0</span>
-      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
     </div>
-    <form id="form-variete" data-objet="varietes">
+    <footer class="tiroir-pied">
+      <button id="culture-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="culture-ajouter" type="submit" class="bouton principal" data-texte="cultures.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="tiroir-varietes" class="tiroir" aria-labelledby="tiroir-varietes-titre">
+  <form id="form-variete" data-objet="varietes">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-varietes-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
       <label><span data-texte="varietes.nom"></span>
         <input id="variete-nom" data-champ="nom" required>
       </label>
       <label><span data-texte="varietes.culture"></span>
         <select id="variete-cultureId" data-champ="cultureId" required></select>
       </label>
+      <p class="aide" data-texte="varietes.aide"></p>
       <label><span data-texte="cultures.rendement"></span>
         <input id="variete-rendement" data-champ="rendement" data-format="fourchette">
       </label>
@@ -293,28 +805,27 @@
       <label><span data-texte="cultures.pertes"></span>
         <input id="variete-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any">
       </label>
-      <p class="aide"><span data-texte="varietes.aide"></span> <span data-texte="cultures.aideFourchette"></span></p>
-      <div class="boutons">
-        <button id="variete-ajouter" type="submit" class="principal" data-texte="varietes.ajouter"></button>
-        <button id="variete-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-      </div>
+      <p class="aide" data-texte="cultures.aideFourchette"></p>
       <p id="variete-erreur" class="erreur" role="alert" hidden></p>
-    </form>
-    <p id="varietes-vide" class="vide" data-texte="varietes.aucun"></p>
-    <ul id="liste-varietes" class="liste"></ul>
-  </section>
-
-  <section id="section-plantations" class="panneau" data-objet="plantations">
-    <div class="panneau-entete">
-      <h2 data-texte="plantations.titre"></h2>
-      <span class="compte">0</span>
-      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
     </div>
-    <form id="form-plantation" data-objet="plantations">
-      <label><span data-texte="plantations.variete"></span>
+    <footer class="tiroir-pied">
+      <button id="variete-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="variete-ajouter" type="submit" class="bouton principal" data-texte="varietes.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="tiroir-plantations" class="tiroir" aria-labelledby="tiroir-plantations-titre">
+  <form id="form-plantation" data-objet="plantations">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-plantations-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
+      <label class="large"><span data-texte="plantations.variete"></span>
         <select id="plantation-varieteId" data-champ="varieteId" required></select>
       </label>
-      <label><span data-texte="plantations.espace"></span>
+      <label class="large"><span data-texte="plantations.espace"></span>
         <select id="plantation-espaceId" data-champ="espaceId" required></select>
       </label>
       <label><span data-texte="plantations.surface"></span>
@@ -323,24 +834,23 @@
       <label><span data-texte="plantations.date"></span>
         <input id="plantation-date" data-champ="date" type="date" required>
       </label>
-      <div class="boutons">
-        <button id="plantation-ajouter" type="submit" class="principal" data-texte="plantations.ajouter"></button>
-        <button id="plantation-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-      </div>
       <p id="plantation-erreur" class="erreur" role="alert" hidden></p>
-    </form>
-    <p id="plantations-vide" class="vide" data-texte="plantations.aucun"></p>
-    <ul id="liste-plantations" class="liste"></ul>
-  </section>
-
-  <section id="section-pointsVente" class="panneau" data-objet="pointsVente">
-    <div class="panneau-entete">
-      <h2 data-texte="pointsVente.titre"></h2>
-      <span class="compte">0</span>
-      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
     </div>
-    <form id="form-pointVente" data-objet="pointsVente">
-      <label><span data-texte="pointsVente.nom"></span>
+    <footer class="tiroir-pied">
+      <button id="plantation-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="plantation-ajouter" type="submit" class="bouton principal" data-texte="plantations.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="tiroir-pointsVente" class="tiroir" aria-labelledby="tiroir-pointsVente-titre">
+  <form id="form-pointVente" data-objet="pointsVente">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-pointsVente-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
+      <label class="large"><span data-texte="pointsVente.nom"></span>
         <input id="pointVente-nom" data-champ="nom" required>
       </label>
       <label><span data-texte="pointsVente.distanceKm"></span>
@@ -350,23 +860,22 @@
         <input id="pointVente-coutKm" data-champ="coutKm" data-format="fourchette" required>
       </label>
       <p class="aide" data-texte="cultures.aideFourchette"></p>
-      <div class="boutons">
-        <button id="pointVente-ajouter" type="submit" class="principal" data-texte="pointsVente.ajouter"></button>
-        <button id="pointVente-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-      </div>
       <p id="pointVente-erreur" class="erreur" role="alert" hidden></p>
-    </form>
-    <p id="pointsVente-vide" class="vide" data-texte="pointsVente.aucun"></p>
-    <ul id="liste-pointsVente" class="liste"></ul>
-  </section>
-
-  <section id="section-seances" class="panneau" data-objet="seances">
-    <div class="panneau-entete">
-      <h2 data-texte="seances.titre"></h2>
-      <span class="compte">0</span>
-      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
     </div>
-    <form id="form-seance" data-objet="seances">
+    <footer class="tiroir-pied">
+      <button id="pointVente-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="pointVente-ajouter" type="submit" class="bouton principal" data-texte="pointsVente.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="tiroir-seances" class="tiroir" aria-labelledby="tiroir-seances-titre">
+  <form id="form-seance" data-objet="seances">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-seances-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
       <label><span data-texte="seances.pointVente"></span>
         <select id="seance-pointVenteId" data-champ="pointVenteId" required></select>
       </label>
@@ -379,27 +888,26 @@
       <label><span data-texte="seances.fin"></span>
         <input id="seance-fin" data-champ="fin" type="date" required>
       </label>
-      <label><span data-texte="seances.frais"></span>
+      <label class="large"><span data-texte="seances.frais"></span>
         <input id="seance-frais" data-champ="frais" data-format="fourchette" required>
       </label>
       <p class="aide" data-texte="seances.aide"></p>
-      <div class="boutons">
-        <button id="seance-ajouter" type="submit" class="principal" data-texte="seances.ajouter"></button>
-        <button id="seance-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-      </div>
       <p id="seance-erreur" class="erreur" role="alert" hidden></p>
-    </form>
-    <p id="seances-vide" class="vide" data-texte="seances.aucun"></p>
-    <ul id="liste-seances" class="liste"></ul>
-  </section>
-
-  <section id="section-debouches" class="panneau" data-objet="debouches">
-    <div class="panneau-entete">
-      <h2 data-texte="debouches.titre"></h2>
-      <span class="compte">0</span>
-      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
     </div>
-    <form id="form-debouche" data-objet="debouches">
+    <footer class="tiroir-pied">
+      <button id="seance-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="seance-ajouter" type="submit" class="bouton principal" data-texte="seances.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="tiroir-debouches" class="tiroir" aria-labelledby="tiroir-debouches-titre">
+  <form id="form-debouche" data-objet="debouches">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-debouches-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
       <label><span data-texte="debouches.pointVente"></span>
         <select id="debouche-pointVenteId" data-champ="pointVenteId" required></select>
       </label>
@@ -413,23 +921,22 @@
         <input id="debouche-volumeParSeance" data-champ="volumeParSeance" data-format="fourchette" required>
       </label>
       <p class="aide" data-texte="debouches.aide"></p>
-      <div class="boutons">
-        <button id="debouche-ajouter" type="submit" class="principal" data-texte="debouches.ajouter"></button>
-        <button id="debouche-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-      </div>
       <p id="debouche-erreur" class="erreur" role="alert" hidden></p>
-    </form>
-    <p id="debouches-vide" class="vide" data-texte="debouches.aucun"></p>
-    <ul id="liste-debouches" class="liste"></ul>
-  </section>
-
-  <section id="section-lots" class="panneau" data-objet="lots">
-    <div class="panneau-entete">
-      <h2 data-texte="poules.titre"></h2>
-      <span class="compte">0</span>
-      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
     </div>
-    <form id="form-lot" data-objet="lots">
+    <footer class="tiroir-pied">
+      <button id="debouche-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="debouche-ajouter" type="submit" class="bouton principal" data-texte="debouches.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="tiroir-lots" class="tiroir" aria-labelledby="tiroir-lots-titre">
+  <form id="form-lot" data-objet="lots">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-lots-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
       <label><span data-texte="poules.nom"></span>
         <input id="lot-nom" data-champ="nom" required>
       </label>
@@ -461,89 +968,30 @@
         <input id="lot-prixOeuf" data-champ="prixOeuf" data-format="fourchette" required>
       </label>
       <p class="aide" data-texte="poules.aide"></p>
-      <div class="boutons">
-        <button id="lot-ajouter" type="submit" class="principal" data-texte="poules.ajouter"></button>
-        <button id="lot-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
-      </div>
       <p id="lot-erreur" class="erreur" role="alert" hidden></p>
-    </form>
-    <p id="lots-vide" class="vide" data-texte="poules.aucun"></p>
-    <ul id="liste-lots" class="liste"></ul>
-  </section>
+    </div>
+    <footer class="tiroir-pied">
+      <button id="lot-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="lot-ajouter" type="submit" class="bouton principal" data-texte="poules.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
 
-  <section id="section-sauvegarde" class="panneau">
-    <div class="panneau-entete">
-      <h2 data-texte="sauvegarde.titre"></h2>
-    </div>
-    <p class="explication" data-texte="sauvegarde.explication"></p>
-    <div class="actions-sauvegarde">
-      <button id="exporter" type="button" class="principal" data-texte="sauvegarde.exporter"></button>
-      <label><span data-texte="sauvegarde.importer"></span>
-        <input id="importer" type="file" accept=".json,application/json">
-      </label>
-    </div>
-    <p id="import-message" role="status" hidden></p>
-  </section>
-</div>
-
-<main class="volet-projection" id="volet-projection">
-  <div class="onglets" role="tablist" data-texte-aria="projection.onglets">
-    <button type="button" role="tab" id="onglet-tableau" aria-controls="section-tableau" aria-selected="true" data-texte="projection.parCulture"></button>
-    <button type="button" role="tab" id="onglet-offre" aria-controls="section-offre" aria-selected="false" data-texte="projection.offreDemande"></button>
-    <button type="button" role="tab" id="onglet-points" aria-controls="section-points" aria-selected="false" data-texte="projection.pointsVente"></button>
-  </div>
-  <section id="section-tableau" role="tabpanel" aria-labelledby="onglet-tableau">
-    <h2 data-texte="tableau.titre"></h2>
-    <p id="tableau-legende" class="legende" data-texte="tableau.legende"></p>
-    <p id="tableau-vide" data-texte="tableau.aucun"></p>
-    <div class="defilement" id="tableau-defilement">
-      <table id="tableau" class="grille">
-        <caption class="pour-lecteur-d-ecran" data-texte="tableau.legende"></caption>
-        <thead></thead>
-        <tbody></tbody>
-        <tfoot></tfoot>
-      </table>
-    </div>
-  </section>
-
-  <section id="section-offre" role="tabpanel" aria-labelledby="onglet-offre" hidden>
-    <h2 data-texte="offre.titre"></h2>
-    <p id="matrice-legende" class="legende" data-texte="offre.legende"></p>
-    <p id="matrice-vide" data-texte="offre.aucun"></p>
-    <div class="defilement" id="matrice-defilement">
-      <table id="matrice" class="grille">
-        <caption class="pour-lecteur-d-ecran" data-texte="offre.legende"></caption>
-        <thead></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section id="section-points" role="tabpanel" aria-labelledby="onglet-points" hidden>
-    <h2 data-texte="points.titre"></h2>
-    <p id="points-legende" class="legende" data-texte="points.legende"></p>
-    <p id="points-vide" data-texte="points.aucun"></p>
-    <div class="defilement" id="points-defilement">
-      <table id="points" class="grille">
-        <caption class="pour-lecteur-d-ecran" data-texte="points.legende"></caption>
-        <thead></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-</main>
-</div>
+<p id="annonce" class="annonce" role="status" hidden></p>
 
 <script src="i18n.js"></script>
 <script src="store.js"></script>
 <script src="calc.js"></script>
 <script src="exemple.js"></script>
 <script src="ui-commun.js"></script>
+<script src="ui-navigation.js"></script>
 <script src="ui-saisie.js"></script>
 <script src="ui-tableau.js"></script>
 <script src="ui-sauvegarde.js"></script>
 <script src="ui-ventes.js"></script>
 <script src="ui-poules.js"></script>
+<script src="ui-synthese.js"></script>
+<script src="ui-calendrier.js"></script>
 <script>
 (function () {
   "use strict";
@@ -551,6 +999,7 @@
   const T = UiCommun.T;
   let ferme = Store.ouvrir(window.localStorage);
   const fermeOuverte = () => ferme;
+  const navigation = UiNavigation.creer();
   const saisie = UiSaisie.creer({ ferme: fermeOuverte, rafraichir });
   const ventes = UiVentes.creer({ ferme: fermeOuverte, saisie });
   const poules = UiPoules.creer({ saisie });
@@ -568,30 +1017,49 @@
     return donnees;
   }
 
+  // EX-36 : tant qu'aucune plantation n'existe, la synthèse guide la première saisie, étape par étape.
+  function afficherAccueil(donnees) {
+    const fermeVide = Store.OBJETS.every((objet) => donnees[objet].length === 0);
+    document.getElementById("accueil").hidden = donnees.plantations.length > 0;
+    const faites = { espaces: donnees.espaces.length > 0, cultures: donnees.varietes.length > 0, plantations: donnees.plantations.length > 0 };
+    document.querySelectorAll("#accueil [data-etape]").forEach((etape) => {
+      etape.dataset.fait = String(faites[etape.dataset.etape]);
+    });
+    // EX-10 : l'exemple est proposé tant que la ferme est vide, effaçable tant qu'il en reste quelque chose.
+    document.getElementById("proposition-exemple").hidden = !fermeVide;
+    document.getElementById("bandeau-exemple").hidden = !Exemple.estAffichee(ferme);
+  }
+
   // Tout l'affichage se recalcule depuis les données enregistrées (EX-05).
   function rafraichir() {
     const donnees = donneesActives();
     saisie.afficher(donnees);
     ventes.afficher(donnees);
     poules.afficher(donnees);
-    UiTableau.afficher(Calc.tableau(donnees));
-
-    // EX-10 : l'exemple est proposé tant que la ferme est vide, effaçable tant qu'il en reste quelque chose.
-    const fermeVide = Store.OBJETS.every((objet) => donnees[objet].length === 0);
-    document.getElementById("proposition-exemple").hidden = !fermeVide;
-    document.getElementById("bandeau-exemple").hidden = !Exemple.estAffichee(ferme);
+    const tableau = Calc.tableau(donnees);
+    UiTableau.afficher(tableau);
+    UiSynthese.afficher(tableau, donnees);
+    UiCalendrier.afficher(donnees);
+    afficherAccueil(donnees);
+    document.getElementById("pastille-sauvegarde").hidden = document.getElementById("rappel-export").hidden;
   }
 
   // ---- Démarrage
 
   document.title = T.titre;
   UiCommun.traduire(document);
-  UiCommun.brancherOnglets(document.querySelector("#volet-projection .onglets"));
-  // La barre de raccourcis s'étale sur plusieurs lignes : un panneau atteint par un raccourci s'arrête sous elle.
-  const raccourcis = document.getElementById("raccourcis");
-  new ResizeObserver(() => document.documentElement.style.setProperty("--hauteur-raccourcis", `${raccourcis.offsetHeight}px`)).observe(raccourcis);
+  UiCommun.brancherOnglets(document.querySelector("#carte-projection .onglets"));
   saisie.brancher(document);
   sauvegarde.brancher();
+  navigation.brancher();
+
+  // « Ajouter … » : mène à la page de l'objet et ouvre son tiroir (EX-31).
+  document.addEventListener("click", (evenement) => {
+    const bouton = evenement.target.closest("[data-ouvrir]");
+    if (!bouton) return;
+    navigation.aller(UiNavigation.PAGE_DE[bouton.dataset.ouvrir]);
+    saisie.ouvrir(bouton.dataset.ouvrir);
+  });
 
   document.getElementById("proposition-texte").textContent = UiCommun.remplir(T.exemple.proposition, { plantations: Exemple.NOMBRE_DE_PLANTATIONS });
   document.getElementById("charger-exemple").addEventListener("click", () => {

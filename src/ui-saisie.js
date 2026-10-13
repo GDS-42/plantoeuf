@@ -1,8 +1,8 @@
-// Panneaux de saisie : formulaires, listes, mode modification (EX-01).
+// Saisie : listes de chaque objet et formulaires ouverts dans un tiroir (EX-01 ; P2, EX-31).
 (function () {
   "use strict";
 
-  const { T, formats, texte, remplir, element, afficherFourchette, saisieFourchette, afficherDate, afficherMois, nomDe, parNom } = UiCommun;
+  const { T, formats, texte, remplir, element, icone, afficherFourchette, saisieFourchette, afficherDate, afficherMois, nomDe, parNom } = UiCommun;
   const CHAMPS_SURCHARGEABLES = Calc.CHAMPS_SURCHARGEABLES;
 
   // ---- Lignes des listes
@@ -49,22 +49,47 @@
     return morceaux.join(" · ");
   }
 
-  // Liste d'un panneau ; enEdition : identifiant de l'élément en cours de modification (EX-15).
+  // P2 : contenu d'une ligne de liste — un titre et ses puces, puis des faits « libellé : valeur »
+  // alignés, puis d'éventuelles alertes. faits : [[libellé, valeur (texte ou élément)], …] ;
+  // puces : [{ texte, ton }] avec ton « verte », « oeuf » ou « alerte » ; alertes : éléments.
+  function contenuLigne({ titre, puces = [], faits = [], alertes = [] }) {
+    return element("div", { class: "ligne-texte" },
+      element("div", { class: "ligne-entete" }, element("span", { class: "ligne-titre" }, titre),
+        ...puces.map(({ texte: t, ton }) => element("span", { class: ton ? `puce ${ton}` : "puce" }, t))),
+      ...(faits.length ? [element("dl", { class: "ligne-faits" }, ...faits.map(([libelle, valeur]) =>
+        element("div", {}, element("dt", {}, libelle), element("dd", {}, valeur))))] : []),
+      ...alertes);
+  }
+
+  // Boutons d'une ligne : une icône, et leur nom pour les lecteurs d'écran.
+  function boutonLigne(action, nomIcone, libelle) {
+    return element("button", { type: "button", class: "bouton-icone", "data-action": action, title: libelle },
+      icone(nomIcone), element("span", { class: "pour-lecteur-d-ecran" }, libelle));
+  }
+
+  // Liste d'un objet ; resume(e) rend le contenu de la ligne (texte ou éléments) ;
+  // enEdition : identifiant de l'élément en cours de modification (EX-15).
   function afficherListe(objet, enregistrements, resume, enEdition) {
     document.getElementById(`${objet}-vide`).hidden = enregistrements.length > 0;
-    document.getElementById(`liste-${objet}`).replaceChildren(...enregistrements.map((e) => {
-      const li = element("li", { "data-id": e.id },
-        element("span", { class: "resume" }, ...[].concat(resume(e))),
-        element("button", { type: "button", "data-action": "modifier" }, T.commun.modifier),
-        element("button", { type: "button", "data-action": "supprimer" }, T.commun.supprimer));
+    const liste = document.getElementById(`liste-${objet}`);
+    liste.hidden = enregistrements.length === 0;
+    liste.replaceChildren(...enregistrements.map((e) => {
+      const contenu = [].concat(resume(e));
+      const texteLigne = contenu.length === 1 && contenu[0] instanceof Node && contenu[0].classList && contenu[0].classList.contains("ligne-texte")
+        ? contenu[0]
+        : element("div", { class: "ligne-texte" }, element("span", { class: "resume" }, ...contenu));
+      const li = element("li", { "data-id": e.id }, texteLigne,
+        element("div", { class: "ligne-actions" },
+          boutonLigne("modifier", "crayon", T.commun.modifier),
+          boutonLigne("supprimer", "corbeille", T.commun.supprimer)));
       if (e.id === enEdition) li.setAttribute("aria-current", "true");
       return li;
     }));
-    // EX-12 : le nombre d'éléments actifs, dans le titre du panneau et dans la barre de raccourcis.
+    // Le nombre d'éléments actifs, dans le titre de la liste et dans la navigation.
     const compte = document.querySelector(`#section-${objet} .compte`);
     compte.textContent = String(enregistrements.length);
     compte.setAttribute("aria-label", remplir(T.panneaux.compte, { nombre: enregistrements.length }));
-    document.querySelectorAll(`.compte-raccourci[data-objet="${objet}"]`).forEach((el) => {
+    document.querySelectorAll(`.compte-nav[data-objet="${objet}"]`).forEach((el) => {
       el.textContent = String(enregistrements.length);
     });
   }
@@ -109,16 +134,28 @@
     zone.hidden = !message;
   }
 
-  // EX-15 : le panneau et l'élément en cours de modification se signalent.
+  // EX-15 : la liste et l'élément en cours de modification se signalent.
   function signalerEdition(formulaire, id) {
-    const panneau = formulaire.closest(".panneau");
+    const panneau = document.getElementById(`section-${formulaire.dataset.objet}`);
     if (id) panneau.dataset.mode = "modification";
     else delete panneau.dataset.mode;
-    panneau.querySelector(".mode-modification").hidden = !id;
     panneau.querySelectorAll("ul.liste li").forEach((li) => {
       if (li.dataset.id === id) li.setAttribute("aria-current", "true");
       else li.removeAttribute("aria-current");
     });
+  }
+
+  // ---- Tiroirs (EX-31) : le formulaire s'ouvre à droite, titré « Ajouter… » ou « Modifier… ».
+
+  function tiroirDe(formulaire) {
+    return formulaire.closest("dialog");
+  }
+
+  function ouvrirTiroir(formulaire, mode) {
+    const tiroir = tiroirDe(formulaire);
+    tiroir.querySelector(".tiroir-titre").textContent = T.tiroirs[formulaire.dataset.objet][mode];
+    if (!tiroir.open) tiroir.showModal();
+    formulaire.querySelector("[data-champ]").focus();
   }
 
   function quitterEdition(formulaire) {
@@ -126,8 +163,14 @@
     delete formulaire.dataset.id;
     signalerEdition(formulaire, null);
     boutonValider(formulaire).textContent = texte(boutonValider(formulaire).dataset.texte);
-    formulaire.querySelector(".annuler").hidden = true;
     montrerErreur(formulaire, null);
+  }
+
+  // Ferme le tiroir et oublie la saisie en cours.
+  function fermer(formulaire) {
+    const tiroir = tiroirDe(formulaire);
+    if (tiroir.open) tiroir.close();
+    quitterEdition(formulaire);
   }
 
   function entrerEdition(formulaire, enregistrement) {
@@ -136,9 +179,17 @@
     formulaire.dataset.id = enregistrement.id;
     signalerEdition(formulaire, enregistrement.id);
     boutonValider(formulaire).textContent = T.commun.enregistrer;
-    formulaire.querySelector(".annuler").hidden = false;
-    formulaire.scrollIntoView({ block: "nearest" });
-    formulaire.querySelector("[data-champ]").focus();
+    ouvrirTiroir(formulaire, "modifier");
+  }
+
+  // Message bref après un enregistrement ou une suppression.
+  let minuterieAnnonce = null;
+  function annoncer(message) {
+    const zone = document.getElementById("annonce");
+    zone.textContent = message;
+    zone.hidden = false;
+    clearTimeout(minuterieAnnonce);
+    minuterieAnnonce = setTimeout(() => { zone.hidden = true; }, 2600);
   }
 
   // ferme : fonction qui rend la ferme ouverte (elle change si un autre onglet l'a modifiée).
@@ -152,20 +203,34 @@
 
       formulaire.addEventListener("submit", (evenement) => {
         evenement.preventDefault();
+        const modification = Boolean(formulaire.dataset.id);
         try {
           const champs = lireFormulaire(formulaire);
-          if (formulaire.dataset.id) ferme().modifier(objet, formulaire.dataset.id, champs);
+          if (modification) ferme().modifier(objet, formulaire.dataset.id, champs);
           else ferme().ajouter(objet, champs);
         } catch (e) {
           if (!T.erreurs[e.code]) console.error(e);
           montrerErreur(formulaire, T.erreurs[e.code] || T.erreurs.inconnue);
           return;
         }
-        quitterEdition(formulaire);
+        fermer(formulaire);
         rafraichir();
+        annoncer(modification ? T.annonces.enregistre : T.annonces.ajoute);
       });
 
-      formulaire.querySelector(".annuler").addEventListener("click", () => quitterEdition(formulaire));
+      const tiroir = tiroirDe(formulaire);
+      formulaire.querySelector(".annuler").addEventListener("click", () => fermer(formulaire));
+      tiroir.querySelector('[data-action="fermer"]').addEventListener("click", () => fermer(formulaire));
+      // Échap ferme le tiroir (événement « close ») ; un clic sur le voile aussi.
+      tiroir.addEventListener("close", () => {
+        if (!tiroir.open) quitterEdition(formulaire);
+      });
+      tiroir.addEventListener("click", (evenement) => {
+        if (evenement.target !== tiroir) return;
+        const cadre = tiroir.getBoundingClientRect();
+        const dedans = evenement.clientX >= cadre.left && evenement.clientX <= cadre.right && evenement.clientY >= cadre.top && evenement.clientY <= cadre.bottom;
+        if (!dedans) fermer(formulaire);
+      });
 
       document.getElementById(`liste-${objet}`).addEventListener("click", (evenement) => {
         const bouton = evenement.target.closest("button[data-action]");
@@ -175,8 +240,9 @@
           entrerEdition(formulaire, ferme().obtenir(objet, id));
         } else if (bouton.dataset.action === "supprimer") {
           ferme().supprimer(objet, id);
-          if (formulaire.dataset.id === id) quitterEdition(formulaire);
+          if (formulaire.dataset.id === id) fermer(formulaire);
           rafraichir();
+          annoncer(T.annonces.supprime);
         }
       });
     }
@@ -186,7 +252,14 @@
     }
 
     function quitterToutes() {
-      Object.values(formulaires).forEach(quitterEdition);
+      Object.values(formulaires).forEach(fermer);
+    }
+
+    // Ouvre le tiroir d'ajout d'un objet, formulaire vide.
+    function ouvrir(objet) {
+      const formulaire = formulaires[objet];
+      quitterEdition(formulaire);
+      ouvrirTiroir(formulaire, "ajouter");
     }
 
     function parId(objet) {
@@ -224,9 +297,9 @@
       return formulaires[objet] && formulaires[objet].dataset.id;
     }
 
-    return { brancher, afficher, quitterToutes, enEdition };
+    return { brancher, afficher, quitterToutes, enEdition, ouvrir, annoncer };
   }
 
-  // Outils partagés avec les autres panneaux de saisie (ui-ventes.js).
-  globalThis.UiSaisie = { creer, outils: { afficherListe, remplirChoix } };
+  // Outils partagés avec les autres listes (ui-ventes.js, ui-poules.js).
+  globalThis.UiSaisie = { creer, outils: { afficherListe, contenuLigne, remplirChoix, annoncer } };
 })();

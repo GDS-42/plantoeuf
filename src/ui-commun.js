@@ -26,9 +26,33 @@
     return el;
   }
 
+  // Élément SVG (graphiques, calendrier) : mêmes conventions que element().
+  const SVG = "http://www.w3.org/2000/svg";
+  function svg(balise, attributs, ...enfants) {
+    const el = document.createElementNS(SVG, balise);
+    for (const [nom, valeur] of Object.entries(attributs || {})) el.setAttribute(nom, valeur);
+    el.append(...enfants);
+    return el;
+  }
+
+  // Une icône de la planche d'icônes de index.html (<symbol id="i-…">), décorative.
+  function icone(nom, classe = "icone") {
+    return svg("svg", { class: classe, "aria-hidden": "true", focusable: "false" }, svg("use", { href: `#i-${nom}` }));
+  }
+
   // format : par défaut deux décimales au plus ; les œufs se comptent en entiers.
   function afficherFourchette(f, format = nombre) {
     return [f.basse, f.mediane, f.haute].map((v) => format.format(v)).join(" / ");
+  }
+
+  // P2 : une fourchette à lire d'un coup d'œil — la médiane en évidence, la basse et la haute à côté,
+  // plus discrètes. Un seul nombre si les trois sont égaux. unite : texte ajouté après les valeurs.
+  function elementFourchette(f, format = nombre, unite = "") {
+    const suffixe = unite ? ` ${unite}` : "";
+    const mediane = element("span", { class: "f-mediane" }, format.format(f.mediane) + suffixe);
+    if (f.basse === f.mediane && f.mediane === f.haute) return element("span", { class: "f" }, mediane);
+    return element("span", { class: "f" }, mediane, " ",
+      element("span", { class: "f-bornes" }, `${format.format(f.basse)} à ${format.format(f.haute)}`));
   }
 
   // Une fourchette dans un champ de saisie : un seul nombre si les trois sont égaux.
@@ -95,7 +119,10 @@
     texte,
     remplir,
     element,
+    svg,
+    icone,
     afficherFourchette,
+    elementFourchette,
     saisieFourchette,
     afficherDate,
     afficherMois,

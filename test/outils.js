@@ -1,5 +1,31 @@
 // Aides de saisie partagées par les tests de bout en bout à partir de T05.
 // Ce fichier n'est pas un test : Playwright ne lit que *.e2e.js, Node que *.test.js.
+const { expect } = require("@playwright/test");
+
+// P2 (EX-30, EX-31) : une page à la fois, choisie dans la navigation ; le formulaire d'un objet
+// s'ouvre dans un tiroir, par le bouton « Ajouter » de sa liste ou par « Modifier » sur une ligne.
+const PAGE_DE = {
+  espaces: "espaces", cultures: "cultures", varietes: "cultures", plantations: "plantations",
+  pointsVente: "ventes", seances: "ventes", debouches: "ventes", lots: "poules",
+};
+
+async function aller(page, nom) {
+  await page.locator(`#navigation a[data-page="${nom}"]`).click();
+  await expect(page.locator(`#page-${nom}`)).toBeVisible();
+}
+
+async function ouvrir(page, objet) {
+  await aller(page, PAGE_DE[objet]);
+  await page.locator(`#section-${objet} [data-ouvrir="${objet}"]`).click();
+  await expect(page.locator(`#tiroir-${objet}`)).toBeVisible();
+}
+
+// Ouvre le tiroir de modification de la ligne de `objet` qui contient `texte`.
+async function modifier(page, objet, texte) {
+  await aller(page, PAGE_DE[objet]);
+  await page.locator(`#liste-${objet} li`, { hasText: texte }).locator('[data-action="modifier"]').click();
+  await expect(page.locator(`#tiroir-${objet}`)).toBeVisible();
+}
 
 // Choisit dans une liste déroulante l'option dont le texte contient `texte`.
 async function choisir(page, select, texte) {
@@ -8,6 +34,7 @@ async function choisir(page, select, texte) {
 }
 
 async function ajouterEspace(page, { nom, surface, type = "plein_champ" }) {
+  await ouvrir(page, "espaces");
   await page.locator("#espace-nom").fill(nom);
   await page.locator("#espace-surface").fill(String(surface));
   await page.locator("#espace-type").selectOption(type);
@@ -15,6 +42,7 @@ async function ajouterEspace(page, { nom, surface, type = "plein_champ" }) {
 }
 
 async function ajouterCulture(page, c) {
+  await ouvrir(page, "cultures");
   await page.locator("#culture-nom").fill(c.nom);
   await page.locator("#culture-famille").fill(c.famille || "");
   await page.locator("#culture-unite").selectOption(c.unite);
@@ -27,12 +55,14 @@ async function ajouterCulture(page, c) {
 }
 
 async function ajouterVariete(page, { nom, culture }) {
+  await ouvrir(page, "varietes");
   await page.locator("#variete-nom").fill(nom);
   await choisir(page, "#variete-cultureId", culture);
   await page.locator("#variete-ajouter").click();
 }
 
 async function ajouterPlantation(page, { variete, espace, surface, date }) {
+  await ouvrir(page, "plantations");
   await choisir(page, "#plantation-varieteId", variete);
   await choisir(page, "#plantation-espaceId", espace);
   await page.locator("#plantation-surface").fill(String(surface));
@@ -61,4 +91,4 @@ async function caseDuTableau(page, culture, mesure, mois) {
   return { cellule, basse: await valeur("basse"), mediane: await valeur("mediane"), haute: await valeur("haute") };
 }
 
-module.exports = { choisir, ajouterEspace, ajouterCulture, ajouterVariete, ajouterPlantation, saisirS2, caseDuTableau };
+module.exports = { PAGE_DE, aller, ouvrir, modifier, choisir, ajouterEspace, ajouterCulture, ajouterVariete, ajouterPlantation, saisirS2, caseDuTableau };

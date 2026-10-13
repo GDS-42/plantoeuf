@@ -15,17 +15,22 @@
     return td;
   }
 
-  // EX-14 : le chiffre d'affaires estimé de la saison, en fourchette, en tête de l'outil.
-  function afficherSynthese(tableau) {
-    const synthese = document.getElementById("synthese");
-    const vide = tableau.lignes.length === 0 && !tableau.poules;
-    const ca = tableau.total.total.ca;
+  // EX-14 : le chiffre d'affaires et la marge estimés de la saison, en fourchette, en tête de l'outil.
+  function afficherIndicateur(id, fourchette, vide) {
+    const indicateur = document.getElementById(id);
     for (const niveau of ["basse", "mediane", "haute"]) {
-      const el = synthese.querySelector(`.${niveau}`);
-      el.dataset.valeur = String(ca[niveau]);
-      el.textContent = vide ? T.synthese.vide : enEuros(ca[niveau]);
+      const el = indicateur.querySelector(`.${niveau}`);
+      el.dataset.valeur = String(fourchette[niveau]);
+      el.textContent = vide ? T.synthese.vide : enEuros(fourchette[niveau]);
     }
-    synthese.querySelector(".synthese-bornes").hidden = vide;
+    indicateur.querySelector(".indicateur-bornes").hidden = vide;
+    indicateur.classList.toggle("negatif", !vide && fourchette.mediane < 0);
+  }
+
+  function afficherSynthese(tableau) {
+    const vide = tableau.lignes.length === 0 && !tableau.poules;
+    afficherIndicateur("synthese", tableau.total.total.ca, vide);
+    afficherIndicateur("synthese-marge", tableau.total.total.marge, vide);
   }
 
   function ligneDuTableau(attributs, entetes, cases, total, format) {

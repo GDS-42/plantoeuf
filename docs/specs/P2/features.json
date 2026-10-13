@@ -1,0 +1,83 @@
+{
+  "tranche": "P2",
+  "seuil_alerte_sessions": 10,
+  "parallelisme_max": 3,
+  "evaluateur": {
+    "modele": "fable",
+    "effort": "high"
+  },
+  "taches": [
+    {
+      "id": "T33",
+      "exigences": ["EX-30", "EX-31", "EX-32", "EX-36"],
+      "description": "Socle : système visuel, barre du haut (chiffre d'affaires et marge en fourchette), navigation par pages, formulaires dans des tiroirs, accueil guidé, aides de test (aller, ouvrir, modifier)",
+      "verification": ["./verify.sh T33"],
+      "depend_de": [],
+      "fichiers": ["src/index.html", "src/ui-navigation.js", "src/ui-saisie.js", "src/ui-commun.js", "src/ui-tableau.js", "src/i18n.js", "test/outils.js", "test/squelette.e2e.js", "test/p2-socle.e2e.js"],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T34",
+      "exigences": ["EX-33", "EX-34"],
+      "description": "Synthèse : chiffres clés, graphique mensuel du chiffre d'affaires et de la marge avec leur fourchette, tableau « Par culture » lisible (une ligne par culture, une mesure au choix)",
+      "verification": ["./verify.sh T34"],
+      "depend_de": ["T33"],
+      "fichiers": ["src/ui-synthese.js", "src/ui-tableau.js", "src/index.html", "src/i18n.js", "test/p2-synthese.e2e.js", "test/tableau.e2e.js", "test/tranche.e2e.js", "test/presentation.e2e.js"],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T35",
+      "exigences": ["EX-34", "EX-36"],
+      "description": "Ventes : vue « Offre et demande » lisible, vue « Points de vente » qui montre ce qui rapporte et ce qui coûte, listes de la page Ventes",
+      "verification": ["./verify.sh T35"],
+      "depend_de": ["T33"],
+      "fichiers": ["src/ui-ventes.js", "src/index.html", "src/i18n.js", "test/p2-ventes.e2e.js", "test/ventes.e2e.js", "test/exemple-ventes.e2e.js"],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T36",
+      "exigences": ["EX-35", "EX-36"],
+      "description": "Ferme : lignes lisibles des espaces, cultures, variétés, plantations et lots ; calendrier de culture ; page Sauvegarde",
+      "verification": ["./verify.sh T36"],
+      "depend_de": ["T33"],
+      "fichiers": ["src/ui-saisie.js", "src/ui-calendrier.js", "src/ui-poules.js", "src/index.html", "src/i18n.js", "test/p2-ferme.e2e.js", "test/saisie.e2e.js", "test/espaces.e2e.js", "test/recolte.e2e.js", "test/modele.e2e.js", "test/poules.e2e.js", "test/exemple-poules.e2e.js", "test/exemple.e2e.js", "test/export.e2e.js"],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T37",
+      "exigences": ["EX-30", "EX-31", "EX-32", "EX-33", "EX-34", "EX-35", "EX-36", "EX-37"],
+      "description": "Vérification de bout en bout de la tranche (lisibilité de 360 à 1920 px, contrastes, focus), puis revue par l'évaluateur séparé, restreinte à la conformité à la spec",
+      "verification": ["./verify.sh P2"],
+      "depend_de": ["T34", "T35", "T36"],
+      "fichiers": ["test/p2-lisibilite.e2e.js"],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T38",
+      "exigences": ["EX-38"],
+      "description": "Captures d'écran (1366 × 768, 1920 × 1080, 390 × 844, ferme d'exemple) envoyées à l'humain, qui valide",
+      "verification": ["validation humaine"],
+      "depend_de": ["T37"],
+      "fichiers": [],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    }
+  ]
+}
