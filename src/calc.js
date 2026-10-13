@@ -625,6 +625,27 @@
     return { semaines, lignes };
   }
 
+  // P2 (T35) : bilan de la saison par produit, à partir du résultat de offreDemande — nombre de semaines
+  // en excédent et en manque (et combien de chacune sont sûres), à l'équilibre (avec une offre ou une
+  // demande non nulle) et sans débouché (avec une production). Une semaine sans offre ni demande ne compte pas.
+  function bilanOffreDemande(od) {
+    return od.lignes.map((ligne) => {
+      const bilan = { produitId: ligne.produitId, depasse: 0, depasseSur: 0, manque: 0, manqueSur: 0, equilibre: 0, sansDebouche: 0 };
+      for (const lundi of od.semaines) {
+        const s = ligne.semaines[lundi];
+        if (s.etat === "depasse" || s.etat === "manque") {
+          bilan[s.etat] += 1;
+          if (s.sur) bilan[`${s.etat}Sur`] += 1;
+        } else if (s.etat === "equilibre") {
+          if (s.offre.haute > 0 || s.demande.haute > 0) bilan.equilibre += 1;
+        } else if (s.offre.haute > 0) {
+          bilan.sansDebouche += 1;
+        }
+      }
+      return bilan;
+    });
+  }
+
   return {
     CHAMPS_SURCHARGEABLES,
     OEUFS,
@@ -635,6 +656,7 @@
     coutSeance,
     seancesDeLaFerme,
     offreDemande,
+    bilanOffreDemande,
     ventes,
     pointsDeVente,
     oeufsParSemaine,

@@ -329,6 +329,207 @@
   /* ==== fin T34 ==== */
 
   /* ==== T35 — Ventes : offre et demande, points de vente, listes des ventes ==== */
+  /* Jetons de la zone : teintes de la matrice offre-demande, deux bras de trois intensités autour d'un neutre
+     (excédent bleu, manque ambre), le fond discret « sans débouché » et le cadre de l'écart sûr. Le texte
+     garde l'encre du thème sur chaque teinte (contraste ≥ 10:1 en clair, ≥ 6:1 en sombre). */
+  :root {
+    --od-bleu-1: #eaf1fb; --od-bleu-2: #d3e2f6; --od-bleu-3: #b3cdef;
+    --od-ambre-1: #fdf3e6; --od-ambre-2: #fae0c1; --od-ambre-3: #f5c896;
+    --od-neutre: #eceeea; --od-sans: #f4f6f3; --od-trait-bleu: #6f97d0; --od-trait-ambre: #d98b45;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --od-bleu-1: #1b2a3d; --od-bleu-2: #213e63; --od-bleu-3: #2c568a;
+      --od-ambre-1: #2e2416; --od-ambre-2: #4a3418; --od-ambre-3: #6b471a;
+      --od-neutre: #2a332d; --od-sans: #1b241e; --od-trait-bleu: #5b8ad0; --od-trait-ambre: #c07a35;
+    }
+  }
+  :root[data-theme="dark"] {
+    --od-bleu-1: #1b2a3d; --od-bleu-2: #213e63; --od-bleu-3: #2c568a;
+    --od-ambre-1: #2e2416; --od-ambre-2: #4a3418; --od-ambre-3: #6b471a;
+    --od-neutre: #2a332d; --od-sans: #1b241e; --od-trait-bleu: #5b8ad0; --od-trait-ambre: #c07a35;
+  }
+
+  .vue-ventes { gap: 1.25rem; }
+  .vue-entete { display: grid; gap: 0.3rem; }
+  .vue-ventes .etat-vide { border: 1px dashed var(--trait-fort); border-radius: var(--rayon); }
+  .vue-ventes h3 { font-size: 1rem; font-weight: 650; }
+  .puce.rouge { background: var(--rouge-doux); color: var(--rouge-texte); }
+  .puce .icone { width: 0.95rem; height: 0.95rem; }
+  .f.negatif .f-mediane { color: var(--rouge-texte); }
+
+  /* Points de vente : une carte par point, le résultat en grand, sa fourchette en barre autour de zéro. */
+  .pv { display: grid; gap: 1.75rem; }
+  /* Autant de colonnes que de cartes tant qu'elles tiennent, chacune de 30rem au plus. */
+  .pv-cartes { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); max-width: calc(var(--cartes, 3) * 30rem); }
+  .pv-carte {
+    display: grid; gap: 0.85rem; align-content: start; min-width: 0;
+    padding: 1.1rem 1.25rem 1.05rem; border: 1px solid var(--trait); border-radius: var(--rayon);
+    background: var(--surface); box-shadow: var(--ombre);
+  }
+  .pv-carte.negatif { border-color: var(--rouge-doux); box-shadow: inset 3px 0 0 var(--rouge), var(--ombre); }
+  .pv-carte-entete { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem 0.75rem; }
+  .pv-nom { font-size: 1rem; font-weight: 650; line-height: 1.35; overflow-wrap: anywhere; }
+  .pv-seances { flex: none; margin-top: 0.1rem; }
+  .pv-resultat { display: grid; gap: 0.15rem; }
+  .pv-libelle { color: var(--encre-douce); font-size: 0.8125rem; font-weight: 600; }
+  .pv-valeur-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.7rem; }
+  .pv-valeur { font: 700 1.85rem/1.15 var(--police-titre); letter-spacing: -0.02em; white-space: nowrap; }
+  .pv-carte.negatif .pv-valeur { color: var(--rouge-texte); }
+  .pv-bornes { color: var(--encre-pale); font-size: 0.875rem; }
+  .pv-barre { position: relative; padding: 0.55rem 0.4rem 0; }
+  .pv-barre-piste { position: relative; display: block; height: 0.5rem; border-radius: 999px; background: var(--surface-survol); }
+  .pv-barre-gain, .pv-barre-perte { position: absolute; top: 0; bottom: 0; min-width: 2px; border-radius: 999px; }
+  .pv-barre-gain { background: var(--accent); }
+  .pv-barre-perte { background: var(--rouge); }
+  .pv-barre-zero { position: absolute; top: -0.3rem; bottom: -0.3rem; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--encre-douce); }
+  .pv-barre-reperes { position: relative; display: block; height: 1.15rem; margin-top: 0.3rem; }
+  .pv-barre-zero-texte { position: absolute; top: 0; transform: translateX(-50%); color: var(--encre-pale); font-size: 0.75rem; line-height: 1.2; }
+  .pv-barre-mediane { position: absolute; top: 50%; width: 0.8rem; height: 0.8rem; margin: -0.4rem 0 0 -0.4rem; border-radius: 50%; background: var(--encre); box-shadow: 0 0 0 2px var(--surface); }
+  .pv-faits { display: grid; gap: 0.45rem; margin: 0; padding-top: 0.8rem; border-top: 1px solid var(--trait); }
+  .pv-faits > div { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.15rem 0.75rem; }
+  .pv-faits dt { color: var(--encre-douce); font-size: 0.875rem; }
+  .pv-faits dd { margin: 0; text-align: right; }
+
+  /* Mois par mois : une mesure à la fois, choisie par des boutons à bascule. */
+  .pv-mois { display: grid; gap: 0.75rem; }
+  .pv-mois-entete { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem 1rem; }
+  .pv-bascule { display: inline-flex; flex-wrap: wrap; gap: 0.2rem; padding: 0.25rem; border-radius: var(--rayon-petit); background: var(--surface-survol); }
+  .pv-bascule button { min-height: 2.25rem; padding: 0.35rem 0.8rem; border: 0; border-radius: 6px; background: transparent; color: var(--encre-douce); font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+  .pv-bascule button:hover { color: var(--encre); }
+  .pv-bascule button[aria-pressed="true"] { background: var(--surface); color: var(--encre); box-shadow: var(--ombre); }
+  .pv-grille { width: 100%; }
+  .pv-grille thead th { vertical-align: bottom; }
+  .pv-grille .pv-coin { min-width: 12rem; text-align: left; }
+  .pv-unite { display: block; margin-top: 0.1rem; color: var(--encre-pale); font-weight: 500; white-space: normal; }
+  .pv-grille tbody th { min-width: 12rem; max-width: 16rem; white-space: normal; vertical-align: middle; }
+  .pv-grille td { min-width: 5.5rem; vertical-align: middle; }
+  .pv-grille td .mediane { font-size: 0.9375rem; }
+  .pv-grille td.negatif .mediane { color: var(--rouge-texte); }
+  .pv-grille td.fixe .bornes { display: none; }
+  .pv-grille .pv-total { position: sticky; right: 0; z-index: 2; background: var(--surface-douce); box-shadow: inset 1px 0 0 var(--trait-fort); }
+  .pv-grille thead .pv-total { z-index: 4; color: var(--encre); }
+  .pv-grille tbody tr:hover > * { background: var(--surface-douce); }
+  .pv-grille tbody tr:hover > .pv-total { background: var(--surface-survol); }
+
+  /* Offre et demande : une ligne par produit, une case teintée par semaine, le bilan de la saison à droite. */
+  .od { display: grid; gap: 1rem; }
+  .od-legende { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.4rem; color: var(--encre-douce); font-size: 0.8125rem; }
+  .od-legende-item { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .od-legende-note { flex-basis: 100%; color: var(--encre-pale); }
+  .od-gamme { display: inline-flex; gap: 2px; }
+  .od-pastille { display: inline-block; flex: none; width: 0.95rem; height: 0.95rem; border-radius: 3px; background: var(--od-fond, var(--surface)); box-shadow: inset 0 0 0 1px var(--trait); }
+  .od-pastille-sur { background: var(--od-ambre-2); box-shadow: inset 0 0 0 2px var(--od-trait-ambre); }
+  .od-depasse { --od-trait: var(--od-trait-bleu); }
+  .od-manque { --od-trait: var(--od-trait-ambre); }
+  .od-depasse.od-n1 { --od-fond: var(--od-bleu-1); }
+  .od-depasse.od-n2 { --od-fond: var(--od-bleu-2); }
+  .od-depasse.od-n3 { --od-fond: var(--od-bleu-3); }
+  .od-manque.od-n1 { --od-fond: var(--od-ambre-1); }
+  .od-manque.od-n2 { --od-fond: var(--od-ambre-2); }
+  .od-manque.od-n3 { --od-fond: var(--od-ambre-3); }
+  .od-equilibre { --od-fond: var(--od-neutre); }
+  .od-sans_debouche { --od-fond: var(--od-sans); }
+  .od-vide { --od-fond: var(--surface); }
+
+  .od-grille { width: 100%; }
+  .od-grille thead th { vertical-align: bottom; }
+  .od-grille .od-coin { min-width: 10rem; text-align: left; }
+  .od-grille thead th[data-semaine] { min-width: 3.3rem; padding: 0.5rem 0.2rem; text-align: center; line-height: 1.25; }
+  .od-date { display: block; color: var(--encre); font-weight: 600; }
+  .od-num { display: block; color: var(--encre-pale); font-weight: 500; }
+  .od-grille thead th.od-choisie .od-date { color: var(--accent-texte); }
+  .od-grille thead th.od-choisie { box-shadow: inset 0 -3px 0 var(--accent); }
+  .od-grille tbody th { min-width: 10rem; max-width: 13rem; white-space: normal; vertical-align: middle; line-height: 1.3; }
+  .od-grille tr.od-choisie > th { color: var(--accent-texte); }
+  .od-grille td.od-case {
+    height: 2.75rem; min-width: 3.3rem; padding: 0 0.15rem; border-bottom: 0;
+    background: var(--od-fond, var(--surface)); box-shadow: inset 0 0 0 1px var(--surface);
+    color: var(--encre); text-align: center; vertical-align: middle; cursor: pointer;
+  }
+  .od-grille td.od-case[data-sur="true"] { box-shadow: inset 0 0 0 1px var(--surface), inset 0 0 0 2.5px var(--od-trait); }
+  .od-grille td.od-debut-mois, .od-grille th.od-debut-mois { border-left: 1px solid var(--trait-fort); }
+  .od-grille td.od-case:hover { filter: brightness(0.96); }
+  .od-grille td.od-case[aria-current="true"] { outline: 3px solid var(--encre); outline-offset: -3px; }
+  .od-grille td.od-case:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+  .od-grille td .ecart { display: block; font-size: 0.875rem; font-weight: 650; }
+  .od-egal { color: var(--encre-douce); font-weight: 600; }
+  .od-offre { display: none; }
+  .od-grille td.od-sans_debouche:not(.od-vide) .od-offre { display: block; color: var(--encre-pale); font-size: 0.8125rem; }
+  .od-offre .basse, .od-offre .haute { display: none; }
+  .od-grille .od-bilan {
+    position: sticky; right: 0; z-index: 2; min-width: 9.5rem; padding: 0.35rem 0.75rem;
+    background: var(--surface-douce); box-shadow: inset 1px 0 0 var(--trait-fort);
+    text-align: left; white-space: nowrap; vertical-align: middle;
+  }
+  .od-grille thead .od-bilan { z-index: 4; color: var(--encre); }
+  .od-grille td.od-bilan { display: table-cell; font-size: 0.8125rem; color: var(--encre-douce); }
+  .od-bilan-ligne { display: flex; align-items: center; gap: 0.45rem; line-height: 1.5; }
+
+  /* Détail de la semaine choisie : offre, demande, écart en fourchettes, puis les ventes par point. */
+  .od-detail { display: grid; gap: 1rem; padding: 1.1rem 1.25rem; border: 1px solid var(--trait); border-radius: var(--rayon); background: var(--surface-douce); }
+  .od-detail-entete { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.75rem; }
+  .od-detail-entete h3 { font-size: 1.05rem; }
+  .od-detail-semaine { color: var(--encre-douce); }
+  .od-puce-depasse { background: var(--bleu-doux); color: var(--bleu-texte); }
+  .od-detail-chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 0.85rem 1.5rem; margin: 0; }
+  .od-detail-chiffres dt { color: var(--encre-douce); font-size: 0.875rem; }
+  .od-detail-chiffres dd { margin: 0.2rem 0 0; }
+  .od-chiffre { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.1rem 0.5rem; }
+  .od-chiffre .mediane, .od-chiffre .ecart { font: 700 1.35rem/1.25 var(--police-titre); letter-spacing: -0.01em; white-space: nowrap; }
+  .od-chiffre-bornes { color: var(--encre-pale); font-size: 0.875rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .od-detail-ecart.od-depasse .ecart { color: var(--bleu-texte); }
+  .od-detail-ecart.od-manque .ecart { color: var(--ambre-texte); }
+  .od-note { margin-top: 0.2rem; color: var(--encre-douce); font-size: 0.875rem; }
+  .od-detail-debouches h4 { margin: 0; color: var(--encre-douce); font-size: 0.875rem; font-weight: 600; }
+  .od > *, .od-detail > *, .pv > *, .pv-mois > * { min-width: 0; }
+  .od-mini-boite { overflow-x: auto; margin-top: 0.4rem; }
+  .od-mini { min-width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .od-mini th, .od-mini td { padding: 0.5rem 1.5rem 0.5rem 0; border-top: 1px solid var(--trait); text-align: left; white-space: nowrap; vertical-align: baseline; }
+  .od-mini thead th { border-top: 0; padding-block: 0.25rem; color: var(--encre-pale); font-size: 0.8125rem; font-weight: 600; }
+  .od-mini tbody th { font-weight: 600; white-space: normal; min-width: 9rem; }
+
+  /* Tiroirs de séance et de débouché : quoi faire d'abord quand il manque un point de vente ou une culture. */
+  .tiroir-manque { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.5rem 0.75rem; align-items: start; padding: 0.85rem 1rem; border-radius: var(--rayon-petit); background: var(--bleu-doux); color: var(--bleu-texte); }
+  .tiroir-manque .bouton { grid-column: 2; justify-self: start; border-color: currentColor; background: transparent; color: inherit; }
+
+  /* Page Ventes : le titre à gauche, les faits alignés en colonnes d'une ligne à l'autre ; sous 1180 px,
+     le titre au-dessus des faits ; au téléphone, deux faits par rangée. */
+  #page-ventes ul.liste .ligne-texte { grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr); align-items: center; gap: 0.45rem 1.5rem; }
+  #page-ventes #liste-seances .ligne-texte { grid-template-columns: minmax(10rem, 13rem) minmax(0, 1fr); }
+  #page-ventes #liste-debouches .ligne-texte { grid-template-columns: minmax(12rem, 22rem) minmax(0, 1fr); }
+  #page-ventes .ligne-faits { display: grid; grid-template-columns: repeat(5, minmax(0, 9.75rem)); gap: 0.45rem 1.25rem; }
+  #page-ventes #liste-seances .ligne-faits { grid-template-columns: minmax(0, 14.5rem) repeat(2, minmax(0, 9rem)) minmax(0, 7.5rem); }
+  #page-ventes #liste-debouches .ligne-faits { grid-template-columns: repeat(2, minmax(0, 13rem)); }
+  #page-ventes .ligne-faits dd { overflow-wrap: anywhere; }
+  #page-ventes .ligne-faits .f { white-space: normal; }
+  #page-ventes .ligne-faits .f-bornes { white-space: nowrap; }
+  @media (min-width: 1181px) {
+    #liste-seances .ligne-faits > div:first-child dd { white-space: nowrap; }
+  }
+  @media (max-width: 1180px) {
+    #page-ventes ul.liste .ligne-texte, #page-ventes #liste-seances .ligne-texte, #page-ventes #liste-debouches .ligne-texte { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 640px) {
+    #page-ventes .ligne-faits, #page-ventes #liste-seances .ligne-faits, #page-ventes #liste-debouches .ligne-faits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #page-ventes #liste-seances .ligne-faits > div:first-child { grid-column: 1 / -1; }
+  }
+  .ligne-titre-suite { color: var(--encre-douce); font-weight: 500; }
+
+  @media (max-width: 700px) {
+    .pv-grille .pv-coin, .pv-grille tbody th, .od-grille .od-coin, .od-grille tbody th { min-width: 7.5rem; }
+    .pv-grille .pv-total, .od-grille .od-bilan { position: static; }
+    .pv-bascule { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+    /* Ventes de la semaine par point : une fiche par point, chaque valeur précédée de son titre de colonne. */
+    .od-mini thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .od-mini, .od-mini tbody, .od-mini tr, .od-mini th, .od-mini td { display: block; }
+    .od-mini tr { padding: 0.55rem 0; border-top: 1px solid var(--trait); }
+    .od-mini tbody th, .od-mini td { padding: 0.1rem 0; border: 0; white-space: normal; }
+    .od-mini td { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.1rem 1rem; }
+    .od-mini td::before { content: attr(data-titre); color: var(--encre-douce); font-size: 0.875rem; }
+    .od-detail { padding: 1rem; }
+
+  }
   /* ==== fin T35 ==== */
 
   /* ==== T36 — Ferme : lignes des listes, calendrier de culture, poules, sauvegarde ==== */
@@ -508,28 +709,61 @@
           </table>
         </div>
       </section>
-      <section id="section-offre" class="vue" role="tabpanel" aria-labelledby="onglet-offre" hidden>
-        <h2 data-texte="offre.titre"></h2>
-        <p id="matrice-legende" class="legende" data-texte="offre.legende"></p>
-        <p id="matrice-vide" class="legende" data-texte="offre.aucun"></p>
-        <div class="defilement" id="matrice-defilement">
-          <table id="matrice" class="grille">
-            <caption class="pour-lecteur-d-ecran" data-texte="offre.legende"></caption>
-            <thead></thead>
-            <tbody></tbody>
-          </table>
+      <!-- T35 : offre et demande — une ligne par produit, une case colorée par semaine, le détail de la semaine choisie. -->
+      <section id="section-offre" class="vue vue-ventes" role="tabpanel" aria-labelledby="onglet-offre" hidden>
+        <div class="vue-entete">
+          <h2 data-texte="offre.titre"></h2>
+          <p id="matrice-legende" class="legende" data-texte="offre.legende"></p>
+        </div>
+        <div id="matrice-vide" class="etat-vide">
+          <svg class="icone" aria-hidden="true"><use href="#i-synthese"></use></svg>
+          <p data-texte="offre.aucun"></p>
+          <a class="bouton" href="#ventes" data-texte="vueVentes.offre.aller"></a>
+        </div>
+        <div id="offre-contenu" class="od">
+          <div id="offre-legende" class="od-legende"></div>
+          <div class="defilement od-defilement" id="matrice-defilement">
+            <table id="matrice" class="grille od-grille">
+              <caption class="pour-lecteur-d-ecran" data-texte="offre.legende"></caption>
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <section id="offre-detail" class="od-detail" aria-live="polite"></section>
         </div>
       </section>
-      <section id="section-points" class="vue" role="tabpanel" aria-labelledby="onglet-points" hidden>
-        <h2 data-texte="points.titre"></h2>
-        <p id="points-legende" class="legende" data-texte="points.legende"></p>
-        <p id="points-vide" class="legende" data-texte="points.aucun"></p>
-        <div class="defilement" id="points-defilement">
-          <table id="points" class="grille">
-            <caption class="pour-lecteur-d-ecran" data-texte="points.legende"></caption>
-            <thead></thead>
-            <tbody></tbody>
-          </table>
+      <!-- T35 : points de vente — une carte par point (résultat en fourchette autour de zéro), puis le tableau mois par mois. -->
+      <section id="section-points" class="vue vue-ventes" role="tabpanel" aria-labelledby="onglet-points" hidden>
+        <div class="vue-entete">
+          <h2 data-texte="points.titre"></h2>
+          <p id="points-legende" class="legende" data-texte="points.legende"></p>
+        </div>
+        <div id="points-vide" class="etat-vide">
+          <svg class="icone" aria-hidden="true"><use href="#i-ventes"></use></svg>
+          <p data-texte="points.aucun"></p>
+          <button type="button" class="bouton" data-ouvrir="pointsVente"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="vueVentes.points.ajouter"></span></button>
+        </div>
+        <div id="points-contenu" class="pv">
+          <ol id="points-cartes" class="pv-cartes"></ol>
+          <div class="pv-mois">
+            <div class="pv-mois-entete">
+              <h3 data-texte="vueVentes.points.parMois"></h3>
+              <div id="points-mesures" class="pv-bascule" role="group" data-texte-aria="vueVentes.points.mesures">
+                <button type="button" data-mesure="resultat" aria-pressed="true" data-texte="vueVentes.points.mesure.resultat"></button>
+                <button type="button" data-mesure="ca" aria-pressed="false" data-texte="vueVentes.points.mesure.ca"></button>
+                <button type="button" data-mesure="couts" aria-pressed="false" data-texte="vueVentes.points.mesure.couts"></button>
+                <button type="button" data-mesure="seances" aria-pressed="false" data-texte="vueVentes.points.mesure.seances"></button>
+              </div>
+            </div>
+            <p id="points-sans-seance" class="legende" data-texte="vueVentes.points.sansSeance" hidden></p>
+            <div class="defilement pv-defilement" id="points-defilement">
+              <table id="points" class="grille pv-grille">
+                <caption class="pour-lecteur-d-ecran" data-texte="points.legende"></caption>
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </section>
     </section>
@@ -876,6 +1110,11 @@
       <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
     </header>
     <div class="tiroir-corps">
+      <div id="seance-manque-point" class="tiroir-manque large" hidden>
+        <svg class="icone" aria-hidden="true"><use href="#i-info"></use></svg>
+        <p data-texte="vueVentes.tiroirs.sansPoint"></p>
+        <button type="button" class="bouton" data-ouvrir="pointsVente"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.pointsVente.ajouter"></span></button>
+      </div>
       <label><span data-texte="seances.pointVente"></span>
         <select id="seance-pointVenteId" data-champ="pointVenteId" required></select>
       </label>
@@ -908,6 +1147,16 @@
       <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
     </header>
     <div class="tiroir-corps">
+      <div id="debouche-manque-point" class="tiroir-manque large" hidden>
+        <svg class="icone" aria-hidden="true"><use href="#i-info"></use></svg>
+        <p data-texte="vueVentes.tiroirs.sansPointDebouche"></p>
+        <button type="button" class="bouton" data-ouvrir="pointsVente"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.pointsVente.ajouter"></span></button>
+      </div>
+      <div id="debouche-manque-culture" class="tiroir-manque large" hidden>
+        <svg class="icone" aria-hidden="true"><use href="#i-info"></use></svg>
+        <p data-texte="vueVentes.tiroirs.sansCulture"></p>
+        <button type="button" class="bouton" data-ouvrir="cultures"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.cultures.ajouter"></span></button>
+      </div>
       <label><span data-texte="debouches.pointVente"></span>
         <select id="debouche-pointVenteId" data-champ="pointVenteId" required></select>
       </label>
