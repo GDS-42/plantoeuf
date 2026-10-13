@@ -85,5 +85,9 @@ Une ferme fictive de 10 plantations donne un tableau CA / marge par culture et p
 - T03 · Une seule page, une section par objet : formulaire, puis liste. « Modifier » remplit le formulaire, « Supprimer » supprime logiquement, sans confirmation. Après chaque enregistrement, tout l'affichage se recalcule depuis les données enregistrées (`rafraichir`).
 - T03 · Une variété enregistre `null` pour chaque champ numérique non surchargé ; la famille botanique est facultative. Un élément dont la référence a été supprimée reste affiché, marqué « (supprimé) ».
 - T03 · Identifiants des champs : `<objet>-<champ>` (ex. `#culture-joursAvantRecolte`), listes `#liste-<objets>`, boutons `[data-action="modifier|supprimer"]`.
+- T04 · Les semaines de récolte partent de la date de première récolte (semaine 1 = 30 avril–6 mai dans S1), pas des semaines du calendrier : c'est la seule lecture où S1 donne 33,75 kg chaque semaine.
+- T04 · Granularité à la semaine (SPEC, points tranchés) : pour une période quelconque (un mois du tableau), une semaine de récolte compte entière dans la période qui contient son jour du milieu, c'est-à-dire la plupart de ses jours. S1 : avril 0, mai 5 semaines, juin 3 semaines. Première version au prorata des jours, corrigée avant commit sur remarque du relecteur.
+- T04 · Fin de récolte = première récolte + 7 × semaines − 1 jour (S1 : 30 avril → 24 juin inclus). Dates en « AAAA-MM-JJ », calculées en jours UTC. Production = surface × rendement × (100 − pertes) / 100, sur chaque niveau de la fourchette.
+- T04 · Les dates de récolte s'affichent dans la liste des plantations (`test/recolte.e2e.js`, hors liste `fichiers`, car `./verify.sh T04` exige un test Playwright `[T04]`).
 
 ## ✎ Bilan de fin de tranche

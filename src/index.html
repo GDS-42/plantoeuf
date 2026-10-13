@@ -155,8 +155,7 @@
   const T = Textes;
   const nombre = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
   const jour = new Intl.DateTimeFormat("fr-FR", { timeZone: "UTC" });
-  // Champs numériques de la culture qu'une variété peut surcharger.
-  const CHAMPS_SURCHARGEABLES = ["rendement", "prix", "joursAvantRecolte", "semainesRecolte", "pertes"];
+  const CHAMPS_SURCHARGEABLES = Calc.CHAMPS_SURCHARGEABLES;
 
   // ---- Outils d'affichage
 
@@ -231,9 +230,14 @@
     const variete = varietes.get(plantation.varieteId);
     const culture = variete && cultures.get(variete.cultureId);
     const nom = variete ? `${nomDe(culture)} ${nomDe(variete)}` : nomDe(variete);
-    return [nom, nomDe(espaces.get(plantation.espaceId)),
+    const morceaux = [nom, nomDe(espaces.get(plantation.espaceId)),
       remplir(T.resume.surface, { valeur: nombre.format(plantation.surface) }),
-      remplir(T.resume.date, { valeur: afficherDate(plantation.date) })].join(" · ");
+      remplir(T.resume.date, { valeur: afficherDate(plantation.date) })];
+    if (culture) {
+      const recolte = Calc.datesRecolte(plantation, Calc.parametres(culture, variete));
+      morceaux.push(remplir(T.resume.recolte, { debut: afficherDate(recolte.debut), fin: afficherDate(recolte.fin) }));
+    }
+    return morceaux.join(" · ");
   }
 
   function afficherListe(objet, enregistrements, resume) {

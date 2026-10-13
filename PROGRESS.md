@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N1 · Sessions consommées : 3 / 15 (seuil d'alerte)
+Tranche en cours : N1 · Sessions consommées : 4 / 15 (seuil d'alerte)
 
 ---
 
@@ -234,4 +234,103 @@ Running 5 tests using 1 worker
 
   5 passed (3.8s)
 == T03 : vérification verte ==
+```
+
+## 13/10/2026 · T04 — Dates de récolte et répartition hebdomadaire
+
+- Session 4 du seuil d'alerte.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 (aucun écart) · Relecteur : Fable, deux passages en contexte frais.
+  - 1er passage → **CONFORME**, avec une remarque : la première version répartissait au jour près dans une semaine, alors que la spec tranche « Granularité de la répartition : la semaine ». Corrigé avant commit : une semaine compte entière dans la période qui contient la plupart de ses jours ; le test au prorata des jours a été remplacé (avant tout commit) par un test de granularité, rouge puis vert.
+  - 2e passage, sur le diff final → **CONFORME**.
+- Résultat : **vert**. `./verify.sh T04` → exit 0 (8 tests unitaires, 1 de bout en bout) ; `./verify.sh N1` → exit 0.
+- Fichiers : `src/calc.js`, `test/calc.test.js`, et hors liste `fichiers` : `src/index.html`, `src/i18n.js`, `test/recolte.e2e.js` (affichage des dates de récolte ; `./verify.sh T04` exige un test Playwright `[T04]`).
+- Rouge d'abord : 7 tests `[T04]` rouges (`Calc.ajouterJours is not a function`…), test de bout en bout rouge (dates absentes de la liste).
+- Commit : « T04 — Dates de récolte et répartition hebdomadaire de la production ».
+
+Preuve (`./verify.sh T04`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 30942 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+# Subtest: [T04] les dates se calculent au jour près, y compris d'une année sur l'autre
+ok 1 - [T04] les dates se calculent au jour près, y compris d'une année sur l'autre
+  ---
+  duration_ms: 1.228803
+  type: 'test'
+  ...
+# Subtest: [T04] EX-02 : une variété sans surcharge reprend les durées de la culture
+ok 2 - [T04] EX-02 : une variété sans surcharge reprend les durées de la culture
+  ---
+  duration_ms: 1.312022
+  type: 'test'
+  ...
+# Subtest: [T04] EX-02 : les durées surchargées par la variété priment sur celles de la culture
+ok 3 - [T04] EX-02 : les durées surchargées par la variété priment sur celles de la culture
+  ---
+  duration_ms: 0.27455
+  type: 'test'
+  ...
+# Subtest: [T04] EX-03 : production = surface × rendement × (1 − pertes), en fourchette
+ok 4 - [T04] EX-03 : production = surface × rendement × (1 − pertes), en fourchette
+  ---
+  duration_ms: 0.300821
+  type: 'test'
+  ...
+# Subtest: [T04] S1 : 33,75 kg par semaine du 30 avril au 24 juin
+ok 5 - [T04] S1 : 33,75 kg par semaine du 30 avril au 24 juin
+  ---
+  duration_ms: 2.340266
+  type: 'test'
+  ...
+# Subtest: [T04] S1 : 0 kg les autres semaines (production_nulle_hors_fenetre)
+ok 6 - [T04] S1 : 0 kg les autres semaines (production_nulle_hors_fenetre)
+  ---
+  duration_ms: 0.407455
+  type: 'test'
+  ...
+# Subtest: [T04] EX-03 : la répartition est uniforme, à la semaine, et rend toute la production sur la fenêtre
+ok 7 - [T04] EX-03 : la répartition est uniforme, à la semaine, et rend toute la production sur la fenêtre
+  ---
+  duration_ms: 0.39838
+  type: 'test'
+  ...
+# Subtest: [T04] granularité à la semaine : une semaine compte entière dans la période qui contient la plupart de ses jours
+ok 8 - [T04] granularité à la semaine : une semaine compte entière dans la période qui contient la plupart de ses jours
+  ---
+  duration_ms: 0.372851
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 2 - test/squelette.test.js
+  ---
+  duration_ms: 76.037782
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 3 - test/store.test.js
+  ---
+  duration_ms: 74.309539
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 100.924522
+== Tests de bout en bout (Playwright) ==
+
+Running 1 test using 1 worker
+
+  ✓  1 test/recolte.e2e.js:9:1 › [T04] une plantation saisie affiche ses dates de première et de dernière récolte (606ms)
+
+  1 passed (1.5s)
+== T04 : vérification verte ==
 ```

@@ -66,6 +66,7 @@
       semainesRecolte: "{valeur} semaines de récolte",
       pertes: "{valeur} % de pertes",
       date: "en terre le {valeur}",
+      recolte: "récolte du {debut} au {fin}",
     },
     // Les clés sont les valeurs enregistrées ; les textes sont ce qui s'affiche.
     typesEspace: {
