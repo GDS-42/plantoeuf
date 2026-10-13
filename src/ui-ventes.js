@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  const { T, formats, remplir, element, afficherFourchette, afficherDate, nomDe, parNom } = UiCommun;
+  const { T, formats, remplir, element, afficherFourchette, afficherDate, afficherMois, enEuros, nomDe, parNom } = UiCommun;
   const { afficherListe, remplirChoix } = UiSaisie.outils;
   const { caseFourchette } = UiTableau.outils;
   const jourCourt = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" });
@@ -59,6 +59,35 @@
           ...od.semaines.map((lundi) => caseDemande(ligne.semaines[lundi], lundi))),
       ];
     }));
+  }
+
+  // ---- Vue « Points de vente » (EX-22)
+
+  function caseSeances(nombre, mois) {
+    if (nombre === 0) return element("td", { "data-mois": mois, class: "nul" }, T.tableau.nul);
+    return element("td", { "data-mois": mois }, formats.nombre.format(nombre));
+  }
+
+  function afficherPointsDeVente(vue) {
+    const vide = vue.points.length === 0;
+    document.getElementById("points-vide").hidden = !vide;
+    document.getElementById("points-legende").hidden = vide;
+    const table = document.getElementById("points");
+    table.hidden = vide;
+    if (vide) return;
+    table.tHead.replaceChildren(element("tr", {},
+      element("th", { scope: "col" }, T.points.pointVente),
+      element("th", { scope: "col" }, T.points.estimation),
+      ...vue.mois.map((m) => element("th", { scope: "col", "data-mois": m }, afficherMois(m))),
+      element("th", { scope: "col" }, T.tableau.total)));
+    const ligne = (point, mesure, entetes, cases) => element("tr", { "data-point-vente": point.pointVenteId, "data-mesure": mesure }, ...entetes, ...cases);
+    const enFourchettes = (point, mesure) => [...vue.mois.map((m) => caseFourchette(point.mois[m][mesure], enEuros, { "data-mois": m })),
+      caseFourchette(point.total[mesure], enEuros, { "data-mois": "total" })];
+    table.tBodies[0].replaceChildren(...vue.points.flatMap((point) => [
+      ligne(point, "seances", [element("th", { rowspan: "4", scope: "rowgroup" }, point.nom), element("th", { scope: "row" }, T.points.seances)],
+        [...vue.mois.map((m) => caseSeances(point.mois[m].seances, m)), caseSeances(point.total.seances, "total")]),
+      ...["ca", "couts", "resultat"].map((mesure) => ligne(point, mesure, [element("th", { scope: "row" }, T.points[mesure])], enFourchettes(point, mesure))),
+    ]));
   }
 
   function resumePointVente(pointVente) {
@@ -117,6 +146,7 @@
       remplirChoix(document.getElementById("debouche-produitId"), cultures.map((c) => ({ valeur: c.id, libelle: c.nom })));
 
       afficherOffreDemande(Calc.offreDemande(donnees));
+      afficherPointsDeVente(Calc.pointsDeVente(donnees));
     }
 
     return { afficher };

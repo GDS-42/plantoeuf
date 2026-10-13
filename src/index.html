@@ -55,7 +55,7 @@
   .volets { flex: 1; min-height: 0; display: flex; }
   .volet-saisie { flex: none; width: var(--largeur-saisie); overflow-y: auto; border-right: 1px solid var(--trait); padding: 0 1rem 2rem; box-sizing: border-box; }
   .volet-projection { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 0.9rem 1.25rem 1rem; }
-  #section-tableau, #section-offre { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  #section-tableau, #section-offre, #section-points { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 0.4rem; }
   .onglets { flex: none; display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.7rem; border-bottom: 1px solid var(--trait-fort); }
   .onglets button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 0.4rem 0.8rem; color: var(--encre-douce); font-weight: 600; }
   .onglets button[aria-selected="true"] { border-bottom-color: var(--accent); color: var(--accent-fonce); }
@@ -434,6 +434,7 @@
   <div class="onglets" role="tablist" data-texte-aria="projection.onglets">
     <button type="button" role="tab" id="onglet-tableau" aria-controls="section-tableau" aria-selected="true" data-texte="projection.parCulture"></button>
     <button type="button" role="tab" id="onglet-offre" aria-controls="section-offre" aria-selected="false" data-texte="projection.offreDemande"></button>
+    <button type="button" role="tab" id="onglet-points" aria-controls="section-points" aria-selected="false" data-texte="projection.pointsVente"></button>
   </div>
   <section id="section-tableau" role="tabpanel" aria-labelledby="onglet-tableau">
     <h2 data-texte="tableau.titre"></h2>
@@ -456,6 +457,19 @@
     <div class="defilement" id="matrice-defilement">
       <table id="matrice" class="grille">
         <caption class="pour-lecteur-d-ecran" data-texte="offre.legende"></caption>
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="section-points" role="tabpanel" aria-labelledby="onglet-points" hidden>
+    <h2 data-texte="points.titre"></h2>
+    <p id="points-legende" class="legende" data-texte="points.legende"></p>
+    <p id="points-vide" data-texte="points.aucun"></p>
+    <div class="defilement" id="points-defilement">
+      <table id="points" class="grille">
+        <caption class="pour-lecteur-d-ecran" data-texte="points.legende"></caption>
         <thead></thead>
         <tbody></tbody>
       </table>

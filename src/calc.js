@@ -378,7 +378,7 @@
   }
 
   // Ventes des cultures qui ont un débouché, par culture puis par semaine (son lundi) :
-  // { vendu, ca, debouches: [{ debouche, pointVenteId, vendu, ca }] }. La production de la semaine va aux
+  // { offre, vendu, ca, debouches: [{ debouche, pointVenteId, demande, vendu, ca }] }. La production de la semaine va aux
   // débouchés dans l'ordre de service, chacun jusqu'à sa demande (séances de la semaine × volume vendable) ;
   // chaque niveau de la fourchette se calcule avec les valeurs de ce niveau.
   function ventes(donnees) {
@@ -400,16 +400,18 @@
         const reste = { ...(offreCulture.get(lundi) || fourchetteNulle()) };
         const servis = liste.map(({ debouche, pointVente }) => {
           const nombre = (seances.get(pointVente.id) && seances.get(pointVente.id).get(lundi)) || 0;
+          const demande = proportion(debouche.volumeParSeance, nombre, 1);
           const vendu = {};
           const ca = {};
           for (const niveau of NIVEAUX) {
-            vendu[niveau] = Math.min(nombre * debouche.volumeParSeance[niveau], reste[niveau]);
+            vendu[niveau] = Math.min(demande[niveau], reste[niveau]);
             reste[niveau] -= vendu[niveau];
             ca[niveau] = vendu[niveau] * debouche.prix[niveau];
           }
-          return { debouche, pointVenteId: pointVente.id, vendu, ca };
+          return { debouche, pointVenteId: pointVente.id, demande, vendu, ca };
         });
         parSemaine.set(lundi, {
+          offre: offreCulture.get(lundi) || fourchetteNulle(),
           vendu: servis.reduce((total, d) => somme(total, d.vendu), fourchetteNulle()),
           ca: servis.reduce((total, d) => somme(total, d.ca), fourchetteNulle()),
           debouches: servis,
@@ -422,6 +424,60 @@
 
   function moisDuJeudi(lundi) {
     return ajouterJours(lundi, 3).slice(0, 7);
+  }
+
+  // ---- Points de vente (EX-22)
+
+  // Par point de vente actif et par mois (celui du jeudi de la semaine) : nombre de séances, chiffre
+  // d'affaires, coût des séances et résultat. Le chiffre d'affaires d'un point pris seul va du cas le moins
+  // favorable pour lui (production basse, sa demande basse, demande haute des débouchés servis avant lui)
+  // au plus favorable (l'inverse) ; la médiane est celle du calcul médian. Ces fourchettes ne s'additionnent
+  // pas d'un point de vente à l'autre.
+  function pointsDeVente(donnees) {
+    const parPoint = new Map((donnees.pointsVente || []).filter((p) => !p.supprimeLe).sort((a, b) => a.nom.localeCompare(b.nom, "fr"))
+      .map((pointVente) => [pointVente.id, { pointVente, mois: new Map() }]));
+    const caseDuMois = (pointVenteId, mois) => {
+      const parMois = parPoint.get(pointVenteId).mois;
+      if (!parMois.has(mois)) parMois.set(mois, { seances: 0, ca: fourchetteNulle(), couts: fourchetteNulle() });
+      return parMois.get(mois);
+    };
+
+    for (const seance of seancesDeLaFerme(donnees)) {
+      const c = caseDuMois(seance.pointVenteId, moisDuJeudi(lundiDe(seance.date)));
+      c.seances += 1;
+      c.couts = somme(c.couts, seance.cout);
+    }
+    for (const parSemaine of ventes(donnees).values()) {
+      for (const [lundi, semaine] of parSemaine) {
+        let avant = fourchetteNulle();
+        for (const servi of semaine.debouches) {
+          const pire = Math.min(servi.demande.basse, Math.max(0, semaine.offre.basse - avant.haute));
+          const meilleur = Math.min(servi.demande.haute, Math.max(0, semaine.offre.haute - avant.basse));
+          avant = somme(avant, servi.demande);
+          if (meilleur === 0) continue;
+          const c = caseDuMois(servi.pointVenteId, moisDuJeudi(lundi));
+          c.ca = somme(c.ca, { basse: pire * servi.debouche.prix.basse, mediane: servi.ca.mediane, haute: meilleur * servi.debouche.prix.haute });
+        }
+      }
+    }
+
+    const tousLesMois = [...parPoint.values()].flatMap((p) => [...p.mois.keys()]).sort();
+    const mois = tousLesMois.length ? moisEntre(tousLesMois[0], tousLesMois[tousLesMois.length - 1]) : [];
+    const bilan = (c) => ({ seances: c.seances, ca: c.ca, couts: c.couts, resultat: soustraire(c.ca, c.couts) });
+    const points = [...parPoint.values()].map(({ pointVente, mois: parMois }) => {
+      const point = { pointVenteId: pointVente.id, nom: pointVente.nom, mois: {} };
+      const total = { seances: 0, ca: fourchetteNulle(), couts: fourchetteNulle() };
+      for (const m of mois) {
+        const c = parMois.get(m) || { seances: 0, ca: fourchetteNulle(), couts: fourchetteNulle() };
+        point.mois[m] = bilan(c);
+        total.seances += c.seances;
+        total.ca = somme(total.ca, c.ca);
+        total.couts = somme(total.couts, c.couts);
+      }
+      point.total = bilan(total);
+      return point;
+    });
+    return { mois, points };
   }
 
   function semainesEntre(premiere, derniere) {
@@ -469,6 +525,7 @@
     seancesDeLaFerme,
     offreDemande,
     ventes,
+    pointsDeVente,
     numeroDeSemaine,
     parametres,
     datesRecolte,

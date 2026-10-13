@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N2 · Sessions consommées : 7 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : N2 · Sessions consommées : 8 / 12 (seuil d'alerte) · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -2484,4 +2484,87 @@ Running 1 test using 1 worker
 
   1 passed (1.0s)
 == T18 : vérification verte ==
+```
+
+## 13/10/2026 · T23 — Vue « Points de vente » : séances, chiffre d'affaires, coûts et résultat par mois
+
+- Session 8 / 12 du seuil d'alerte de N2.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Résultat : **vert**. `./verify.sh T23` → exit 0 (3 tests unitaires, 2 de bout en bout) ; `./verify.sh N2` → exit 0 (73 tests unitaires, 55 de bout en bout).
+- Fichiers : `src/calc.js` (`pointsDeVente` ; `ventes` rend aussi l'offre de la semaine et la demande de chaque débouché), `src/ui-ventes.js` (vue « Points de vente »), `src/index.html` (onglet et section), `src/i18n.js`, `src/ui-commun.js` (un montant arrondi à zéro s'affiche « 0 € », pas « -0 € »), `test/ventes.test.js`, `test/ventes.e2e.js`.
+- Rouge d'abord : 3 tests unitaires rouges (`Calc.pointsDeVente is not a function`), 2 de bout en bout rouges (onglet absent ; « -0 € » au lieu de « 0 € »).
+- Trouvé en relisant une capture : un résultat de −0,3 € s'affichait « -0 € ». Test ajouté, puis correction (`signDisplay: "negative"`).
+- Commit : « T23 — Vue « Points de vente » : séances, chiffre d'affaires, coûts et résultat par mois ».
+
+Preuve (`./verify.sh T23`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 111373 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 67.988974
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 71.134248
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 3 - test/squelette.test.js
+  ---
+  duration_ms: 80.451153
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 4 - test/store.test.js
+  ---
+  duration_ms: 68.635531
+  type: 'test'
+  ...
+# Subtest: [T23] S6 : le marché de Saint-Paul compte 9 séances, coûte 221,40 € et rapporte 400 − 221,40 = 178,60 €
+ok 5 - [T23] S6 : le marché de Saint-Paul compte 9 séances, coûte 221,40 € et rapporte 400 − 221,40 = 178,60 €
+  ---
+  duration_ms: 4.555705
+  type: 'test'
+  ...
+# Subtest: [T23] la fourchette d'un point de vente va du cas le moins favorable pour lui au plus favorable, médiane comprise
+ok 6 - [T23] la fourchette d'un point de vente va du cas le moins favorable pour lui au plus favorable, médiane comprise
+  ---
+  duration_ms: 9.864781
+  type: 'test'
+  ...
+# Subtest: [T23] un point de vente sans débouché n'a que des coûts ; un point supprimé disparaît
+ok 7 - [T23] un point de vente sans débouché n'a que des coûts ; un point supprimé disparaît
+  ---
+  duration_ms: 0.7742
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 164.393828
+== Tests de bout en bout (Playwright) ==
+
+Running 2 tests using 1 worker
+
+  ✓  1 test/ventes.e2e.js:187:1 › [T23] S6 : la vue « Points de vente » donne, par mois, les séances, le chiffre d'affaires, les coûts et le résultat (884ms)
+  ✓  2 test/ventes.e2e.js:204:1 › [T23] un résultat arrondi à zéro s'affiche comme zéro, sans signe moins (114ms)
+
+  2 passed (1.7s)
+== T23 : vérification verte ==
 ```

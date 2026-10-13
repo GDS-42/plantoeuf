@@ -353,3 +353,53 @@ test("[T22] 200 plantations, 10 points de vente, 20 séances et 100 débouchés 
   assert.equal(tableau.lignes.length, 20);
   assert.ok(ms < 1000, `${ms} ms`);
 });
+
+
+// ---- T23 : par point de vente et par mois, séances, chiffre d'affaires, coûts et résultat (EX-22, scénario S6)
+
+test("[T23] S6 : le marché de Saint-Paul compte 9 séances, coûte 221,40 € et rapporte 400 − 221,40 = 178,60 €", () => {
+  const vue = Calc.pointsDeVente(fermeS4());
+  assert.deepEqual(vue.mois, ["2026-04", "2026-05", "2026-06"]);
+  const [marche] = vue.points;
+  assert.equal(marche.pointVenteId, "pv1");
+  assert.equal(marche.total.seances, 9);
+  assert.deepEqual([vue.mois.map((m) => marche.mois[m].seances)], [[1, 4, 4]]);
+  procheFourchette(marche.total.ca, f(400));
+  procheFourchette(marche.total.couts, f(221.4));
+  procheFourchette(marche.total.resultat, f(400 - 221.4));
+  procheFourchette(marche.mois["2026-05"].couts, f(4 * 24.6));
+});
+
+test("[T23] la fourchette d'un point de vente va du cas le moins favorable pour lui au plus favorable, médiane comprise", () => {
+  // Une seule semaine (4 au 10 mai) : 10 kg récoltés ; l'AMAP, servie d'abord (3 €), prend de 0 à 10 kg ; le marché a le reste.
+  const donnees = fermeS4({
+    plantations: [{ ...PLANTATION_S1, surface: (100 * 10) / 33.75 }],
+    pointsVente: [AMAP],
+    debouches: [{ ...DEBOUCHE, volumeParSeance: f(10) }, { ...DEBOUCHE_AMAP, volumeParSeance: f(0, 5, 10) }],
+  });
+  donnees.seances = [{ ...SAMEDI, debut: "2026-05-09", fin: "2026-05-09" }, { ...MARDI, debut: "2026-05-05", fin: "2026-05-05" }];
+  const vue = Calc.pointsDeVente(donnees);
+  const marche = vue.points.find((p) => p.pointVenteId === "pv1");
+  const amap = vue.points.find((p) => p.pointVenteId === "pv2");
+  procheFourchette(amap.total.ca, f(0, 5 * 3, 10 * 3));
+  procheFourchette(marche.total.ca, f(0, 5 * 2.5, 10 * 2.5));
+  // Les médianes sont celles du calcul médian : elles s'additionnent au chiffre d'affaires médian de la culture.
+  proche(marche.total.ca.mediane + amap.total.ca.mediane, Calc.tableau(donnees).lignes[0].total.ca.mediane);
+  for (const point of vue.points) {
+    for (const m of vue.mois) {
+      for (const cle of ["ca", "couts", "resultat"]) assert.ok(ordonnee(point.mois[m][cle]), `${point.pointVenteId} ${m} ${cle}`);
+    }
+  }
+});
+
+test("[T23] un point de vente sans débouché n'a que des coûts ; un point supprimé disparaît", () => {
+  const supprime = "2026-10-13T08:00:00.000Z";
+  const vue = Calc.pointsDeVente(fermeS4({
+    pointsVente: [AMAP, { ...MARCHE, id: "pv3", nom: "magasin fermé", supprimeLe: supprime }],
+    seances: [MARDI, { ...SAMEDI, id: "s3", pointVenteId: "pv3" }],
+  }));
+  assert.deepEqual(vue.points.map((p) => p.nom), ["AMAP du mardi", "marché de Saint-Paul"]);
+  const amap = vue.points[0];
+  procheFourchette(amap.total.ca, f(0));
+  assert.equal(amap.total.seances, 10);
+});

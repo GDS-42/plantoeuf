@@ -99,6 +99,7 @@
       onglets: "Vues de la projection",
       parCulture: "Par culture",
       offreDemande: "Offre et demande",
+      pointsVente: "Points de vente",
     },
     offre: {
       titre: "Offre et demande, semaine par semaine",
@@ -117,6 +118,17 @@
       },
       sur: "écart sûr",
       sansDebouche: "sans débouché",
+    },
+    points: {
+      titre: "Résultat par point de vente",
+      legende: "Estimations : chaque case donne une fourchette, la médiane en gras, la basse et la haute dessous. Résultat = chiffre d'affaires − coût des séances. La fourchette d'un point va du cas le moins favorable pour lui au plus favorable : elles ne s'additionnent pas d'un point à l'autre.",
+      aucun: "Aucun point de vente : ajoutez-en un, avec ses séances et ses débouchés.",
+      pointVente: "Point de vente",
+      estimation: "Estimation (fourchette basse – médiane – haute)",
+      seances: "Séances",
+      ca: "Chiffre d'affaires estimé (€)",
+      couts: "Coût des séances estimé (€)",
+      resultat: "Résultat estimé (€)",
     },
     synthese: {
       titre: "Chiffre d'affaires estimé de la saison",

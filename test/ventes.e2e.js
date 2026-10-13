@@ -181,3 +181,30 @@ test("[T22] S4 et S6 : le tableau donne le volume vendu, et la marge de la ferme
   expect(await valeurPied("marge")).toBeCloseTo(178.6, 6);
   await expect(page.locator('#tableau tfoot tr[data-mesure="couts"] th')).toContainText(/séances/i);
 });
+
+// ---- T23 : la vue « Points de vente » (EX-22, scénario S6)
+
+test("[T23] S6 : la vue « Points de vente » donne, par mois, les séances, le chiffre d'affaires, les coûts et le résultat", async ({ page }) => {
+  await page.goto("index.html");
+  await saisirS2(page);
+  await saisirMarche(page);
+  await page.locator("#onglet-points").click();
+  await expect(page.locator("#section-points")).toBeVisible();
+  await expect(page.locator("#tableau")).toBeHidden();
+
+  const valeur = async (mesure) => Number(await page.locator(`#points tr[data-mesure="${mesure}"] td[data-mois="total"] .mediane`).getAttribute("data-valeur"));
+  await expect(page.locator('#points tbody th[rowspan]')).toContainText("marché de Saint-Paul");
+  await expect(page.locator('#points tr[data-mesure="seances"] td[data-mois="total"]')).toHaveText("9");
+  expect(await valeur("ca")).toBeCloseTo(400, 6);
+  expect(await valeur("couts")).toBeCloseTo(221.4, 6);
+  expect(await valeur("resultat")).toBeCloseTo(178.6, 6);
+  await expect(page.locator('#points tr[data-mesure="resultat"] th')).toContainText(/estim/i);
+});
+
+test("[T23] un résultat arrondi à zéro s'affiche comme zéro, sans signe moins", async ({ page }) => {
+  await page.goto("index.html");
+  const [presqueZero, zero, perte, gain] = await page.evaluate(() => [-0.3, 0, -16.2, 16.2].map(UiCommun.enEuros));
+  expect(presqueZero).toBe(zero);
+  expect(perte).not.toBe(gain);
+  expect(perte).toMatch(/16/);
+});

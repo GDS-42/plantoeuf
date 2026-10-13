@@ -6,7 +6,7 @@
   const T = Textes;
   const nombre = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
   const jour = new Intl.DateTimeFormat("fr-FR", { timeZone: "UTC" });
-  const euros = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+  const euros = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0, signDisplay: "negative" });
   const volumes = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
   const nomDuMois = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" });
 
