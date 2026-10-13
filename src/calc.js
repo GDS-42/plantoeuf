@@ -100,6 +100,20 @@
     return total;
   }
 
+  // Plantations actives dont la variété et la culture sont actives, avec leurs paramètres.
+  function plantationsCalculables({ cultures = [], varietes = [], plantations = [] }) {
+    const actifs = (liste) => liste.filter((e) => !e.supprimeLe);
+    const culturesParId = new Map(actifs(cultures).map((c) => [c.id, c]));
+    const varietesParId = new Map(actifs(varietes).map((v) => [v.id, v]));
+    const resultat = [];
+    for (const plantation of actifs(plantations)) {
+      const variete = varietesParId.get(plantation.varieteId);
+      const culture = variete && culturesParId.get(variete.cultureId);
+      if (culture) resultat.push({ plantation, culture, p: parametres(culture, variete) });
+    }
+    return resultat;
+  }
+
   // ---- Tableau économique (EX-04)
 
   function produit(a, b) {
@@ -134,17 +148,10 @@
   // Volume, CA (volume × prix) et marge (égale au CA en N1) par culture et par mois, en fourchette.
   // Le CA se calcule plantation par plantation, au prix de sa variété. Seuls comptent les
   // enregistrements actifs dont la variété et la culture sont actives.
-  function tableau({ cultures = [], varietes = [], plantations = [] }) {
-    const actifs = (liste) => liste.filter((e) => !e.supprimeLe);
-    const culturesParId = new Map(actifs(cultures).map((c) => [c.id, c]));
-    const varietesParId = new Map(actifs(varietes).map((v) => [v.id, v]));
+  function tableau(donnees) {
     const parCulture = new Map();
 
-    for (const plantation of actifs(plantations)) {
-      const variete = varietesParId.get(plantation.varieteId);
-      const culture = variete && culturesParId.get(variete.cultureId);
-      if (!culture) continue;
-      const p = parametres(culture, variete);
+    for (const { plantation, culture, p } of plantationsCalculables(donnees)) {
       if (!parCulture.has(culture.id)) parCulture.set(culture.id, { culture, mois: new Map() });
       const parMois = parCulture.get(culture.id).mois;
       for (const semaine of productionHebdomadaire(plantation, p)) {
@@ -183,6 +190,52 @@
     return { mois, lignes, total };
   }
 
+  // ---- Sur-occupation des espaces (EX-06)
+
+  // Une plantation occupe son espace du semis ou de la plantation à la fin de sa récolte, incluses.
+  // Rend, pour chaque espace actif dont la surface est dépassée à une date : les périodes de
+  // dépassement avec la surface occupée, et pour chaque mois touché la plus grande surface occupée.
+  // Le calcul signale seulement : il ne modifie ni ne refuse aucune plantation.
+  function surOccupations(donnees) {
+    const occupations = new Map();
+    for (const { plantation, p } of plantationsCalculables(donnees)) {
+      if (!occupations.has(plantation.espaceId)) occupations.set(plantation.espaceId, []);
+      occupations.get(plantation.espaceId).push({
+        debut: versJour(plantation.date),
+        fin: versJour(datesRecolte(plantation, p).fin),
+        surface: plantation.surface,
+      });
+    }
+
+    const resultat = {};
+    for (const espace of (donnees.espaces || []).filter((e) => !e.supprimeLe)) {
+      const liste = occupations.get(espace.id) || [];
+      const bornes = [...new Set(liste.flatMap((o) => [o.debut, o.fin + 1]))].sort((a, b) => a - b);
+      const periodes = [];
+      for (let i = 0; i < bornes.length - 1; i++) {
+        const jour = bornes[i];
+        const surface = liste.filter((o) => o.debut <= jour && jour <= o.fin).reduce((s, o) => s + o.surface, 0);
+        if (surface - espace.surface <= 1e-9) continue;
+        const precedente = periodes[periodes.length - 1];
+        if (precedente && precedente.fin === jour - 1 && precedente.surface === surface) precedente.fin = bornes[i + 1] - 1;
+        else periodes.push({ debut: jour, fin: bornes[i + 1] - 1, surface });
+      }
+      if (periodes.length === 0) continue;
+
+      const parMois = new Map();
+      for (const periode of periodes) {
+        for (const mois of moisEntre(depuisJour(periode.debut).slice(0, 7), depuisJour(periode.fin).slice(0, 7))) {
+          parMois.set(mois, Math.max(parMois.get(mois) || 0, periode.surface));
+        }
+      }
+      resultat[espace.id] = {
+        periodes: periodes.map((o) => ({ debut: depuisJour(o.debut), fin: depuisJour(o.fin), surface: o.surface })),
+        mois: [...parMois.entries()].sort().map(([mois, surface]) => ({ mois, surface })),
+      };
+    }
+    return resultat;
+  }
+
   return {
     CHAMPS_SURCHARGEABLES,
     ajouterJours,
@@ -192,5 +245,6 @@
     productionSurPeriode,
     productionHebdomadaire,
     tableau,
+    surOccupations,
   };
 });

@@ -221,3 +221,66 @@ test("[T05] une ferme de 200 plantations se calcule en moins d'une seconde", () 
   assert.equal(tableau.lignes.length, 20);
   assert.ok(ms < 1000, `${ms} ms`);
 });
+
+// ---- T07 : sur-occupation d'un espace (EX-06, scénario S3)
+
+// Une salade qui occupe sa planche 30 jours avant récolte puis 4 semaines de récolte.
+const SALADE = { ...COURGETTE, id: "c9", nom: "salade", joursAvantRecolte: 30, semainesRecolte: 4 };
+const BATAVIA = { ...SANS_SURCHARGE, id: "v9", cultureId: "c9", nom: "batavia" };
+const PLANCHE_4 = { id: "e4", nom: "planche 4", surface: 30, type: "plein_champ" };
+
+function fermeS3(plantations, complements = {}) {
+  return {
+    espaces: [PLANCHE_4, ...(complements.espaces || [])],
+    cultures: [SALADE],
+    varietes: [BATAVIA, ...(complements.varietes || [])],
+    plantations,
+  };
+}
+
+const PREMIERE = { id: "p1", varieteId: "v9", espaceId: "e4", surface: 20, date: "2026-05-01" }; // du 1er mai au 27 juin
+const SECONDE = { id: "p2", varieteId: "v9", espaceId: "e4", surface: 20, date: "2026-06-01" }; // du 1er juin au 28 juillet
+
+test("[T07] S3 : deux plantations de 20 m² qui se chevauchent en juin sur 30 m² signalent juin", () => {
+  const signaux = Calc.surOccupations(fermeS3([PREMIERE, SECONDE]));
+  assert.deepEqual(Object.keys(signaux), ["e4"]);
+  assert.deepEqual(signaux.e4.periodes, [{ debut: "2026-06-01", fin: "2026-06-27", surface: 40 }]);
+  assert.deepEqual(signaux.e4.mois, [{ mois: "2026-06", surface: 40 }]);
+});
+
+test("[T07] une plantation occupe son espace du semis ou de la plantation à la fin de sa récolte", () => {
+  const veille = { ...SECONDE, date: "2026-06-28" };
+  assert.deepEqual(Calc.surOccupations(fermeS3([PREMIERE, veille])), {});
+  const dernierJour = { ...SECONDE, date: "2026-06-27" };
+  assert.deepEqual(Calc.surOccupations(fermeS3([PREMIERE, dernierJour])).e4.periodes, [{ debut: "2026-06-27", fin: "2026-06-27", surface: 40 }]);
+});
+
+test("[T07] occuper exactement la surface de l'espace n'est pas une sur-occupation", () => {
+  assert.deepEqual(Calc.surOccupations(fermeS3([{ ...PREMIERE, surface: 15 }, { ...SECONDE, surface: 15 }])), {});
+});
+
+test("[T07] chaque période garde la surface occupée, et chaque mois la plus grande", () => {
+  const troisieme = { ...SECONDE, id: "p3", surface: 5, date: "2026-06-10" }; // du 10 juin au 6 août
+  const signaux = Calc.surOccupations(fermeS3([PREMIERE, SECONDE, troisieme]));
+  assert.deepEqual(signaux.e4.periodes, [
+    { debut: "2026-06-01", fin: "2026-06-09", surface: 40 },
+    { debut: "2026-06-10", fin: "2026-06-27", surface: 45 },
+  ]);
+  assert.deepEqual(signaux.e4.mois, [{ mois: "2026-06", surface: 45 }]);
+});
+
+test("[T07] une sur-occupation sur deux mois les signale tous les deux ; les espaces sont indépendants", () => {
+  const autre = { id: "e5", nom: "planche 5", surface: 30, type: "plein_champ" };
+  const longue = { ...SECONDE, id: "p4", surface: 15, date: "2026-05-20" }; // du 20 mai au 16 juillet
+  const ailleurs = { ...SECONDE, id: "p5", espaceId: "e5", surface: 25 };
+  const signaux = Calc.surOccupations(fermeS3([PREMIERE, longue, ailleurs], { espaces: [autre] }));
+  assert.deepEqual(Object.keys(signaux), ["e4"]);
+  assert.deepEqual(signaux.e4.mois.map((m) => m.mois), ["2026-05", "2026-06"]);
+});
+
+test("[T07] les plantations supprimées, ou dont la variété est supprimée, n'occupent rien", () => {
+  const supprime = "2026-10-13T08:00:00.000Z";
+  const varieteSupprimee = { ...BATAVIA, id: "v10", supprimeLe: supprime };
+  assert.deepEqual(Calc.surOccupations(fermeS3([PREMIERE, { ...SECONDE, supprimeLe: supprime }])), {});
+  assert.deepEqual(Calc.surOccupations(fermeS3([PREMIERE, { ...SECONDE, varieteId: "v10" }], { varietes: [varieteSupprimee] })), {});
+});

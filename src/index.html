@@ -29,6 +29,7 @@
   #tableau td .mediane { display: block; font-weight: 600; }
   #tableau td .bornes { display: block; font-size: 0.75rem; color: #5a6652; }
   #tableau td.nul { color: #a3ad9b; }
+  .sur-occupation { margin-left: 0.5rem; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #7a3f00; background: #fff0d4; }
   #tableau tfoot { border-top: 2px solid #8a9a7e; }
   [hidden] { display: none !important; }
 </style>
@@ -238,8 +239,14 @@
     return remplir(T.resume[champ], { valeur: affiche, unite: T.unitesVente[unite] });
   }
 
-  function resumeEspace(espace) {
-    return [espace.nom, remplir(T.resume.surface, { valeur: nombre.format(espace.surface) }), T.typesEspace[espace.type]].join(" · ");
+  function resumeEspace(espace, surOccupation) {
+    const texte = [espace.nom, remplir(T.resume.surface, { valeur: nombre.format(espace.surface) }), T.typesEspace[espace.type]].join(" · ");
+    if (!surOccupation) return texte;
+    const mois = surOccupation.mois.map((m) => remplir(T.espaces.moisSurOccupe, {
+      mois: nomDuMois.format(new Date(m.mois + "-01T00:00:00Z")), surface: nombre.format(m.surface),
+    })).join(", ");
+    return [texte, element("span", { class: "sur-occupation", role: "status" },
+      remplir(T.espaces.surOccupation, { mois, surface: nombre.format(espace.surface) }))];
   }
 
   function resumeCulture(culture) {
@@ -272,7 +279,7 @@
   function afficherListe(objet, enregistrements, resume) {
     document.getElementById(`${objet}-vide`).hidden = enregistrements.length > 0;
     document.getElementById(`liste-${objet}`).replaceChildren(...enregistrements.map((e) => element("li", { "data-id": e.id },
-      element("span", { class: "resume" }, resume(e)),
+      element("span", { class: "resume" }, ...[].concat(resume(e))),
       element("button", { type: "button", "data-action": "modifier" }, T.commun.modifier),
       element("button", { type: "button", "data-action": "supprimer" }, T.commun.supprimer))));
   }
@@ -443,7 +450,8 @@
     plantations.sort((a, b) => a.date.localeCompare(b.date) ||
       resumePlantation(a, toutesVarietes, toutesCultures, tousEspaces).localeCompare(resumePlantation(b, toutesVarietes, toutesCultures, tousEspaces), "fr"));
 
-    afficherListe("espaces", espaces, resumeEspace);
+    const surOccupations = Calc.surOccupations({ espaces, cultures, varietes, plantations });
+    afficherListe("espaces", espaces, (e) => resumeEspace(e, surOccupations[e.id]));
     afficherListe("cultures", cultures, resumeCulture);
     afficherListe("varietes", varietes, (v) => resumeVariete(v, toutesCultures));
     afficherListe("plantations", plantations, (p) => resumePlantation(p, toutesVarietes, toutesCultures, tousEspaces));

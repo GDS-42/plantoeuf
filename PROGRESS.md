@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N1 · Sessions consommées : 6 / 15 (seuil d'alerte)
+Tranche en cours : N1 · Sessions consommées : 7 / 15 (seuil d'alerte)
 
 ---
 
@@ -487,4 +487,91 @@ Running 3 tests using 1 worker
 
   3 passed (3.0s)
 == T06 : vérification verte ==
+```
+
+## 13/10/2026 · T07 — Signal de sur-occupation d'un espace
+
+- Session 7 du seuil d'alerte.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Résultat : **vert**. `./verify.sh T07` → exit 0 (6 tests unitaires, 2 de bout en bout) ; `./verify.sh N1` → exit 0.
+- Fichiers : `src/calc.js`, `src/index.html`, `src/i18n.js`, `test/calc.test.js`, `test/espaces.e2e.js`.
+- Rouge d'abord : 6 tests unitaires rouges (`Calc.surOccupations is not a function`) ; test S3 de bout en bout rouge (signal absent). Le second test de bout en bout passait à vide : précondition « signal d'abord visible » ajoutée avant le commit.
+- Refactor : `Calc.tableau` et `Calc.surOccupations` partagent la résolution des plantations calculables.
+- Commit : « T07 — Signal de sur-occupation d'un espace ».
+
+Preuve (`./verify.sh T07`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 43653 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+# Subtest: [T07] S3 : deux plantations de 20 m² qui se chevauchent en juin sur 30 m² signalent juin
+ok 1 - [T07] S3 : deux plantations de 20 m² qui se chevauchent en juin sur 30 m² signalent juin
+  ---
+  duration_ms: 2.958989
+  type: 'test'
+  ...
+# Subtest: [T07] une plantation occupe son espace du semis ou de la plantation à la fin de sa récolte
+ok 2 - [T07] une plantation occupe son espace du semis ou de la plantation à la fin de sa récolte
+  ---
+  duration_ms: 0.541641
+  type: 'test'
+  ...
+# Subtest: [T07] occuper exactement la surface de l'espace n'est pas une sur-occupation
+ok 3 - [T07] occuper exactement la surface de l'espace n'est pas une sur-occupation
+  ---
+  duration_ms: 0.377038
+  type: 'test'
+  ...
+# Subtest: [T07] chaque période garde la surface occupée, et chaque mois la plus grande
+ok 4 - [T07] chaque période garde la surface occupée, et chaque mois la plus grande
+  ---
+  duration_ms: 0.312075
+  type: 'test'
+  ...
+# Subtest: [T07] une sur-occupation sur deux mois les signale tous les deux ; les espaces sont indépendants
+ok 5 - [T07] une sur-occupation sur deux mois les signale tous les deux ; les espaces sont indépendants
+  ---
+  duration_ms: 0.37884
+  type: 'test'
+  ...
+# Subtest: [T07] les plantations supprimées, ou dont la variété est supprimée, n'occupent rien
+ok 6 - [T07] les plantations supprimées, ou dont la variété est supprimée, n'occupent rien
+  ---
+  duration_ms: 0.260912
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 2 - test/squelette.test.js
+  ---
+  duration_ms: 82.576982
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 3 - test/store.test.js
+  ---
+  duration_ms: 77.61338
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 99.675541
+== Tests de bout en bout (Playwright) ==
+
+Running 2 tests using 1 worker
+
+  ✓  1 test/espaces.e2e.js:18:1 › [T07] S3 : « planche 4 » porte un signal de sur-occupation pour juin, et les deux plantations restent enregistrées (790ms)
+  ✓  2 test/espaces.e2e.js:33:1 › [T07] le signal disparaît dès que la sur-occupation est corrigée (852ms)
+
+  2 passed (2.3s)
+== T07 : vérification verte ==
 ```

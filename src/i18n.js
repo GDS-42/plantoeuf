@@ -24,6 +24,8 @@
       ajouter: "Ajouter l'espace",
       aucun: "Aucun espace pour l'instant.",
       unite: "m²",
+      surOccupation: "⚠ Sur-occupé en {mois}, pour {surface} m² disponibles.",
+      moisSurOccupe: "{mois} ({surface} m² plantés)",
     },
     cultures: {
       titre: "Cultures",

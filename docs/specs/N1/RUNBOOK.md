@@ -93,5 +93,6 @@ Une ferme fictive de 10 plantations donne un tableau CA / marge par culture et p
 - T05 · Colonnes : du premier au dernier mois qui reçoit une semaine de récolte. Une ligne par culture qui a au moins une plantation active (variété et culture actives), rangée par nom. Montants arrondis à l'euro, volumes au dixième ; la valeur exacte reste dans `data-valeur`.
 - T05 · Le tableau est en tête de page ; chaque case montre la médiane en gras, la basse et la haute en dessous ; la légende et les en-têtes disent « estimation » et « fourchette basse – médiane – haute » (EX-09).
 - T06 · Recalcul : chaque enregistrement relance `rafraichir()`, qui recalcule listes et tableau depuis les données enregistrées. Une modification venue d'un autre onglet (événement `storage`) relit la ferme puis rafraîchit : sans cela, l'onglet resté ouvert écrasait les données de l'autre à sa prochaine saisie.
+- T07 · Une plantation occupe son espace du jour du semis ou de la plantation jusqu'au dernier jour de sa récolte, inclus. Sur-occupation quand la somme des surfaces dépasse strictement celle de l'espace ; occuper exactement la surface n'est pas signalé. Le signal donne chaque mois touché avec la plus grande surface plantée, dans la ligne de l'espace ; aucune saisie n'est bloquée.
 
 ## ✎ Bilan de fin de tranche
