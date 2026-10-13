@@ -4609,3 +4609,11 @@ dist/index.html : 328621 octets
   ✓   75 test/p2-ventes.e2e.js:276:1 › [T35] la semaine choisie se lit en détail : offre, demande et écart en fourchettes, et les ventes par point de vente (561ms)
   ✓   76 test/p2-ventes.e2e.js:314:1 › [T35] page Ventes : chaque ligne donne ses faits, fourchettes comprises (494ms)
 ```
+
+## 13/10/2026 · P2 — Mise en ligne sur Vercel
+
+- Demande de l'humain : « oui, envoie les sources sur Vercel ».
+- Sources de P2 (commit d9c447e) envoyées au projet Vercel « plantoeuf » : 32 morceaux de moins de 16 Ko, chacun vérifié en comparant son empreinte SHA-1 à l'`uid` renvoyé par Vercel. Le déploiement de production rassemble les morceaux puis lance `build.sh` ; sortie dans `dist`.
+- Avant l'envoi, une simulation locale du même assemblage donne un `dist/index.html` identique à celui du dépôt : SHA-1 a87f276a36cffd354e3308fde161ee5e01b7f4c6, 328 621 octets.
+- Résultat : déploiement dpl_8qT4zHboumvz4yo1ET1kLs8rMcV2 READY, alias plantoeuf.vercel.app. La page servie n'a pas pu être relue d'ici (réseau de la session et accès de lecture Vercel refusés) ; vérification visuelle laissée à l'humain.
+- À savoir pour un prochain envoi en ligne : le transport décode une fois de trop les séquences `\uXXXX`. Pour qu'un ` ` littéral arrive tel quel, il faut écrire `\\u005cu00a0` dans la chaîne JSON.
