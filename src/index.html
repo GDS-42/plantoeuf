@@ -68,7 +68,7 @@
   .raccourcis a { padding: 0.2rem 0.65rem; border: 1px solid var(--trait-fort); border-radius: 999px; background: var(--surface); color: var(--encre); font-size: 0.875rem; text-decoration: none; }
   .raccourcis a:hover { border-color: var(--accent); color: var(--accent-fonce); }
   .compte-raccourci { color: var(--encre-douce); }
-  .panneau { margin-top: 1rem; background: var(--surface); border: 1px solid var(--trait); border-radius: 10px; scroll-margin-top: 3.5rem; }
+  .panneau { margin-top: 1rem; background: var(--surface); border: 1px solid var(--trait); border-radius: 10px; scroll-margin-top: calc(var(--hauteur-raccourcis, 3.5rem) + 0.75rem); }
   .panneau-entete { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.75rem 1rem 0.5rem; }
   .panneau-entete h2 { font-size: 1.1rem; }
   .compte { min-width: 1.6rem; padding: 0 0.45rem; border-radius: 999px; background: var(--accent-doux); color: var(--accent-fonce); font-size: 0.875rem; font-weight: 600; text-align: center; }
@@ -187,6 +187,7 @@
     <a href="#section-pointsVente"><span data-texte="pointsVente.titre"></span> <span class="compte-raccourci" data-objet="pointsVente"></span></a>
     <a href="#section-seances"><span data-texte="seances.titre"></span> <span class="compte-raccourci" data-objet="seances"></span></a>
     <a href="#section-debouches"><span data-texte="debouches.titre"></span> <span class="compte-raccourci" data-objet="debouches"></span></a>
+    <a href="#section-lots"><span data-texte="poules.titre"></span> <span class="compte-raccourci" data-objet="lots"></span></a>
     <a href="#section-sauvegarde"><span data-texte="sauvegarde.titre"></span></a>
   </nav>
   <section id="section-espaces" class="panneau" data-objet="espaces">
@@ -415,6 +416,54 @@
     <ul id="liste-debouches" class="liste"></ul>
   </section>
 
+  <section id="section-lots" class="panneau" data-objet="lots">
+    <div class="panneau-entete">
+      <h2 data-texte="poules.titre"></h2>
+      <span class="compte">0</span>
+      <span class="mode-modification" data-texte="panneaux.modification" hidden></span>
+    </div>
+    <form id="form-lot" data-objet="lots">
+      <label><span data-texte="poules.nom"></span>
+        <input id="lot-nom" data-champ="nom" required>
+      </label>
+      <label><span data-texte="poules.effectif"></span>
+        <input id="lot-effectif" data-champ="effectif" data-format="nombre" type="number" min="1" step="1" required>
+      </label>
+      <label><span data-texte="poules.arrivee"></span>
+        <input id="lot-arrivee" data-champ="arrivee" type="date" required>
+      </label>
+      <label><span data-texte="poules.debutPonte"></span>
+        <input id="lot-debutPonte" data-champ="debutPonte" type="date" required>
+      </label>
+      <label><span data-texte="poules.reforme"></span>
+        <input id="lot-reforme" data-champ="reforme" type="date" required>
+      </label>
+      <label><span data-texte="poules.ponte"></span>
+        <input id="lot-ponte" data-champ="ponte" data-format="fourchette" required>
+      </label>
+      <label><span data-texte="poules.pertes"></span>
+        <input id="lot-pertes" data-champ="pertes" data-format="nombre" type="number" min="0" max="100" step="any" required>
+      </label>
+      <label><span data-texte="poules.aliment"></span>
+        <input id="lot-aliment" data-champ="aliment" data-format="fourchette" required>
+      </label>
+      <label><span data-texte="poules.prixAliment"></span>
+        <input id="lot-prixAliment" data-champ="prixAliment" data-format="fourchette" required>
+      </label>
+      <label><span data-texte="poules.prixOeuf"></span>
+        <input id="lot-prixOeuf" data-champ="prixOeuf" data-format="fourchette" required>
+      </label>
+      <p class="aide" data-texte="poules.aide"></p>
+      <div class="boutons">
+        <button id="lot-ajouter" type="submit" class="principal" data-texte="poules.ajouter"></button>
+        <button id="lot-annuler" type="button" class="annuler" data-texte="commun.annuler" hidden></button>
+      </div>
+      <p id="lot-erreur" class="erreur" role="alert" hidden></p>
+    </form>
+    <p id="lots-vide" class="vide" data-texte="poules.aucun"></p>
+    <ul id="liste-lots" class="liste"></ul>
+  </section>
+
   <section id="section-sauvegarde" class="panneau">
     <div class="panneau-entete">
       <h2 data-texte="sauvegarde.titre"></h2>
@@ -487,6 +536,7 @@
 <script src="ui-tableau.js"></script>
 <script src="ui-sauvegarde.js"></script>
 <script src="ui-ventes.js"></script>
+<script src="ui-poules.js"></script>
 <script>
 (function () {
   "use strict";
@@ -496,6 +546,7 @@
   const fermeOuverte = () => ferme;
   const saisie = UiSaisie.creer({ ferme: fermeOuverte, rafraichir });
   const ventes = UiVentes.creer({ ferme: fermeOuverte, saisie });
+  const poules = UiPoules.creer({ saisie });
   const sauvegarde = UiSauvegarde.creer({
     ferme: fermeOuverte,
     apresImport: () => {
@@ -515,6 +566,7 @@
     const donnees = donneesActives();
     saisie.afficher(donnees);
     ventes.afficher(donnees);
+    poules.afficher(donnees);
     UiTableau.afficher(Calc.tableau(donnees));
 
     // EX-10 : l'exemple est proposé tant que la ferme est vide, effaçable tant qu'il en reste quelque chose.
@@ -528,6 +580,9 @@
   document.title = T.titre;
   UiCommun.traduire(document);
   UiCommun.brancherOnglets(document.querySelector("#volet-projection .onglets"));
+  // La barre de raccourcis s'étale sur plusieurs lignes : un panneau atteint par un raccourci s'arrête sous elle.
+  const raccourcis = document.getElementById("raccourcis");
+  new ResizeObserver(() => document.documentElement.style.setProperty("--hauteur-raccourcis", `${raccourcis.offsetHeight}px`)).observe(raccourcis);
   saisie.brancher(document);
   sauvegarde.brancher();
 

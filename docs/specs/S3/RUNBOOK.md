@@ -70,5 +70,7 @@ Le format exporté passe en version 3 : un fichier de N1 (version 1) ou de N2 (v
 ## ✎ Décisions
 
 - T26 · Le store vérifie que les dates d'un lot se suivent (arrivée ≤ début de ponte ≤ réforme, le même jour permis) à l'ajout, à la modification et à l'import ; code d'erreur `dates_desordonnees`. Les tests comparent la version du format à `Store.VERSION` : un prochain objet ne touchera plus aucun test.
+- T27 · Le panneau « Lots de poules » vient après les débouchés ; ses dix champs sont obligatoires. Le choix du produit d'un débouché propose « Œufs » (identifiant `oeufs`, `Calc.OEUFS`) après les cultures ; un débouché d'œufs se lit « €/œuf » et « œufs par séance ». La marge de défilement des panneaux suit la hauteur de la barre de raccourcis (`--hauteur-raccourcis`, mesurée au démarrage et à chaque changement de taille).
+- T27 · Maquettes sur le canevas Claude Design : variante A retenue (bandeaux « Maraîchage » et « Atelier poules » dans le tableau, affichés seulement quand la ferme a au moins un lot).
 
 ## ✎ Bilan de fin de tranche

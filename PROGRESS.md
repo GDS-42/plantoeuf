@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : S3 · Sessions consommées : 1 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : S3 · Sessions consommées : 2 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
 
 ---
 
@@ -3289,4 +3289,85 @@ Running 1 test using 1 worker
 
   1 passed (892ms)
 == T26 : vérification verte ==
+```
+
+## 13/10/2026 · T27 — Panneau de saisie des lots de poules ; « Œufs » parmi les produits d'un débouché
+
+- Session 2 / 11 du seuil d'alerte de S3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Maquette d'abord : deux variantes sur le canevas Claude Design « plantoeuf — présentation P1 » (rangée S3) — A, bloc « Atelier poules » sous les cultures avec bandeaux d'atelier ; B, les œufs comme une ligne de plus. A retenue (mise en œuvre en T29) ; le panneau des lots suit la maquette.
+- Résultat : **vert**. `./verify.sh T27` → exit 0 (4 tests de bout en bout) ; `./verify.sh S3` → exit 0 (79 tests unitaires, 62 de bout en bout), dont l'audit de lisibilité `[T15]` et le parcours sans erreur `[T11]` avec le nouveau panneau.
+- Fichiers : `src/ui-poules.js` (nouveau : liste et résumé des lots), `src/index.html` (panneau, raccourci, branchement), `src/i18n.js` (textes du panneau, message `dates_desordonnees`, « Produit vendu (culture ou œufs) »), `src/ui-ventes.js` (option « Œufs » et débouché lu en œufs), `src/calc.js` (identifiant réservé `Calc.OEUFS`), `test/poules.e2e.js`.
+- Rouge d'abord : 3 tests de bout en bout rouges (panneau absent), puis un 4e écrit après lecture d'une capture : avec un raccourci de plus, la barre passe sur trois lignes et cachait le titre du panneau atteint. Test rouge, puis correction (marge de défilement des panneaux réglée sur la hauteur réelle de la barre).
+- Commit : « T27 — Panneau de saisie des lots de poules ; « Œufs » parmi les produits d'un débouché ».
+
+Preuve (`./verify.sh T27`) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 121238 octets
+== Tests unitaires (node --test) ==
+TAP version 13
+1..0
+# Subtest: test/calc.test.js
+ok 1 - test/calc.test.js
+  ---
+  duration_ms: 70.390266
+  type: 'test'
+  ...
+1..0
+# Subtest: test/exemple.test.js
+ok 2 - test/exemple.test.js
+  ---
+  duration_ms: 69.384104
+  type: 'test'
+  ...
+1..0
+# Subtest: test/poules.test.js
+ok 3 - test/poules.test.js
+  ---
+  duration_ms: 64.339686
+  type: 'test'
+  ...
+1..0
+# Subtest: test/squelette.test.js
+ok 4 - test/squelette.test.js
+  ---
+  duration_ms: 60.784419
+  type: 'test'
+  ...
+1..0
+# Subtest: test/store.test.js
+ok 5 - test/store.test.js
+  ---
+  duration_ms: 55.09121
+  type: 'test'
+  ...
+1..0
+# Subtest: test/ventes.test.js
+ok 6 - test/ventes.test.js
+  ---
+  duration_ms: 80.893933
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 170.110185
+== Tests de bout en bout (Playwright) ==
+
+Running 4 tests using 1 worker
+
+  ✓  1 test/poules.e2e.js:39:1 › [T27] un lot de poules se saisit, se liste, se modifie, se supprime et se retrouve après réouverture (592ms)
+  ✓  2 test/poules.e2e.js:67:1 › [T27] des dates qui ne se suivent pas sont refusées avec un message, et rien n'est enregistré (270ms)
+  ✓  3 test/poules.e2e.js:75:1 › [T27] « Œufs » se choisit comme produit d'un débouché, et le débouché se lit en œufs (311ms)
+  ✓  4 test/poules.e2e.js:93:1 › [T27] chaque raccourci mène à son panneau, titre visible sous la barre de raccourcis (327ms)
+
+  4 passed (2.4s)
+== T27 : vérification verte ==
 ```

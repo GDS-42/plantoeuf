@@ -8,6 +8,8 @@
 
   // Champs numériques de la culture qu'une variété peut surcharger (SPEC, objet Variété).
   const CHAMPS_SURCHARGEABLES = ["rendement", "prix", "joursAvantRecolte", "semainesRecolte", "pertes"];
+  // Identifiant réservé du produit « œufs » dans un débouché (SPEC S3) : les œufs de tous les lots.
+  const OEUFS = "oeufs";
   const JOUR_MS = 24 * 3600 * 1000;
   const NIVEAUX = ["basse", "mediane", "haute"];
 
@@ -517,6 +519,7 @@
 
   return {
     CHAMPS_SURCHARGEABLES,
+    OEUFS,
     ajouterJours,
     jourDeLaSemaine,
     lundiDe,

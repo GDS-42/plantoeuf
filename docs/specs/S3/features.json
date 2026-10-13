@@ -50,7 +50,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": false,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T28",

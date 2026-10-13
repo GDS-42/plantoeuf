@@ -112,12 +112,19 @@
     return morceaux.join(" · ");
   }
 
-  function resumeDebouche(debouche, pointsVente, cultures) {
+  // Un débouché vend une culture, ou les œufs (S3) : nom du produit et unités de son prix et de son volume.
+  function produitDuDebouche(debouche, cultures) {
+    if (debouche.produitId === Calc.OEUFS) return { nom: T.poules.oeufs, unitePrix: T.poules.oeuf, uniteVolume: T.poules.uniteOeufs };
     const culture = cultures.get(debouche.produitId);
     const unite = T.unitesVente[culture ? culture.unite : "kg"];
-    return [remplir(T.resume.debouche, { produit: nomDe(culture), pointVente: nomDe(pointsVente.get(debouche.pointVenteId)) }),
-      remplir(T.resume.prixDebouche, { valeur: afficherFourchette(debouche.prix), unite }),
-      remplir(T.resume.volumeParSeance, { valeur: afficherFourchette(debouche.volumeParSeance), unite })].join(" · ");
+    return { nom: nomDe(culture), unitePrix: unite, uniteVolume: unite };
+  }
+
+  function resumeDebouche(debouche, pointsVente, cultures) {
+    const produit = produitDuDebouche(debouche, cultures);
+    return [remplir(T.resume.debouche, { produit: produit.nom, pointVente: nomDe(pointsVente.get(debouche.pointVenteId)) }),
+      remplir(T.resume.prixDebouche, { valeur: afficherFourchette(debouche.prix), unite: produit.unitePrix }),
+      remplir(T.resume.volumeParSeance, { valeur: afficherFourchette(debouche.volumeParSeance), unite: produit.uniteVolume })].join(" · ");
   }
 
   // ferme : fonction qui rend la ferme ouverte ; saisie : le module de saisie (mode modification).
@@ -143,7 +150,8 @@
       const choixPoints = pointsVente.map((p) => ({ valeur: p.id, libelle: p.nom }));
       remplirChoix(document.getElementById("seance-pointVenteId"), choixPoints);
       remplirChoix(document.getElementById("debouche-pointVenteId"), choixPoints);
-      remplirChoix(document.getElementById("debouche-produitId"), cultures.map((c) => ({ valeur: c.id, libelle: c.nom })));
+      remplirChoix(document.getElementById("debouche-produitId"),
+        [...cultures.map((c) => ({ valeur: c.id, libelle: c.nom })), { valeur: Calc.OEUFS, libelle: T.poules.oeufs }]);
 
       afficherOffreDemande(Calc.offreDemande(donnees));
       afficherPointsDeVente(Calc.pointsDeVente(donnees));
