@@ -16,7 +16,8 @@ async function aller(page, nom) {
 
 async function ouvrir(page, objet) {
   await aller(page, PAGE_DE[objet]);
-  await page.locator(`#section-${objet} [data-ouvrir="${objet}"]`).click();
+  // Le bouton « Ajouter » visible : en tête de la liste, ou dans son état vide quand elle est vide (EX-36).
+  await page.locator(`#section-${objet} [data-ouvrir="${objet}"]`).filter({ visible: true }).click();
   await expect(page.locator(`#tiroir-${objet}`)).toBeVisible();
 }
 

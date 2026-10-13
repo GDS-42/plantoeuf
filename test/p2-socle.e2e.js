@@ -109,10 +109,17 @@ test("[T33] EX-31 : une erreur de saisie laisse le tiroir ouvert, avec son messa
 
 // ---- EX-32 : synthèse en tête
 
-for (const [largeur, hauteur] of [[390, 844], [1280, 720], [1920, 1080]]) {
-  test(`[T33] EX-32 à ${largeur} px : chiffre d'affaires et marge en fourchette, entièrement visibles en tête`, async ({ page }) => {
+for (const [largeur, hauteur] of [[360, 740], [390, 844], [900, 700], [1280, 720], [1920, 1080]]) {
+  test(`[T33] EX-32 à ${largeur} px : chiffre d'affaires et marge en fourchette, entièrement visibles en tête, même après défilement`, async ({ page }) => {
     await page.setViewportSize({ width: largeur, height: hauteur });
     await chargerExemple(page);
+    await aller(page, "plantations");
+    // Défile jusqu'au bas de la page, quel que soit l'élément qui défile (page ou zone de contenu).
+    await page.evaluate(() => {
+      window.scrollTo(0, document.documentElement.scrollHeight);
+      const contenu = document.getElementById("contenu");
+      contenu.scrollTop = contenu.scrollHeight;
+    });
     for (const id of ["#synthese", "#synthese-marge"]) {
       const indicateur = page.locator(id);
       await expect(indicateur).toContainText(/estim/i);
@@ -122,6 +129,8 @@ for (const [largeur, hauteur] of [[390, 844], [1280, 720], [1920, 1080]]) {
         const boite = await valeur.boundingBox();
         expect(boite.x, `${id} .${niveau}`).toBeGreaterThanOrEqual(0);
         expect(boite.x + boite.width, `${id} .${niveau}`).toBeLessThanOrEqual(largeur);
+        expect(boite.y, `${id} .${niveau}`).toBeGreaterThanOrEqual(0);
+        expect(boite.y + boite.height, `${id} .${niveau}`).toBeLessThanOrEqual(hauteur);
       }
     }
     // Aucun texte de la barre ne déborde ni ne se chevauche.
@@ -153,11 +162,23 @@ test("[T33] EX-36 : une ferme vide ouvre sur les trois étapes et la ferme d'exe
   await expect(page.locator("#proposition-exemple")).toBeHidden();
 });
 
-test("[T33] EX-36 : une liste vide dit ce qu'elle contiendra et propose de l'ajouter", async ({ page }) => {
+test("[T33] EX-36 : une liste vide le dit et propose de l'ajouter, dans l'état vide lui-même ; la liste remplie garde son bouton en tête", async ({ page }) => {
   await page.goto("index.html");
-  for (const [nom, objet] of [["espaces", "espaces"], ["plantations", "plantations"], ["poules", "lots"]]) {
+  const listes = [["espaces", "espaces"], ["cultures", "cultures"], ["cultures", "varietes"], ["plantations", "plantations"],
+    ["ventes", "pointsVente"], ["ventes", "seances"], ["ventes", "debouches"], ["poules", "lots"]];
+  for (const [nom, objet] of listes) {
     await aller(page, nom);
-    await expect(page.locator(`#${objet}-vide`)).toBeVisible();
-    await expect(page.locator(`#section-${objet} [data-ouvrir="${objet}"]`)).toBeVisible();
+    const vide = page.locator(`#${objet}-vide`);
+    await expect(vide).toBeVisible();
+    await expect(vide.locator("p")).not.toBeEmpty();
+    await expect(vide.locator(`[data-ouvrir="${objet}"]`)).toBeVisible();
+    await expect(page.locator(`#section-${objet} .carte-entete [data-ouvrir="${objet}"]`)).toBeHidden();
   }
+  await aller(page, "espaces");
+  await page.locator('#espaces-vide [data-ouvrir="espaces"]').click();
+  await expect(page.locator("#tiroir-espaces")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await ajouterEspace(page, { nom: "planche 1", surface: 30 });
+  await expect(page.locator("#espaces-vide")).toBeHidden();
+  await expect(page.locator('#section-espaces .carte-entete [data-ouvrir="espaces"]')).toBeVisible();
 });

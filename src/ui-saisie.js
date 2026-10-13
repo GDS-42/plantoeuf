@@ -70,7 +70,13 @@
   // Liste d'un objet ; resume(e) rend le contenu de la ligne (texte ou éléments) ;
   // enEdition : identifiant de l'élément en cours de modification (EX-15).
   function afficherListe(objet, enregistrements, resume, enEdition) {
-    document.getElementById(`${objet}-vide`).hidden = enregistrements.length > 0;
+    const vide = document.getElementById(`${objet}-vide`);
+    vide.hidden = enregistrements.length > 0;
+    // EX-36 : l'état vide propose le geste suivant, le même bouton « Ajouter » que l'en-tête de la liste.
+    if (!vide.querySelector("[data-ouvrir]")) {
+      vide.append(element("button", { type: "button", class: "bouton principal", "data-ouvrir": objet },
+        icone("plus"), T.tiroirs[objet].ajouter));
+    }
     const liste = document.getElementById(`liste-${objet}`);
     liste.hidden = enregistrements.length === 0;
     liste.replaceChildren(...enregistrements.map((e) => {

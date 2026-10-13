@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : S3 · Sessions consommées : 7 / 11 (seuil d'alerte) · N2 terminée en 10 / 12 · P1 : 6 / 9, T17 en attente de validation humaine · N1 terminée en 10 / 15
+Tranche en cours : P2 · Sessions consommées : 1 / 10 (seuil d'alerte) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4428,3 +4428,41 @@ Running 70 tests using 2 workers
   1. `[T24]` (`test/ventes.test.js`) : un débouché de l'exemple vend une culture **ou les œufs** (`|| debouche.produitId === Calc.OEUFS`) ;
   2. `[T14]` P1-S2 (`test/presentation.e2e.js`) : la dernière en-tête de groupe du tableau, quelle qu'elle soit, au lieu de « Tomate » ;
   3. ferme d'exemple : trois débouchés d'œufs (marché 0,45 à 0,55 € l'œuf, 180 par séance en médiane ; AMAP 0,50 à 0,55 €, 60 ; épicerie 0,35 à 0,45 €, 120) ; les deux assertions de `[T31]` qui figent leur absence s'inversent.
+
+## 13/10/2026 · P2 — Refus de la présentation P1 et ouverture de la tranche P2
+
+- L'humain a essayé l'outil en ligne (plantoeuf.vercel.app) et refusé la présentation P1, captures à l'appui : « c'est très moche et pas pratique » ; « Même les tableaux […] sont illisibles, il n'y a aucun travail de présentation des données » ; « L'application doit être agréable, des données correctement présentées, clairement ». Il demande d'utiliser des agents autant que nécessaire. EX-17 (validation humaine de P1) : **refusée**.
+- L'agent a rédigé `docs/specs/P2/` (SPEC, RUNBOOK, features). Cause relevée : la spec P1 elle-même imposait « aucun champ derrière un clic » (EX-12) ; P2 la remplace (navigation par pages, formulaires en tiroir).
+- **Décision consignée (écart à la règle « ne jamais modifier les tests »)** : les tests de bout en bout de N1, N2 et S3 remplissaient les formulaires directement ; avec les tiroirs, leurs étapes de navigation changent (aides `aller`, `ouvrir`, `modifier` de `test/outils.js`). Leurs assertions de valeur et de comportement restent ; les tests de mise en page de P1 (T12, T13, T16) sont remplacés par ceux de P2. Prise par l'agent sur la base du refus de l'humain et de sa consigne de ne plus s'arrêter ; signalée à l'humain.
+
+## 13/10/2026 · T33 — Socle P2 : navigation par pages, tiroirs, synthèse en tête, accueil guidé
+
+- Modèle : Opus 5.5, effort élevé · Reprises : 1 (après relecture) · Relecture : **Fable, ÉCART** puis corrigé (voir ci-dessous).
+- Écart de méthode : le socle a été écrit avant ses tests `[T33]` (refonte d'ensemble menée d'un bloc) ; les tests ont été écrits ensuite, puis durcis par la relecture.
+- Fait : barre du haut (chiffre d'affaires et marge en fourchette), navigation latérale à sept pages avec leurs comptes, formulaires dans des `<dialog>` (titre « Ajouter… » / « Modifier… », fermeture par enregistrement, Annuler, croix, Échap, clic sur le voile ; erreur → tiroir ouvert), annonce passagère, accueil guidé d'une ferme sans plantation, états vides avec leur bouton « Ajouter », thème sombre par jetons, icônes SVG dans le fichier, modules `ui-navigation.js`, `ui-synthese.js` et `ui-calendrier.js` (ces deux derniers vides, pour T34 et T36), aides de test.
+- Relecture Fable (verdict ÉCART) : (1) au téléphone la barre du haut défilait hors de l'écran — corrigé (barre collante, navigation collée dessous) ; (2) le test EX-32 ne contrôlait pas la position verticale — durci (360, 390, 900, 1280, 1920 px, après défilement ; il a révélé un débordement de la page à 1280 px dû aux textes pour lecteur d'écran, corrigé) ; (3) EX-36 testé de façon complaisante — l'état vide porte maintenant son bouton, le test le vérifie pour les huit listes ; la réécriture des textes d'état vide est confiée à T34, T35 et T36 ; (4) « à » en dur dans `elementFourchette` — passé dans `i18n.js`. Remarques mineures : clés mortes retirées.
+- État de la suite : 47 anciens tests de bout en bout restent rouges à ce stade (navigation), migrés par T34 (15), T35 (10) et T36 (22), lancées en parallèle dans des copies de travail séparées.
+
+Preuve (`./verify.sh T33`, extrait) :
+
+```text
+== Assemblage de dist/index.html ==
+dist/index.html : 170780 octets
+== Tests unitaires (node --test) ==
+== Tests de bout en bout (Playwright) ==
+  ✓   1 test/p2-socle.e2e.js:25:1 › [T33] EX-30 : la navigation mène à chaque page, une seule visible à la fois, avec le nombre d'éléments de chacune (1.2s)
+  ✓   2 test/p2-socle.e2e.js:42:1 › [T33] EX-30 : la page ouverte se retrouve au rechargement (579ms)
+  ✓   3 test/p2-socle.e2e.js:52:1 › [T33] EX-31, P2-S1 : « Ajouter un espace » ouvre le tiroir titré ; l'enregistrement le referme et l'espace apparaît (558ms)
+  ✓   4 test/p2-socle.e2e.js:67:1 › [T33] EX-31, P2-S2 : « Modifier » ouvre le tiroir de modification, signale la ligne, et l'enregistrement recalcule la synthèse (757ms)
+  ✓   5 test/p2-socle.e2e.js:84:1 › [T33] EX-31 : Échap, « Annuler » et la croix referment le tiroir sans rien enregistrer (1.3s)
+  ✓   6 test/p2-socle.e2e.js:101:1 › [T33] EX-31 : une erreur de saisie laisse le tiroir ouvert, avec son message (738ms)
+  ✓   7 test/p2-socle.e2e.js:113:3 › [T33] EX-32 à 360 px : chiffre d'affaires et marge en fourchette, entièrement visibles en tête, même après défilement (557ms)
+  ✓   8 test/p2-socle.e2e.js:113:3 › [T33] EX-32 à 390 px : chiffre d'affaires et marge en fourchette, entièrement visibles en tête, même après défilement (546ms)
+  ✓   9 test/p2-socle.e2e.js:113:3 › [T33] EX-32 à 900 px : chiffre d'affaires et marge en fourchette, entièrement visibles en tête, même après défilement (545ms)
+  ✓  10 test/p2-socle.e2e.js:113:3 › [T33] EX-32 à 1280 px : chiffre d'affaires et marge en fourchette, entièrement visibles en tête, même après défilement (619ms)
+  ✓  11 test/p2-socle.e2e.js:113:3 › [T33] EX-32 à 1920 px : chiffre d'affaires et marge en fourchette, entièrement visibles en tête, même après défilement (590ms)
+  ✓  12 test/p2-socle.e2e.js:147:1 › [T33] EX-36 : une ferme vide ouvre sur les trois étapes et la ferme d'exemple ; une étape mène au tiroir de sa page (726ms)
+  ✓  13 test/p2-socle.e2e.js:165:1 › [T33] EX-36 : une liste vide le dit et propose de l'ajouter, dans l'état vide lui-même ; la liste remplie garde son bouton en tête (1.1s)
+  13 passed (10.8s)
+== T33 : vérification verte ==
+```

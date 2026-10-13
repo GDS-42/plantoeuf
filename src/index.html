@@ -85,7 +85,7 @@
   p { margin: 0; }
   button, input, select { font: inherit; color: inherit; }
   [hidden] { display: none !important; }
-  .pour-lecteur-d-ecran { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .pour-lecteur-d-ecran { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .icone { width: 1.25rem; height: 1.25rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
   /* Focus clavier toujours visible (EX-16). */
@@ -151,7 +151,8 @@
   .compte-nav:empty { display: none; }
   .pastille-alerte { margin-left: auto; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--ambre); }
 
-  .contenu { grid-area: contenu; overflow-y: auto; scroll-padding-top: 1rem; }
+  /* position: relative : les éléments placés en absolu (textes pour lecteur d'écran…) restent dans la zone qui défile. */
+  .contenu { grid-area: contenu; position: relative; overflow-y: auto; scroll-padding-top: 1rem; }
   .bandeau {
     display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem;
     margin: 1rem clamp(1rem, 3vw, 2.5rem) 0; padding: 0.75rem 1rem;
@@ -202,7 +203,7 @@
   .bouton .icone { width: 1.1rem; height: 1.1rem; }
   .bandeau .bouton { border-color: currentColor; background: transparent; color: inherit; }
   .bouton-icone {
-    display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem; flex: none;
+    position: relative; display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem; flex: none;
     border: 1px solid transparent; border-radius: var(--rayon-petit);
     background: transparent; color: var(--encre-pale); cursor: pointer;
   }
@@ -239,6 +240,7 @@
   .etat-vide { display: grid; justify-items: center; gap: 0.75rem; padding: 2.25rem 1.25rem; text-align: center; color: var(--encre-douce); }
   .etat-vide > .icone { width: 2.25rem; height: 2.25rem; padding: 0.55rem; box-sizing: content-box; border-radius: 50%; background: var(--accent-doux); color: var(--accent-texte); }
   .etat-vide p { max-width: 46ch; }
+  .panneau:has(> .etat-vide:not([hidden])) > .carte-entete [data-ouvrir] { display: none; }
 
   /* ---- Puces */
   .puce { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0.55rem; border-radius: 999px; background: var(--surface-survol); color: var(--encre-douce); font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
@@ -349,13 +351,15 @@
   /* ---- Écran étroit : navigation en ruban sous la barre, une colonne */
   @media (max-width: 900px) {
     .app { display: block; height: auto; }
-    .barre { flex-wrap: wrap; gap: 0.5rem 1rem; padding-block: 0.75rem; }
+    .barre { position: sticky; top: 0; flex-wrap: wrap; gap: 0.35rem 1rem; padding-block: 0.6rem; }
+    .marque-sous-titre { display: none; }
+    .marque-logo { width: 1.75rem; height: 1.75rem; }
     .saison { margin-left: 0; width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .indicateur { padding-inline: 0.75rem; }
     .indicateur:first-child { padding-left: 0; }
     .indicateur-valeur { flex-wrap: wrap; row-gap: 0; }
     .indicateur-bornes { white-space: normal; }
-    .navigation { position: sticky; top: 0; z-index: 4; display: flex; gap: 0.25rem; overflow-x: auto; padding: 0.5rem; border-right: 0; border-bottom: 1px solid var(--trait); }
+    .navigation { position: sticky; top: var(--hauteur-barre-mesuree, 6.5rem); z-index: 4; display: flex; gap: 0.25rem; overflow-x: auto; padding: 0.5rem; border-right: 0; border-bottom: 1px solid var(--trait); }
     .navigation ul { display: flex; gap: 0.25rem; }
     .navigation-groupe { display: none; }
     .navigation a { white-space: nowrap; }
@@ -1048,6 +1052,9 @@
 
   document.title = T.titre;
   UiCommun.traduire(document);
+  // Au téléphone, la navigation se colle sous la barre du haut, dont la hauteur suit son contenu.
+  const barre = document.querySelector(".barre");
+  new ResizeObserver(() => document.documentElement.style.setProperty("--hauteur-barre-mesuree", `${barre.offsetHeight}px`)).observe(barre);
   UiCommun.brancherOnglets(document.querySelector("#carte-projection .onglets"));
   saisie.brancher(document);
   sauvegarde.brancher();

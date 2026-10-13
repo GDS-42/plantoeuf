@@ -16,6 +16,8 @@
       enregistrer: "Enregistrer les modifications",
       annuler: "Annuler",
       fermer: "Fermer",
+      // Bornes d'une fourchette affichées à côté de sa médiane.
+      bornes: "{basse} à {haute}",
       choisir: "— choisir —",
       supprime: "(supprimé)",
     },
@@ -91,8 +93,6 @@
       },
     },
     panneaux: {
-      raccourcis: "Aller à un panneau de saisie",
-      modification: "Modification en cours",
       compte: "{nombre} élément(s) enregistré(s)",
     },
     espaces: {
@@ -223,7 +223,6 @@
       resultat: "Résultat estimé (€)",
     },
     synthese: {
-      titre: "Chiffre d'affaires estimé de la saison",
       ca: "Chiffre d'affaires estimé",
       marge: "Marge estimée",
       entre: "entre",

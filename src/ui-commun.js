@@ -52,7 +52,7 @@
     const mediane = element("span", { class: "f-mediane" }, format.format(f.mediane) + suffixe);
     if (f.basse === f.mediane && f.mediane === f.haute) return element("span", { class: "f" }, mediane);
     return element("span", { class: "f" }, mediane, " ",
-      element("span", { class: "f-bornes" }, `${format.format(f.basse)} à ${format.format(f.haute)}`));
+      element("span", { class: "f-bornes" }, remplir(T.commun.bornes, { basse: format.format(f.basse), haute: format.format(f.haute) })));
   }
 
   // Une fourchette dans un champ de saisie : un seul nombre si les trois sont égaux.
