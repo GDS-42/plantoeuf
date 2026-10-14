@@ -58,3 +58,27 @@ test("[T45] sans_cout_comme_r1 : sans coût de culture, ni ligne « Semences, pl
   await aller(page, "cultures");
   await expect(page.locator('#liste-cultures li [data-fait="coutM2"]')).toHaveCount(0);
 });
+
+// ---- T47 : besoins en semences et plants (EX-49, scénario S12)
+
+test("[T47] S12 : la page Plantations liste 100 plants de courgette à prévoir en mars 2026, pour 40 € (30 à 50)", async ({ page }) => {
+  await scenarioS12(page);
+  await aller(page, "plantations");
+  const section = page.locator("#section-besoins");
+  await expect(section).toBeVisible();
+  await expect(section.locator("h2")).toContainText(/semences et plants/i);
+  const mois = section.locator('.besoins-mois[data-mois="2026-03"]');
+  await expect(mois.locator("h3")).toContainText(/mars 2026/i);
+  const ligne = mois.locator("li").first();
+  await expect(ligne).toContainText("courgette");
+  await expect(ligne.locator('[data-fait="date"]')).toContainText("01/03/2026");
+  await expect(ligne.locator('[data-fait="quantite"]')).toContainText("100 plants");
+  await expect(ligne.locator('[data-fait="cout"]')).toContainText("40 €");
+  await expect(ligne.locator('[data-fait="cout"]')).toContainText("30 à 50");
+});
+
+test("[T47] EX-49 : sans densité, pas de liste de semences et plants", async ({ page }) => {
+  await scenarioS12(page, { couts: false });
+  await aller(page, "plantations");
+  await expect(page.locator("#section-besoins")).toBeHidden();
+});

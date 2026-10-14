@@ -281,6 +281,13 @@
   .champ-date > input[data-format="date"] { flex: 1 1 auto; font-variant-numeric: tabular-nums; }
   .champ-date .bouton-calendrier { border-color: var(--trait-fort); }
   .champ-date .selecteur-date { position: absolute; right: 0; bottom: 0; width: 1px; height: 1px; min-height: 0; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+  /* N3 (EX-49) : semences et plants à prévoir, mois par mois. */
+  .besoins-total { margin-left: auto; color: var(--encre-douce); font-size: 0.95rem; }
+  .besoins-legende { padding: 0 1.25rem 0.9rem; color: var(--encre-douce); font-size: 0.875rem; }
+  .besoins-mois { border-top: 1px solid var(--trait); }
+  .besoins-mois > header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.75rem; padding: 0.8rem 1.25rem 0.2rem; }
+  .besoins-mois h3 { font-size: 0.95rem; font-weight: 650; text-transform: capitalize; }
+  .besoins-mois .besoins-cout { color: var(--encre-douce); font-size: 0.95rem; }
   .tiroir-intertitre { margin-top: 0.4rem; padding-top: 0.9rem; border-top: 1px solid var(--trait); font-weight: 700; color: var(--encre); }
   .aide { color: var(--encre-douce); font-size: 0.875rem; font-weight: 400; }
   .erreur { padding: 0.6rem 0.8rem; border-radius: var(--rayon-petit); background: var(--rouge-doux); color: var(--rouge-texte); font-weight: 600; }
@@ -1306,6 +1313,14 @@
       </div>
       <ul id="liste-plantations" class="liste liste-ferme"></ul>
     </section>
+    <section id="section-besoins" class="carte" aria-labelledby="besoins-titre" hidden>
+      <div class="carte-entete">
+        <h2 id="besoins-titre" data-texte="besoins.titre"></h2>
+        <p id="besoins-total" class="besoins-total"></p>
+      </div>
+      <p class="besoins-legende" data-texte="besoins.legende"></p>
+      <div id="besoins"></div>
+    </section>
   </section>
 
   <!-- ==== Page Ventes ==== -->
@@ -1855,6 +1870,7 @@
 <script src="ui-poules.js"></script>
 <script src="ui-vehicules.js"></script>
 <script src="ui-charges.js"></script>
+<script src="ui-besoins.js"></script>
 <script src="ui-synthese.js"></script>
 <script src="ui-calendrier.js"></script>
 <script>
@@ -1905,6 +1921,7 @@
     poules.afficher(donnees);
     vehicules.afficher(donnees);
     charges.afficher(donnees);
+    UiBesoins.afficher(donnees);
     sauvegarde.afficher(donnees);
     const tableau = Calc.tableau(donnees);
     UiTableau.afficher(tableau);

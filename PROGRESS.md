@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 4 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 5 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4804,5 +4804,28 @@ Preuve (`./verify.sh T46`, puis `./verify.sh N3`) :
 # pass 134
 # fail 0
   157 passed (1.7m)
+== N3 : vérification verte ==
+```
+
+## 14/10/2026 · T47 — Semences et plants à prévoir (EX-49)
+
+- Session 5 / 10 du seuil d'alerte de N3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 1 · Relecteur : Fable, contexte frais, sur le diff de la tâche avant commit → **ÉCART** à la première relecture (le regroupement par mois et les totaux des besoins se calculaient dans le rendu), puis **CONFORME** après reprise (`Calc.besoinsParMois` dans `src/calc.js`, `src/ui-besoins.js` n'affiche plus que ce que le calcul donne). Le diff appliqué au dépôt est celui relu.
+- Résultat : pour chaque plantation d'une culture qui a une densité, la page Plantations liste, mois par mois, la culture, la variété, la date, la quantité de graines ou de plants (surface × densité) et son coût en fourchette, avec le total du mois et de la saison. Scénario S12 vérifié : 100 plants de courgette en mars 2026, pour 30 / 40 / 50 €. Sans densité, la section reste cachée.
+- Fichiers : `src/calc.js`, `src/ui-besoins.js` (nouveau), `src/index.html`, `src/i18n.js`, `test/couts.test.js`, `test/couts.e2e.js`.
+- Rouge d'abord, sur le code de T46 : les 3 tests unitaires et 1 test de bout en bout sur 2 rouges (l'autre vérifie qu'il n'y a pas de liste sans densité).
+
+Preuve (`./verify.sh T47`, puis `./verify.sh N3`) :
+
+```text
+# tests 14
+# pass 14
+# fail 0
+  2 passed (1.5s)
+== T47 : vérification verte ==
+# tests 137
+# pass 137
+# fail 0
+  159 passed (1.6m)
 == N3 : vérification verte ==
 ```

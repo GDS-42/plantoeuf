@@ -195,6 +195,20 @@
       aucun: "Vos charges fixes apparaîtront ici : assurance, cotisations, fermage, remboursement d'emprunt… Elles se déduisent de la marge pour donner ce qui vous reste pour vivre.",
       faits: { montant: "Montant", parMois: "Par mois", parAn: "Sur 12 mois" },
     },
+    // N3 (EX-49) : semences et plants à prévoir, page Plantations.
+    besoins: {
+      titre: "Semences et plants à prévoir",
+      legende: "Pour chaque plantation d'une culture qui a une densité : surface × graines ou plants par m², à commander avant la date de mise en place.",
+      totalMois: "à prévoir : ",
+      totalSaison: "Sur la saison : ",
+      coutInconnu: "prix non saisi",
+      faits: { date: "Mise en place", quantite: "Quantité", cout: "Coût estimé" },
+      unites: {
+        "": { un: "graine ou plant", plusieurs: "graines ou plants" },
+        semis: { un: "graine", plusieurs: "graines" },
+        plant: { un: "plant", plusieurs: "plants" },
+      },
+    },
     periodicites: {
       mois: "par mois",
       an: "par an",

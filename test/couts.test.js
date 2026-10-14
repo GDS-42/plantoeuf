@@ -68,3 +68,36 @@ test("[T45] sans_cout_comme_r1 : sans coût de culture, le tableau et les chiffr
   // Une densité sans prix ne coûte rien : rien ne change.
   assert.deepEqual(Calc.tableau({ ...S1, cultures: [{ ...COURGETTE, implantation: "plant", densite: 1 }] }), sans);
 });
+
+// ---- T47 : besoins en semences et plants (EX-49, scénario S12)
+
+test("[T47] S12 : 100 plants de courgette à prévoir en mars 2026, pour 30 / 40 / 50 €", () => {
+  const besoins = Calc.besoins(S12);
+  assert.equal(besoins.length, 1);
+  const [b] = besoins;
+  assert.deepEqual({ plantationId: b.plantationId, date: b.date, mois: b.mois, cultureId: b.cultureId, varieteId: b.varieteId, implantation: b.implantation, quantite: b.quantite },
+    { plantationId: "p1", date: "2026-03-01", mois: "2026-03", cultureId: "c1", varieteId: "v1", implantation: "plant", quantite: 100 });
+  procheFourchette(b.cout, f(30, 40, 50));
+});
+
+test("[T47] EX-49 : seules les cultures qui ont une densité ont des besoins ; sans prix, le coût est inconnu ; la liste suit les dates", () => {
+  assert.deepEqual(Calc.besoins(S1), []);
+  const [sansPrix] = Calc.besoins({ ...S12, cultures: [{ ...COURGETTE_S12, prixUnite: null }] });
+  assert.equal(sansPrix.quantite, 100);
+  assert.equal(sansPrix.cout, null);
+  const deux = Calc.besoins({ ...S12, plantations: [{ ...PLANTATION, id: "p2", date: "2026-04-15", surface: 30 }, PLANTATION, { ...PLANTATION, id: "p3", supprimeLe: "2026-10-14T00:00:00.000Z" }] });
+  assert.deepEqual(deux.map((b) => [b.plantationId, b.quantite]), [["p1", 100], ["p2", 30]]);
+});
+
+test("[T47] EX-49 : les besoins se regroupent par mois, avec le coût connu de chaque mois et de la saison", () => {
+  const plantations = [PLANTATION, { ...PLANTATION, id: "p2", date: "2026-03-20", surface: 12.5 }, { ...PLANTATION, id: "p3", date: "2026-04-15", surface: 30 }];
+  const { mois, cout } = Calc.besoinsParMois({ ...S12, plantations });
+  assert.deepEqual(mois.map((m) => [m.mois, m.besoins.map((b) => b.quantite)]), [["2026-03", [100, 12.5]], ["2026-04", [30]]]);
+  procheFourchette(mois[0].cout, f(33.75, 45, 56.25));
+  procheFourchette(mois[1].cout, f(9, 12, 15));
+  procheFourchette(cout, f(42.75, 57, 71.25));
+  const sansPrix = Calc.besoinsParMois({ ...S12, cultures: [{ ...COURGETTE_S12, prixUnite: null }] });
+  assert.equal(sansPrix.mois[0].cout, null);
+  assert.equal(sansPrix.cout, null);
+  assert.deepEqual(Calc.besoinsParMois(S1), { mois: [], cout: null });
+});

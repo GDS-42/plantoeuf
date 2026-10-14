@@ -134,6 +134,38 @@
     return cout.haute > 0 ? cout : null;
   }
 
+  // N3 (EX-49) : les graines ou plants à prévoir, plantation par plantation, dans l'ordre des dates :
+  // quantité = surface × densité, coût = quantité × prix d'une graine ou d'un plant (null sans prix).
+  function besoins(donnees) {
+    return plantationsCalculables(donnees)
+      .filter(({ culture }) => culture.densite > 0)
+      .map(({ plantation, culture }) => {
+        const quantite = plantation.surface * culture.densite;
+        return {
+          plantationId: plantation.id, date: plantation.date, mois: plantation.date.slice(0, 7), cultureId: culture.id,
+          varieteId: plantation.varieteId, implantation: culture.implantation || "", quantite,
+          cout: culture.prixUnite ? proportion(culture.prixUnite, quantite, 1) : null,
+        };
+      })
+      .sort((a, b) => a.date.localeCompare(b.date) || a.plantationId.localeCompare(b.plantationId));
+  }
+
+  // Les besoins regroupés par mois de mise en place, avec le coût connu de chaque mois et de la saison
+  // (null si aucun besoin n'a de prix) : { mois: [{ mois, besoins, cout }], cout }.
+  function besoinsParMois(donnees) {
+    const coutConnu = (liste) => {
+      const avecPrix = liste.filter((b) => b.cout);
+      return avecPrix.length ? avecPrix.map((b) => b.cout).reduce(somme, fourchetteNulle()) : null;
+    };
+    const tous = besoins(donnees);
+    const parMois = new Map();
+    for (const b of tous) {
+      if (!parMois.has(b.mois)) parMois.set(b.mois, []);
+      parMois.get(b.mois).push(b);
+    }
+    return { mois: [...parMois].map(([mois, liste]) => ({ mois, besoins: liste, cout: coutConnu(liste) })), cout: coutConnu(tous) };
+  }
+
   function plantationsCalculables({ cultures = [], varietes = [], plantations = [] }) {
     const actifs = (liste) => liste.filter((e) => !e.supprimeLe);
     const culturesParId = new Map(actifs(cultures).map((c) => [c.id, c]));
@@ -837,6 +869,8 @@
     coutParM2,
     chargeParMois,
     chargeParAn,
+    besoins,
+    besoinsParMois,
     surOccupations,
   };
 });
