@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 5 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 6 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4827,5 +4827,29 @@ Preuve (`./verify.sh T47`, puis `./verify.sh N3`) :
 # pass 137
 # fail 0
   159 passed (1.6m)
+== N3 : vérification verte ==
+```
+
+## 14/10/2026 · T48 — Ferme d'exemple : une camionnette (EX-50, en partie) — SUSPENDUE sur les coûts de culture
+
+- Session 6 / 10 du seuil d'alerte de N3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`).
+- Résultat : la ferme d'exemple a une camionnette (8 / 9 / 10 L aux 100 km, gazole à 1,60 / 1,75 / 1,90 € le litre, 0,10 / 0,15 / 0,20 € d'entretien et d'usure au km) qui va à ses trois points de vente ; le coût du km saisi de chaque point reste, pour le cas où la camionnette serait supprimée. Effacer l'exemple efface aussi la camionnette ; un exemple chargé avant N3, sans liste de véhicules, s'efface comme avant.
+- **Condition d'arrêt rencontrée (RUNBOOK) : la seconde moitié d'EX-50, des coûts de mise en place pour les cultures de l'exemple, contredit un test existant.** Le test `[T34]` de P2 fige, sur la ferme d'exemple, la règle « coûts = séances + aliment » : `test/p2-synthese.test.js` l. 34-36 (`cles.couts.total = couts + aliment`) et `test/p2-synthese.e2e.js` l. 46 (tuile des coûts = pied « séances » + pied « aliment »). Avec des coûts de culture dans l'exemple, les coûts deviennent séances + aliment + cultures, et ces deux assertions échouent (essai fait sur une copie du dépôt). Voie prudente appliquée : l'exemple n'a pas encore de coûts de culture, aucun test existant n'est modifié. **À décider par l'humain** : accepter d'ajouter le terme « + cultures » à ces deux assertions ; T48 se termine alors en une session (coûts réalistes sur les sept cultures de l'exemple). `passe` reste `false`.
+- Fichiers : `src/exemple.js`, `test/exemple-n3.e2e.js`.
+- Rouge d'abord : 1 test de bout en bout sur 2 rouge (le second, l'effacement, était vert faute de véhicule à effacer).
+
+Preuve (`./verify.sh T48`, puis `./verify.sh N3`) :
+
+```text
+# tests 12
+# pass 12
+# fail 0
+  2 passed (1.9s)
+== T48 : vérification verte ==
+# tests 137
+# pass 137
+# fail 0
+  161 passed (1.6m)
 == N3 : vérification verte ==
 ```

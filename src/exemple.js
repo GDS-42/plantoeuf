@@ -1,7 +1,8 @@
 // Ferme d'exemple (La Réunion) : 5 espaces, 7 cultures, 10 plantations sur la saison fraîche,
 // d'avril à octobre, la plus favorable au maraîchage (sèche, sans cyclone), vendues sur un marché,
 // en paniers et à une épicerie de l'Ouest ; un lot de 100 poules pondeuses, dont les œufs se vendent
-// sans débouché, au prix de l'œuf du lot (voir PROGRESS.md, T31).
+// sans débouché, au prix de l'œuf du lot (voir PROGRESS.md, T31). N3 : une camionnette va aux trois
+// points de vente (ses cultures n'ont pas encore de coûts de mise en place : voir PROGRESS.md, T48).
 // C'est le seul fichier où figurent des valeurs agronomiques et des prix : ce sont des ordres
 // de grandeur pour montrer l'outil, pas des références.
 (function (racine, fabrique) {
@@ -58,11 +59,17 @@
     { variete: "zoizo", espace: "planche4", surface: 15, date: "03-15" },
   ];
 
-  // Points de vente de l'Ouest : distance aller depuis la ferme, coût du km (carburant et usure).
+  // N3 : la camionnette de la ferme — consommation de gazole, prix du litre, entretien et usure au km.
+  const VEHICULES = {
+    camionnette: { nom: "Camionnette", consommation: f(8, 9, 10), prixLitre: f(1.6, 1.75, 1.9), fraisKm: f(0.1, 0.15, 0.2) },
+  };
+
+  // Points de vente de l'Ouest : distance aller depuis la ferme, véhicule qui y va ; le coût du km saisi
+  // (carburant et usure) ne sert que si le véhicule est supprimé.
   const POINTS_VENTE = {
-    marche: { nom: "Marché de Saint-Paul", distanceKm: 12, coutKm: f(0.3, 0.4, 0.5) },
-    amap: { nom: "Paniers de l'AMAP", distanceKm: 6, coutKm: f(0.3, 0.4, 0.5) },
-    epicerie: { nom: "Épicerie de Saint-Gilles", distanceKm: 9, coutKm: f(0.3, 0.4, 0.5) },
+    marche: { nom: "Marché de Saint-Paul", distanceKm: 12, coutKm: f(0.3, 0.4, 0.5), vehicule: "camionnette" },
+    amap: { nom: "Paniers de l'AMAP", distanceKm: 6, coutKm: f(0.3, 0.4, 0.5), vehicule: "camionnette" },
+    epicerie: { nom: "Épicerie de Saint-Gilles", distanceKm: 9, coutKm: f(0.3, 0.4, 0.5), vehicule: "camionnette" },
   };
 
   // Une séance par point de vente : jour (1 = lundi … 7 = dimanche), période « MM-JJ », frais par séance.
@@ -103,7 +110,7 @@
   // Enregistre la ferme d'exemple dans `ferme` (store ouvert) pour l'année `annee`, et retient
   // les identifiants créés pour pouvoir l'effacer d'un geste.
   function charger(ferme, annee) {
-    const ids = { espaces: [], cultures: [], varietes: [], plantations: [], pointsVente: [], seances: [], debouches: [], lots: [] };
+    const ids = { espaces: [], cultures: [], varietes: [], plantations: [], pointsVente: [], seances: [], debouches: [], lots: [], vehicules: [] };
     const cree = (objet, champs) => {
       const enregistrement = ferme.ajouter(objet, champs);
       ids[objet].push(enregistrement.id);
@@ -125,8 +132,10 @@
         date: `${annee}-${plantation.date}`,
       });
     }
+    const vehicules = {};
+    for (const [cle, vehicule] of Object.entries(VEHICULES)) vehicules[cle] = cree("vehicules", vehicule);
     const points = {};
-    for (const [cle, point] of Object.entries(POINTS_VENTE)) points[cle] = cree("pointsVente", point);
+    for (const [cle, { vehicule, ...point }] of Object.entries(POINTS_VENTE)) points[cle] = cree("pointsVente", { ...point, vehiculeId: vehicules[vehicule] });
     for (const { point, debut, fin, ...seance } of SEANCES) {
       cree("seances", { ...seance, pointVenteId: points[point], debut: `${annee}-${debut}`, fin: `${annee}-${fin}` });
     }
@@ -154,7 +163,7 @@
   function effacer(ferme) {
     const ids = ferme.exemple();
     if (!ids) return;
-    for (const objet of ["lots", "debouches", "seances", "pointsVente", "plantations", "varietes", "cultures", "espaces"]) {
+    for (const objet of ["lots", "debouches", "seances", "pointsVente", "vehicules", "plantations", "varietes", "cultures", "espaces"]) {
       for (const id of ids[objet] || []) {
         const enregistrement = ferme.obtenir(objet, id);
         if (enregistrement && !enregistrement.supprimeLe) ferme.supprimer(objet, id);
