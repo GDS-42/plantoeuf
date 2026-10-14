@@ -67,6 +67,7 @@ Le format exporté passe en version 5 : un fichier de version 1 à 4 s'importe p
 
 ## ✎ Surprises et découvertes
 
+- T49 · Cas que la spec ne couvre pas, relevé par l'évaluateur : une charge fixe sans aucun mois de projection (ni plantation, ni séance, ni poule) ne crée pas de projection ; la synthèse garde son état vide.
 - T48 · Le test `[T34]` de P2 fige sur la ferme d'exemple « coûts = séances + aliment » (`test/p2-synthese.test.js` l. 34-36, `test/p2-synthese.e2e.js` l. 46) : des coûts de culture dans l'exemple le feraient échouer. La spec n'avait relevé que les quatre tuiles. T48 est suspendue sur cette moitié d'EX-50, en attente de l'humain.
 ## ✎ Décisions
 

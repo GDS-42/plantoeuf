@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 6 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 7 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4847,6 +4847,25 @@ Preuve (`./verify.sh T48`, puis `./verify.sh N3`) :
 # fail 0
   2 passed (1.9s)
 == T48 : vérification verte ==
+# tests 137
+# pass 137
+# fail 0
+  161 passed (1.6m)
+== N3 : vérification verte ==
+```
+
+## 14/10/2026 · T49 — Vérification de la tranche N3, évaluateur séparé (T48 suspendue : `passe` reste `false`)
+
+- Session 7 / 10 du seuil d'alerte de N3.
+- Modèle : Opus 5.5, effort élevé ; évaluateur : Fable, effort élevé, contexte frais, sur `git diff 2ed70c5 f823692`, dépôt en lecture seule, tests relancés sur une copie → **CONFORME, aucun écart nouveau**. EX-45 à EX-49 et la première moitié d'EX-50 implémentées et vraiment testées ; S12, S13, S14 recalculés chiffre par chiffre ; invariants `sans_cout_comme_r1` et `sans_frais_comme_r1` vérifiés en comparant le `calc.js` d'avant N3 et celui livré sur sept jeux de données ; aucune dépendance, ressource réseau ni test existant modifié ; migration v1 → v5 et refus d'un fichier v6 vérifiés.
+- Point ouvert (seconde moitié d'EX-50) : l'évaluateur confirme le constat (le test `[T34]` fige « coûts = séances + aliment » sur la ferme d'exemple) et juge son traitement conforme au RUNBOOK. Décision de l'humain attendue ; prêt sur une copie du dépôt : coûts de mise en place des sept cultures de l'exemple (289 € sur la saison, 206 à 372), un test `[T48]` de plus (rouge sur le code actuel, vert avec les coûts), et le terme « + cultures » ajouté aux deux assertions `[T34]` ; avec ces retouches, 137 tests unitaires et 162 de bout en bout passent.
+- Remarques non bloquantes de l'évaluateur : (1) `Calc.vehicules` porte `entretien` et `total` même sans frais au km (décision ✎ T44, l'interface les masque) ; (2) une ferme qui n'a qu'une charge fixe, sans aucun mois de projection, garde l'état vide de la synthèse, et `total.total` porte charges et revenu à 0 ; (3) le test de bout en bout des frais au km ne rouvre pas le fichier (réouverture et export couverts en unitaire).
+- Captures à 390 et 1366 px (synthèse avec tuile « Revenu », pied du tableau, page « Charges fixes », semences et plants à prévoir, véhicule avec entretien, camionnette de l'exemple) : aucune erreur de console, aucune requête réseau, aucun défilement horizontal.
+- Déploiements Vercel des commits de T43 à T48 : tous READY en production (contrôle par le connecteur, filtré par sha).
+
+Preuve (`./verify.sh N3` sur le commit f823692) :
+
+```text
 # tests 137
 # pass 137
 # fail 0
