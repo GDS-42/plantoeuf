@@ -86,14 +86,17 @@
     return detail([["data-part", "cultures", V.detail.cultures, parts.cultures], ["data-part", "oeufs", V.detail.oeufs, parts.oeufs]]);
   }
 
-  // Coûts : séances de vente et aliment, chacun en fourchette, quand les deux existent.
+  // Coûts : séances de vente, aliment et (N3) coûts de culture, chacun en fourchette quand il y en a au
+  // moins deux ; une seule source se nomme en une phrase.
+  const SOURCES_DE_COUTS = [
+    ["seances", V.detail.seances, V.detail.seulesSeances],
+    ["aliment", V.detail.aliment, V.detail.seulAliment],
+    ["cultures", V.detail.coutsCultures, V.detail.seulesCultures],
+  ];
   function detailCouts(couts) {
-    const { seances, aliment } = couts;
-    if (seances && aliment) {
-      return detail([["data-cout", "seances", V.detail.seances, seances], ["data-cout", "aliment", V.detail.aliment, aliment]]);
-    }
-    if (seances) return element("p", { class: "tuile-note", "data-cout": "seances" }, V.detail.seulesSeances);
-    if (aliment) return element("p", { class: "tuile-note", "data-cout": "aliment" }, V.detail.seulAliment);
+    const presentes = SOURCES_DE_COUTS.filter(([cle]) => couts[cle]);
+    if (presentes.length > 1) return detail(presentes.map(([cle, libelle]) => ["data-cout", cle, libelle, couts[cle]]));
+    if (presentes.length === 1) return element("p", { class: "tuile-note", "data-cout": presentes[0][0] }, presentes[0][2]);
     return null;
   }
 
@@ -109,7 +112,7 @@
     const tuiles = [
       tuile({ chiffre: "ca", titre: V.chiffres.ca, f: cles.ca, format: euros, ech, detail: detailCa(cles.parts) }),
       tuile({ chiffre: "couts", titre: V.chiffres.couts, f: cles.couts.total, format: euros, ech,
-        detail: detailCouts(cles.couts), note: cles.couts.seances || cles.couts.aliment ? null : V.detail.aucunCout }),
+        detail: detailCouts(cles.couts), note: cles.couts.seances || cles.couts.aliment || cles.couts.cultures ? null : V.detail.aucunCout }),
       tuile({ chiffre: "marge", titre: V.chiffres.marge, f: cles.marge, format: euros, ech,
         detail: element("p", { class: "tuile-note" }, V.detail.marge) }),
     ];

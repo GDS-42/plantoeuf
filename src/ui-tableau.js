@@ -187,7 +187,8 @@
   // poules (EX-27), marge de la ferme. Visible en euros ; masqué en volume (des unités différentes ne s'additionnent pas).
   function pied(tableau, colonnes) {
     const avecCouts = tableau.total.total.couts.haute > 0;
-    const mesures = ["ca", ...(avecCouts ? ["couts"] : []), ...(tableau.poules ? ["aliment"] : []), "marge"];
+    const mesures = ["ca", ...(avecCouts ? ["couts"] : []), ...(tableau.total.total.cultures ? ["cultures"] : []),
+      ...(tableau.poules ? ["aliment"] : []), "marge"];
     return [
       element("tr", { class: "pied-titre" }, element("th", { colspan: String(colonnes), scope: "colgroup" }, element("span", {}, V.pied.titre))),
       ...mesures.map((mesure) => ligne({ "data-culture": "ferme", "data-mesure": mesure, class: `pied-${mesure}` },

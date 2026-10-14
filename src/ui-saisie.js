@@ -75,6 +75,12 @@
     });
   }
 
+  // N3 (EX-47) : le fait « Mise en place » d'une culture qui a un coût de mise en place par m².
+  function coutM2(culture) {
+    const cout = Calc.coutParM2(culture);
+    return cout ? [[F.faits.coutM2, elementFourchette(cout, formats.nombre, F.eurosParM2), "coutM2"]] : [];
+  }
+
   function resumeCulture(culture) {
     return contenuLigne({
       titre: culture.nom,
@@ -85,6 +91,8 @@
         [F.faits.prix, prix(culture.prix, culture.unite), "prix"],
         [F.faits.recolte, recolte(culture.joursAvantRecolte, culture.semainesRecolte), "recolte"],
         [F.faits.pertes, pertes(culture.pertes), "pertes"],
+        // N3 (EX-47) : le coût de mise en place d'un m², s'il y en a un.
+        ...coutM2(culture),
       ],
     });
   }

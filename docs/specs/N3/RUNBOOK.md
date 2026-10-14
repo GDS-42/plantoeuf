@@ -69,6 +69,7 @@ Le format exporté passe en version 5 : un fichier de version 1 à 4 s'importe p
 
 ## ✎ Décisions
 
+- T45 · Les coûts de culture d'une plantation comptent au mois de sa date de mise en place (`date` de la plantation) ; une culture sans coût de mise en place ne reçoit ni `couts` ni `marge` différente de son chiffre d'affaires, et le total ne reçoit `cultures` que si un coût existe. La tuile « Coûts déduits » liste ses sources (séances, aliment, cultures) ; avec une seule, elle garde l'affichage d'avant. Reprise après relecture : la légende de la marge de la synthèse dit désormais qu'une culture déduit ses coûts de mise en place.
 - T44 · Le bilan de saison d'un véhicule porte toujours l'entretien (0 sans frais) et le coût total (= carburant sans frais) ; la ligne du véhicule ne les montre qu'avec des frais au km. Le sous-titre ajoute « x €/km d'entretien ».
 - T44 à T47 · Relus en parallèle par quatre relecteurs Fable, chacun sur le diff de sa tâche (fichier de patch et copie du projet à l'étape voulue), avant tout commit.
 

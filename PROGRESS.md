@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 2 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 3 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4758,5 +4758,28 @@ Preuve (`./verify.sh T44`, puis `./verify.sh N3`) :
 # pass 125
 # fail 0
   151 passed (1.6m)
+== N3 : vérification verte ==
+```
+
+## 14/10/2026 · T45 — Coûts de culture déduits de la marge (EX-47)
+
+- Session 3 / 10 du seuil d'alerte de N3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 1 · Relecteur : Fable, contexte frais, sur le diff de la tâche avant commit → **ÉCART** à la première relecture (la légende de la marge, dans la synthèse, disait encore qu'une culture n'a pas de coût propre), puis **CONFORME** après reprise (légende, texte « rien à déduire », commentaire d'en-tête de `Calc.tableau`, aide « Mise en place » factorisée).
+- Résultat : une plantation coûte surface × densité × prix d'une graine ou d'un plant + surface × intrants, au mois de sa date de mise en place ; la marge de la culture et celle de la ferme les déduisent (du pire au meilleur) ; le pied du tableau porte « Semences, plants et intrants », la tuile des coûts déduits les détaille, la ligne de la culture montre son coût de mise en place par m². Scénario S12 vérifié : mars 2026, 50 / 60 / 70 € ; marge de la courgette 470 / 615 / 760 €. Sans coût de culture, tableau et chiffres clés inchangés, sans clé de plus (`sans_cout_comme_r1`).
+- Fichiers : `src/calc.js`, `src/ui-tableau.js`, `src/ui-synthese.js`, `src/ui-saisie.js`, `src/i18n.js`, `test/couts.test.js`, `test/couts.e2e.js`.
+- Rouge d'abord, sur le code de T44 : 3 tests unitaires sur 4 et 2 de bout en bout sur 3 rouges (les deux tests restants vérifient l'invariant `sans_cout_comme_r1`, vert par construction).
+
+Preuve (`./verify.sh T45`, puis `./verify.sh N3`) :
+
+```text
+# tests 15
+# pass 15
+# fail 0
+  3 passed (2.2s)
+== T45 : vérification verte ==
+# tests 129
+# pass 129
+# fail 0
+  154 passed (1.9m)
 == N3 : vérification verte ==
 ```
