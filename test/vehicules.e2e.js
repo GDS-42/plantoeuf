@@ -116,3 +116,49 @@ test("[T40] EX-42 : sans véhicule, le tiroir du point de vente propose d'en ajo
   await expect(page.locator("#tiroir-vehicules")).toBeVisible();
   await expect(page.locator("#tiroir-pointsVente")).toBeHidden();
 });
+
+// ---- T41 : coût du km déduit du véhicule, bilan de saison (EX-43, EX-44, scénario S11)
+
+async function scenarioS11(page) {
+  await page.goto("index.html");
+  await page.evaluate(() => {
+    const ferme = Store.ouvrir(localStorage);
+    const F = Store.fourchette;
+    const v = ferme.ajouter("vehicules", { nom: "Camionnette", consommation: F(8), prixLitre: F(1.8) });
+    const marche = ferme.ajouter("pointsVente", { nom: "marché de Saint-Paul", distanceKm: 12, coutKm: null, vehiculeId: v.id });
+    ferme.ajouter("seances", { pointVenteId: marche.id, jour: 6, debut: "2026-05-02", fin: "2026-06-27", frais: F(15) });
+  });
+  await page.reload();
+  await aller(page, "ventes");
+}
+
+test("[T41] S11 : la camionnette donne le coût du km du marché, et chaque séance coûte 18,46 €, trajet compris", async ({ page }) => {
+  await scenarioS11(page);
+  const marche = ligne(page, "pointsVente", "marché de Saint-Paul");
+  await expect(marche.locator('[data-fait="coutKm"]')).toContainText("0,14 €/km");
+  await expect(ligne(page, "seances", "marché de Saint-Paul")).toContainText("18,46 €");
+
+  // Dans le tiroir, le coût du km calculé remplace le champ.
+  await modifier(page, "pointsVente", "marché de Saint-Paul");
+  await expect(page.locator("#pointVente-coutVehicule")).toBeVisible();
+  await expect(page.locator("#pointVente-coutVehicule")).toContainText("0,14 €/km");
+});
+
+test("[T41] EX-44 : le véhicule montre son coût du km et, sur la saison, ses kilomètres, ses litres et son carburant", async ({ page }) => {
+  await scenarioS11(page);
+  const camionnette = ligne(page, "vehicules", "Camionnette");
+  await expect(camionnette.locator('[data-fait="coutKm"]')).toContainText("0,14 €/km");
+  await expect(camionnette.locator('[data-fait="km"]')).toContainText("216 km");
+  await expect(camionnette.locator('[data-fait="litres"]')).toContainText("17,28 L");
+  await expect(camionnette.locator('[data-fait="carburant"]')).toContainText("31,1 €");
+});
+
+test("[T41] EX-43 : changer le prix du litre recalcule tout de suite le coût des séances", async ({ page }) => {
+  await scenarioS11(page);
+  await ligne(page, "vehicules", "Camionnette").locator('[data-action="modifier"]').click();
+  await page.locator("#vehicule-prixLitre").fill("2");
+  await page.locator("#vehicule-ajouter").click();
+  // 15 + 2 × 12 × 8 × 2 ÷ 100 = 18,84 €.
+  await expect(ligne(page, "seances", "marché de Saint-Paul")).toContainText("18,84 €");
+  await expect(ligne(page, "vehicules", "Camionnette").locator('[data-fait="carburant"]')).toContainText("34,56 €");
+});

@@ -75,3 +75,73 @@ test("[T40] EX-42 : un point de vente garde son véhicule, sans coût du km sais
   assert.equal(relu.vehiculeId, v.id);
   assert.equal(relu.coutKm, null);
 });
+
+// ---- T41 : coût du km déduit du véhicule, bilan de saison (EX-43, EX-44, scénario S11)
+
+const Calc = require("../src/calc.js");
+
+function proche(a, b) {
+  return Math.abs(a - b) < 1e-9;
+}
+function procheFourchette(reel, attendu) {
+  for (const niveau of ["basse", "mediane", "haute"]) {
+    assert.ok(proche(reel[niveau], attendu[niveau]), `${niveau} : ${reel[niveau]} ≠ ${attendu[niveau]}`);
+  }
+}
+
+const VEHICULE = { id: "v1", nom: "Camionnette", consommation: f(8), prixLitre: f(1.8) };
+// Le marché de Saint-Paul de N2 : 12 km, le samedi du 2 mai au 27 juin 2026 (9 séances), 15 € de frais.
+const MARCHE = { id: "pv1", nom: "marché de Saint-Paul", distanceKm: 12, coutKm: null, vehiculeId: "v1" };
+const SAMEDI = { id: "s1", pointVenteId: "pv1", jour: 6, debut: "2026-05-02", fin: "2026-06-27", frais: f(15) };
+const S11 = { vehicules: [VEHICULE], pointsVente: [MARCHE], seances: [SAMEDI] };
+
+test("[T41] S11 : le coût du km d'un point de vente se déduit de son véhicule (8 L/100 km × 1,80 €/L = 0,144 €/km)", () => {
+  const parId = new Map([[VEHICULE.id, VEHICULE]]);
+  procheFourchette(Calc.coutDuKm(MARCHE, parId), f(0.144));
+  // En fourchette, niveau par niveau.
+  const v = { ...VEHICULE, consommation: f(7, 8, 9), prixLitre: f(1.7, 1.8, 1.95) };
+  procheFourchette(Calc.coutDuKm(MARCHE, new Map([[v.id, v]])), f(0.119, 0.144, 0.1755));
+});
+
+test("[T41] EX-43 : sans véhicule, ou si son véhicule est supprimé, c'est le coût du km saisi qui compte (0 s'il manque)", () => {
+  const sansVehicule = { ...MARCHE, vehiculeId: "", coutKm: f(0.4) };
+  procheFourchette(Calc.coutDuKm(sansVehicule, new Map([[VEHICULE.id, VEHICULE]])), f(0.4));
+  const supprime = new Map([[VEHICULE.id, { ...VEHICULE, supprimeLe: "2026-10-14T00:00:00.000Z" }]]);
+  procheFourchette(Calc.coutDuKm({ ...MARCHE, coutKm: f(0.4) }, supprime), f(0.4));
+  procheFourchette(Calc.coutDuKm(MARCHE, supprime), f(0));
+  procheFourchette(Calc.coutDuKm(MARCHE, new Map()), f(0));
+});
+
+test("[T41] S11 : une séance du marché coûte 15 + 2 × 12 × 0,144 = 18,456 €, partout où elle compte", () => {
+  procheFourchette(Calc.coutSeance(SAMEDI, MARCHE, new Map([[VEHICULE.id, VEHICULE]])), f(18.456));
+  const seances = Calc.seancesDeLaFerme(S11);
+  assert.equal(seances.length, 9);
+  for (const s of seances) procheFourchette(s.cout, f(18.456));
+  // Tableau économique : coût des séances de la ferme ; vue « Points de vente » : coûts du marché.
+  procheFourchette(Calc.tableau(S11).total.total.couts, f(9 * 18.456));
+  procheFourchette(Calc.pointsDeVente(S11).points[0].total.couts, f(9 * 18.456));
+});
+
+test("[T41] S11 : la camionnette roule 216 km sur la saison, consomme 17,28 L et 31,104 € de carburant", () => {
+  const bilans = Calc.vehicules(S11);
+  const bilan = bilans.get("v1");
+  procheFourchette(bilan.coutKm, f(0.144));
+  assert.equal(bilan.seances, 9);
+  assert.equal(bilan.km, 216);
+  procheFourchette(bilan.litres, f(17.28));
+  procheFourchette(bilan.carburant, f(31.104));
+  // Un véhicule que n'utilise aucun point de vente ne roule pas ; un véhicule supprimé n'a pas de bilan.
+  const seul = Calc.vehicules({ ...S11, vehicules: [VEHICULE, { ...VEHICULE, id: "v2", nom: "Voiture" }] }).get("v2");
+  assert.equal(seul.km, 0);
+  procheFourchette(seul.carburant, f(0));
+  assert.equal(Calc.vehicules({ ...S11, vehicules: [{ ...VEHICULE, supprimeLe: "2026-10-14T00:00:00.000Z" }] }).size, 0);
+  // Un point de vente supprimé ne fait plus rouler son véhicule.
+  assert.equal(Calc.vehicules({ ...S11, pointsVente: [{ ...MARCHE, supprimeLe: "2026-10-14T00:00:00.000Z" }] }).get("v1").km, 0);
+});
+
+test("[T41] sans_vehicule_comme_avant : une ferme sans véhicule donne les mêmes résultats, avec ou sans liste de véhicules", () => {
+  const n2 = { pointsVente: [{ ...MARCHE, vehiculeId: undefined, coutKm: f(0.4) }], seances: [SAMEDI] };
+  assert.deepEqual(Calc.tableau({ ...n2, vehicules: [] }), Calc.tableau(n2));
+  assert.deepEqual(Calc.pointsDeVente({ ...n2, vehicules: [] }), Calc.pointsDeVente(n2));
+  procheFourchette(Calc.coutSeance(SAMEDI, n2.pointsVente[0]), f(24.6));
+});

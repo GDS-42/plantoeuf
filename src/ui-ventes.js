@@ -298,28 +298,29 @@
 
   // ---- Lignes de la page Ventes (P2) : un titre, puis des faits alignés
 
-  // vehicule : le véhicule du point de vente (R1, EX-42), s'il en a un, même supprimé.
-  function resumePointVente(pointVente, bilan, debouches, vehicule) {
+  // vehicules : Map id → véhicule, supprimés compris (R1) : le point de vente nomme son véhicule, et son
+  // coût du km s'en déduit tant que le véhicule est actif (EX-43).
+  function resumePointVente(pointVente, bilan, debouches, vehicules) {
     const L = V.lignes;
+    const vehicule = pointVente.vehiculeId ? vehicules.get(pointVente.vehiculeId) : null;
     const faits = [
       [L.distance, remplir(L.km, { valeur: formats.nombre.format(pointVente.distanceKm) })],
-      ...(vehicule ? [[L.vehicule, nomDe(vehicule)]] : []),
-      ...(pointVente.coutKm ? [[L.coutKm, elementFourchette(pointVente.coutKm, formats.nombre, L.parKm)]] : []),
+      [L.coutKm, elementFourchette(Calc.coutDuKm(pointVente, vehicules), formats.nombre, L.parKm), "coutKm"],
       [L.seances, nombreDe(V.points.seances, bilan ? bilan.total.seances : 0)],
       [L.debouches, nombreDe(L.nbDebouches, debouches)],
     ];
     if (bilan) faits.push([L.resultat, fourchetteEuros(bilan.total.resultat)]);
-    return contenuLigne({ titre: pointVente.nom, faits });
+    return contenuLigne({ titre: pointVente.nom, sousTitre: vehicule ? remplir(L.enVehicule, { nom: nomDe(vehicule) }) : "", faits });
   }
 
-  function resumeSeance(seance, pointsVente) {
+  function resumeSeance(seance, pointsVente, vehicules) {
     const L = V.lignes;
     const pointVente = pointsVente.get(seance.pointVenteId);
     const faits = [[L.periode, remplir(L.periodeValeur, { debut: afficherDate(seance.debut), fin: afficherDate(seance.fin) })]];
     // EX-19 : le nombre de séances datées et le coût de chacune, trajet compris.
     if (pointVente && !pointVente.supprimeLe) {
       faits.push([L.seances, nombreDe(V.points.seances, Calc.seancesDatees(seance).length)],
-        [L.cout, elementFourchette(Calc.coutSeance(seance, pointVente), formats.nombre, "€")]);
+        [L.cout, elementFourchette(Calc.coutSeance(seance, pointVente, vehicules), formats.nombre, "€")]);
     }
     faits.push([L.frais, elementFourchette(seance.frais, formats.nombre, "€")]);
     return contenuLigne({ titre: nomDe(pointVente), puces: [{ texte: remplir(L.jour, { jour: T.joursSemaine[seance.jour] }), ton: "verte" }], faits });
@@ -590,6 +591,14 @@
       const avecVehicule = choixVehicule.value !== "";
       document.getElementById("pointVente-champCoutKm").hidden = avecVehicule;
       document.getElementById("pointVente-coutKm").required = !avecVehicule;
+      document.getElementById("pointVente-aideCoutKm").hidden = avecVehicule;
+      // EX-43 : à la place du champ, le coût du km calculé avec ce véhicule.
+      const coutVehicule = document.getElementById("pointVente-coutVehicule");
+      coutVehicule.hidden = !avecVehicule;
+      if (avecVehicule) {
+        const cout = Calc.coutDuKm({ vehiculeId: choixVehicule.value }, parId("vehicules"));
+        coutVehicule.replaceChildren(T.pointsVente.coutAvecVehicule, " ", elementFourchette(cout, formats.nombre, V.lignes.parKm));
+      }
     }
     for (const type of ["change", "ouverture"]) formPoint.addEventListener(type, montrerCoutKm);
 
@@ -612,13 +621,13 @@
 
       const nombreDeDebouches = Calc.nombreDeDebouches(donnees);
       const tousVehicules = parId("vehicules");
-      afficherListe("pointsVente", pointsVente, (p) => resumePointVente(p, bilans.get(p.id), nombreDeDebouches.get(p.id) || 0,
-        p.vehiculeId ? tousVehicules.get(p.vehiculeId) : null), saisie.enEdition("pointsVente"));
+      afficherListe("pointsVente", pointsVente, (p) => resumePointVente(p, bilans.get(p.id), nombreDeDebouches.get(p.id) || 0, tousVehicules),
+        saisie.enEdition("pointsVente"));
       afficherChoixVehicule(donnees.vehicules.slice().sort(parNom));
 
       const nomPoint = (s) => nomDe(tousPoints.get(s.pointVenteId));
       const seances = donnees.seances.slice().sort((a, b) => nomPoint(a).localeCompare(nomPoint(b), "fr") || a.jour - b.jour || a.debut.localeCompare(b.debut));
-      afficherListe("seances", seances, (s) => resumeSeance(s, tousPoints), saisie.enEdition("seances"));
+      afficherListe("seances", seances, (s) => resumeSeance(s, tousPoints, tousVehicules), saisie.enEdition("seances"));
 
       const cleDebouche = (d) => `${produitDuDebouche(d, toutesCultures).nom}\u0000${nomDe(tousPoints.get(d.pointVenteId))}`;
       const debouches = donnees.debouches.slice().sort((a, b) => cleDebouche(a).localeCompare(cleDebouche(b), "fr"));

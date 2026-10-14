@@ -342,23 +342,60 @@
     return dates;
   }
 
+  // R1 (EX-43) : coût du km d'un point de vente. Avec un véhicule actif : consommation (L/100 km) × prix
+  // du litre ÷ 100, niveau par niveau ; sans véhicule, ou si le sien est supprimé : le coût du km saisi
+  // (N2), ou 0 s'il manque. vehiculesParId : Map id → véhicule (supprimés compris ou non).
+  function coutDuKm(pointVente, vehiculesParId = new Map()) {
+    const vehicule = pointVente.vehiculeId ? vehiculesParId.get(pointVente.vehiculeId) : null;
+    if (vehicule && !vehicule.supprimeLe) return proportion(produit(vehicule.consommation, vehicule.prixLitre), 1, 100);
+    return pointVente.coutKm || fourchetteNulle();
+  }
+
+  function vehiculesActifs(vehicules = []) {
+    return new Map(vehicules.filter((v) => !v.supprimeLe).map((v) => [v.id, v]));
+  }
+
   // Coût d'une séance datée : ses frais + le trajet aller-retour (2 × distance × coût du km), en fourchette.
-  function coutSeance(seance, pointVente) {
-    const trajet = proportion(pointVente.coutKm, 2 * pointVente.distanceKm, 1);
+  function coutSeance(seance, pointVente, vehiculesParId = new Map()) {
+    const trajet = proportion(coutDuKm(pointVente, vehiculesParId), 2 * pointVente.distanceKm, 1);
     return somme(seance.frais, trajet);
   }
 
   // Toutes les séances datées de la ferme, avec leur coût : séances actives d'un point de vente actif.
-  function seancesDeLaFerme({ pointsVente = [], seances = [] }) {
+  function seancesDeLaFerme({ pointsVente = [], seances = [], vehicules = [] }) {
     const pointsParId = new Map(pointsVente.filter((p) => !p.supprimeLe).map((p) => [p.id, p]));
+    const vehiculesParId = vehiculesActifs(vehicules);
     const resultat = [];
     for (const seance of seances.filter((s) => !s.supprimeLe)) {
       const pointVente = pointsParId.get(seance.pointVenteId);
       if (!pointVente) continue;
-      const cout = coutSeance(seance, pointVente);
+      const cout = coutSeance(seance, pointVente, vehiculesParId);
       for (const date of seancesDatees(seance)) resultat.push({ seanceId: seance.id, pointVenteId: pointVente.id, date, cout });
     }
     return resultat;
+  }
+
+  // R1 (EX-44) : bilan de saison de chaque véhicule actif (Map id → bilan) : son coût du km, le nombre de
+  // séances datées des points de vente actifs qui l'utilisent, les kilomètres (2 × distance par séance),
+  // les litres (km × consommation ÷ 100) et le coût du carburant (litres × prix du litre), en fourchette.
+  function vehicules({ vehicules: liste = [], pointsVente = [], seances = [] }) {
+    const actifs = vehiculesActifs(liste);
+    const bilans = new Map([...actifs.values()].map((v) => [v.id, { vehiculeId: v.id, coutKm: coutDuKm({ vehiculeId: v.id }, actifs), seances: 0, km: 0 }]));
+    const pointsParId = new Map(pointsVente.filter((p) => !p.supprimeLe).map((p) => [p.id, p]));
+    for (const seance of seances.filter((s) => !s.supprimeLe)) {
+      const pointVente = pointsParId.get(seance.pointVenteId);
+      const bilan = pointVente && bilans.get(pointVente.vehiculeId);
+      if (!bilan) continue;
+      const nombre = seancesDatees(seance).length;
+      bilan.seances += nombre;
+      bilan.km += nombre * 2 * pointVente.distanceKm;
+    }
+    for (const bilan of bilans.values()) {
+      const vehicule = actifs.get(bilan.vehiculeId);
+      bilan.litres = proportion(vehicule.consommation, bilan.km, 100);
+      bilan.carburant = produit(bilan.litres, vehicule.prixLitre);
+    }
+    return bilans;
   }
 
   // ---- Offre et demande par semaine (EX-20)
@@ -685,7 +722,9 @@
     lundiDe,
     seancesDatees,
     coutSeance,
+    coutDuKm,
     seancesDeLaFerme,
+    vehicules,
     offreDemande,
     bilanOffreDemande,
     moisDuJeudi,

@@ -3,16 +3,30 @@
 (function () {
   "use strict";
 
-  const { T, formats, elementFourchette, parNom } = UiCommun;
+  const { T, formats, remplir, elementFourchette, parNom } = UiCommun;
   const { afficherListe, contenuLigne } = UiSaisie.outils;
   const V = T.vehicules;
 
-  function resumeVehicule(vehicule) {
+  // Une fourchette saisie, en texte court : « 8 », ou « 8 (7 à 9) ».
+  function enTexte(f) {
+    const mediane = formats.nombre.format(f.mediane);
+    if (f.basse === f.haute) return mediane;
+    return `${mediane} (${remplir(T.commun.bornes, { basse: formats.nombre.format(f.basse), haute: formats.nombre.format(f.haute) })})`;
+  }
+
+  // bilan : Calc.vehicules — coût du km, et sur la saison les kilomètres, les litres et le carburant (EX-44).
+  function resumeVehicule(vehicule, bilan) {
     return contenuLigne({
       titre: vehicule.nom,
+      sousTitre: remplir(V.sousTitre, {
+        consommation: enTexte(vehicule.consommation),
+        prix: enTexte(vehicule.prixLitre),
+      }),
       faits: [
-        [V.faits.consommation, elementFourchette(vehicule.consommation, formats.nombre, V.consommationValeur), "consommation"],
-        [V.faits.prixLitre, elementFourchette(vehicule.prixLitre, formats.nombre, V.parLitre), "prixLitre"],
+        [V.faits.coutKm, elementFourchette(bilan.coutKm, formats.nombre, V.parKm), "coutKm"],
+        [V.faits.km, remplir(V.kmValeur, { valeur: formats.nombre.format(bilan.km) }), "km"],
+        [V.faits.litres, elementFourchette(bilan.litres, formats.nombre, V.litres), "litres"],
+        [V.faits.carburant, elementFourchette(bilan.carburant, formats.nombre, "€"), "carburant"],
       ],
     });
   }
@@ -21,7 +35,8 @@
   function creer({ saisie }) {
     function afficher(donnees) {
       const vehicules = donnees.vehicules.slice().sort(parNom);
-      afficherListe("vehicules", vehicules, resumeVehicule, saisie.enEdition("vehicules"));
+      const bilans = Calc.vehicules(donnees);
+      afficherListe("vehicules", vehicules, (v) => resumeVehicule(v, bilans.get(v.id)), saisie.enEdition("vehicules"));
     }
 
     return { afficher };
