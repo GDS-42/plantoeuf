@@ -1,0 +1,192 @@
+{
+  "tranche": "N3",
+  "seuil_alerte_sessions": 10,
+  "parallelisme_max": 1,
+  "evaluateur": {
+    "modele": "fable",
+    "effort": "high"
+  },
+  "taches": [
+    {
+      "id": "T43",
+      "exigences": [
+        "EX-45"
+      ],
+      "description": "Modèle et saisie : frais au km du véhicule, coûts de mise en place de la culture, charges fixes (page « Charges fixes », groupe « Budget ») ; format exporté en version 5, migration des versions 1 à 4",
+      "verification": [
+        "./verify.sh T43"
+      ],
+      "depend_de": [],
+      "fichiers": [
+        "src/store.js",
+        "src/index.html",
+        "src/ui-navigation.js",
+        "src/ui-charges.js",
+        "src/i18n.js",
+        "test/charges.test.js",
+        "test/charges.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T44",
+      "exigences": [
+        "EX-46"
+      ],
+      "description": "Frais au km dans le coût du km du véhicule ; entretien et coût total de la saison (scénario S14)",
+      "verification": [
+        "./verify.sh T44"
+      ],
+      "depend_de": [
+        "T43"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "src/ui-vehicules.js",
+        "src/i18n.js",
+        "test/vehicules.test.js",
+        "test/vehicules.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T45",
+      "exigences": [
+        "EX-47"
+      ],
+      "description": "Coûts de culture déduits de la marge, au mois de mise en place ; pied du tableau, tuile des coûts, ligne de la culture (scénario S12)",
+      "verification": [
+        "./verify.sh T45"
+      ],
+      "depend_de": [
+        "T43"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "src/ui-tableau.js",
+        "src/ui-synthese.js",
+        "src/ui-saisie.js",
+        "src/i18n.js",
+        "test/couts.test.js",
+        "test/couts.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T46",
+      "exigences": [
+        "EX-48"
+      ],
+      "description": "Charges fixes sur au moins 12 mois et revenu mensuel ; pied du tableau, tuile « Revenu », ligne d'une charge (scénario S13)",
+      "verification": [
+        "./verify.sh T46"
+      ],
+      "depend_de": [
+        "T45"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "src/ui-tableau.js",
+        "src/ui-synthese.js",
+        "src/ui-charges.js",
+        "src/i18n.js",
+        "test/charges.test.js",
+        "test/charges.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T47",
+      "exigences": [
+        "EX-49"
+      ],
+      "description": "Besoins en semences et plants, mois par mois, section de la page Plantations (scénario S12)",
+      "verification": [
+        "./verify.sh T47"
+      ],
+      "depend_de": [
+        "T43"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "src/ui-besoins.js",
+        "src/index.html",
+        "src/i18n.js",
+        "test/couts.test.js",
+        "test/couts.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T48",
+      "exigences": [
+        "EX-50"
+      ],
+      "description": "Ferme d'exemple : une camionnette qui va à ses points de vente, des coûts de mise en place pour ses cultures",
+      "verification": [
+        "./verify.sh T48"
+      ],
+      "depend_de": [
+        "T44",
+        "T45",
+        "T47"
+      ],
+      "fichiers": [
+        "src/exemple.js",
+        "test/exemple-n3.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    },
+    {
+      "id": "T49",
+      "exigences": [
+        "EX-45",
+        "EX-46",
+        "EX-47",
+        "EX-48",
+        "EX-49",
+        "EX-50"
+      ],
+      "description": "Vérification de bout en bout de la tranche, puis revue par l'évaluateur séparé, restreinte à la conformité à la spec",
+      "verification": [
+        "./verify.sh N3"
+      ],
+      "depend_de": [
+        "T43",
+        "T44",
+        "T45",
+        "T46",
+        "T47",
+        "T48"
+      ],
+      "fichiers": [],
+      "modele": "fable",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    }
+  ],
+  "mode": "simple",
+  "modele_minimum": {
+    "modele": "opus",
+    "effort": "high"
+  }
+}
