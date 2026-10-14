@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 1 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 2 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4736,4 +4736,27 @@ Preuve (`./verify.sh T43`, puis suite complète) :
   3 passed
 == T43 : vérification verte ==
 Suite complète : 122 tests unitaires et 149 de bout en bout, tous verts.
+```
+
+## 14/10/2026 · T44 — Frais d'entretien et d'usure au km (EX-46)
+
+- Session 2 / 10 du seuil d'alerte de N3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais, sur le diff de la tâche avant commit → **CONFORME** (remarque : `entretien` et `total` présents même sans frais, jugé conforme ; consigné en ✎ Décisions).
+- Résultat : le coût du km d'un véhicule ajoute ses frais au km au carburant ; le coût des séances suit partout ; la ligne du véhicule montre, avec des frais, l'entretien et l'usure et le coût total des trajets de la saison. Scénario S14 vérifié : 0,294 €/km ; 22,056 € par séance ; 216 km, 31,104 € de carburant, 32,40 € d'entretien, 63,504 € en tout.
+- Fichiers : `src/calc.js`, `src/ui-vehicules.js`, `src/i18n.js`, `test/vehicules.test.js`, `test/vehicules.e2e.js`.
+- Rouge d'abord : 3 tests unitaires et 1 de bout en bout rouges sur le code de T43 (le second test de bout en bout, invariant `sans_frais_comme_r1`, vert par construction).
+
+Preuve (`./verify.sh T44`, puis `./verify.sh N3`) :
+
+```text
+# tests 13
+# pass 13
+# fail 0
+  2 passed (2.1s)
+== T44 : vérification verte ==
+# tests 125
+# pass 125
+# fail 0
+  151 passed (1.6m)
+== N3 : vérification verte ==
 ```

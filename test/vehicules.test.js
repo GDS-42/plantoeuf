@@ -145,3 +145,35 @@ test("[T41] sans_vehicule_comme_avant : une ferme sans véhicule donne les même
   assert.deepEqual(Calc.pointsDeVente({ ...n2, vehicules: [] }), Calc.pointsDeVente(n2));
   procheFourchette(Calc.coutSeance(SAMEDI, n2.pointsVente[0]), f(24.6));
 });
+
+// ---- T44 : frais d'entretien et d'usure au km (EX-46, scénario S14)
+
+const AVEC_FRAIS = { ...VEHICULE, fraisKm: f(0.15) };
+const S14 = { ...S11, vehicules: [AVEC_FRAIS] };
+
+test("[T44] S14 : les frais au km s'ajoutent au carburant (0,144 + 0,15 = 0,294 €/km), et une séance coûte 22,056 €", () => {
+  const parId = new Map([[AVEC_FRAIS.id, AVEC_FRAIS]]);
+  procheFourchette(Calc.coutDuKm(MARCHE, parId), f(0.294));
+  procheFourchette(Calc.coutSeance(SAMEDI, MARCHE, parId), f(22.056));
+  procheFourchette(Calc.tableau(S14).total.total.couts, f(9 * 22.056));
+  // En fourchette, niveau par niveau.
+  const v = { ...AVEC_FRAIS, fraisKm: f(0.1, 0.15, 0.2) };
+  procheFourchette(Calc.coutDuKm(MARCHE, new Map([[v.id, v]])), f(0.244, 0.294, 0.344));
+});
+
+test("[T44] S14 : sur la saison, 216 km, 31,104 € de carburant, 32,40 € d'entretien et d'usure, 63,504 € en tout", () => {
+  const bilan = Calc.vehicules(S14).get("v1");
+  assert.equal(bilan.km, 216);
+  procheFourchette(bilan.carburant, f(31.104));
+  procheFourchette(bilan.entretien, f(32.4));
+  procheFourchette(bilan.total, f(63.504));
+});
+
+test("[T44] sans_frais_comme_r1 : sans frais au km, le coût du km et les séances restent ceux de R1", () => {
+  const parId = new Map([[VEHICULE.id, VEHICULE]]);
+  procheFourchette(Calc.coutDuKm(MARCHE, parId), f(0.144));
+  procheFourchette(Calc.coutSeance(SAMEDI, MARCHE, parId), f(18.456));
+  const bilan = Calc.vehicules(S11).get("v1");
+  procheFourchette(bilan.entretien, f(0));
+  procheFourchette(bilan.total, bilan.carburant);
+});

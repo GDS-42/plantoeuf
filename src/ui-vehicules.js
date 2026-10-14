@@ -15,18 +15,20 @@
   }
 
   // bilan : Calc.vehicules — coût du km, et sur la saison les kilomètres, les litres et le carburant (EX-44).
+  // N3 (EX-46) : avec des frais au km, l'entretien et l'usure de la saison, puis le coût total des trajets.
   function resumeVehicule(vehicule, bilan) {
+    const consommation = remplir(V.sousTitre, { consommation: enTexte(vehicule.consommation), prix: enTexte(vehicule.prixLitre) });
+    const frais = vehicule.fraisKm ? [[V.faits.entretien, elementFourchette(bilan.entretien, formats.nombre, "€"), "entretien"],
+      [V.faits.total, elementFourchette(bilan.total, formats.nombre, "€"), "total"]] : [];
     return contenuLigne({
       titre: vehicule.nom,
-      sousTitre: remplir(V.sousTitre, {
-        consommation: enTexte(vehicule.consommation),
-        prix: enTexte(vehicule.prixLitre),
-      }),
+      sousTitre: vehicule.fraisKm ? `${consommation} · ${remplir(V.fraisKmValeur, { frais: enTexte(vehicule.fraisKm) })}` : consommation,
       faits: [
         [V.faits.coutKm, elementFourchette(bilan.coutKm, formats.nombre, V.parKm), "coutKm"],
         [V.faits.km, remplir(V.kmValeur, { valeur: formats.nombre.format(bilan.km) }), "km"],
         [V.faits.litres, elementFourchette(bilan.litres, formats.nombre, V.litres), "litres"],
         [V.faits.carburant, elementFourchette(bilan.carburant, formats.nombre, "€"), "carburant"],
+        ...frais,
       ],
     });
   }

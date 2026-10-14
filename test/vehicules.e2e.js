@@ -162,3 +162,27 @@ test("[T41] EX-43 : changer le prix du litre recalcule tout de suite le coût de
   await expect(ligne(page, "seances", "marché de Saint-Paul")).toContainText("18,84 €");
   await expect(ligne(page, "vehicules", "Camionnette").locator('[data-fait="carburant"]')).toContainText("34,56 €");
 });
+
+// ---- T44 : frais d'entretien et d'usure au km (EX-46, scénario S14)
+
+test("[T44] S14 : avec 0,15 € de frais au km, la séance coûte 22,06 € et la camionnette montre son entretien et son coût total", async ({ page }) => {
+  await scenarioS11(page);
+  await ligne(page, "vehicules", "Camionnette").locator('[data-action="modifier"]').click();
+  await page.locator("#vehicule-fraisKm").fill("0,15");
+  await page.locator("#vehicule-ajouter").click();
+  await expect(page.locator("#tiroir-vehicules")).toBeHidden();
+  const camionnette = ligne(page, "vehicules", "Camionnette");
+  await expect(camionnette.locator('[data-fait="coutKm"]')).toContainText("0,29 €/km");
+  await expect(camionnette.locator('[data-fait="carburant"]')).toContainText("31,1 €");
+  await expect(camionnette.locator('[data-fait="entretien"]')).toContainText("32,4 €");
+  await expect(camionnette.locator('[data-fait="total"]')).toContainText("63,5 €");
+  await expect(ligne(page, "seances", "marché de Saint-Paul")).toContainText("22,06 €");
+});
+
+test("[T44] sans_frais_comme_r1 : sans frais au km, la ligne du véhicule ne montre ni entretien ni total", async ({ page }) => {
+  await scenarioS11(page);
+  const camionnette = ligne(page, "vehicules", "Camionnette");
+  await expect(camionnette.locator('[data-fait="carburant"]')).toBeVisible();
+  await expect(camionnette.locator('[data-fait="entretien"]')).toHaveCount(0);
+  await expect(camionnette.locator('[data-fait="total"]')).toHaveCount(0);
+});

@@ -178,7 +178,11 @@
       parKm: "€/km",
       kmValeur: "{valeur} km",
       litres: "L",
-      faits: { coutKm: "Coût du km", km: "Kilomètres de la saison", litres: "Carburant consommé", carburant: "Coût du carburant" },
+      faits: {
+        coutKm: "Coût du km", km: "Kilomètres de la saison", litres: "Carburant consommé", carburant: "Coût du carburant",
+        entretien: "Entretien et usure", total: "Coût total des trajets",
+      },
+      fraisKmValeur: "{frais} €/km d'entretien",
     },
     // N3 (EX-45, EX-48) : charges fixes de la ferme.
     charges: {

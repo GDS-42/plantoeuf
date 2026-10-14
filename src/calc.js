@@ -343,11 +343,15 @@
   }
 
   // R1 (EX-43) : coût du km d'un point de vente. Avec un véhicule actif : consommation (L/100 km) × prix
-  // du litre ÷ 100, niveau par niveau ; sans véhicule, ou si le sien est supprimé : le coût du km saisi
-  // (N2), ou 0 s'il manque. vehiculesParId : Map id → véhicule (supprimés compris ou non).
+  // du litre ÷ 100, niveau par niveau, plus ses frais d'entretien et d'usure au km (N3, EX-46) ; sans
+  // véhicule, ou si le sien est supprimé : le coût du km saisi (N2), ou 0 s'il manque.
+  // vehiculesParId : Map id → véhicule (supprimés compris ou non).
   function coutDuKm(pointVente, vehiculesParId = new Map()) {
     const vehicule = pointVente.vehiculeId ? vehiculesParId.get(pointVente.vehiculeId) : null;
-    if (vehicule && !vehicule.supprimeLe) return proportion(produit(vehicule.consommation, vehicule.prixLitre), 1, 100);
+    if (vehicule && !vehicule.supprimeLe) {
+      const carburant = proportion(produit(vehicule.consommation, vehicule.prixLitre), 1, 100);
+      return vehicule.fraisKm ? somme(carburant, vehicule.fraisKm) : carburant;
+    }
     return pointVente.coutKm || fourchetteNulle();
   }
 
@@ -377,7 +381,8 @@
 
   // R1 (EX-44) : bilan de saison de chaque véhicule actif (Map id → bilan) : son coût du km, le nombre de
   // séances datées des points de vente actifs qui l'utilisent, les kilomètres (2 × distance par séance),
-  // les litres (km × consommation ÷ 100) et le coût du carburant (litres × prix du litre), en fourchette.
+  // les litres (km × consommation ÷ 100) et le coût du carburant (litres × prix du litre), en fourchette ;
+  // N3 (EX-46) : l'entretien et l'usure (km × frais au km, 0 sans frais) et le coût total des trajets.
   function vehicules({ vehicules: liste = [], pointsVente = [], seances = [] }) {
     const actifs = vehiculesActifs(liste);
     const bilans = new Map([...actifs.values()].map((v) => [v.id, { vehiculeId: v.id, coutKm: coutDuKm({ vehiculeId: v.id }, actifs), seances: 0, km: 0 }]));
@@ -394,6 +399,8 @@
       const vehicule = actifs.get(bilan.vehiculeId);
       bilan.litres = proportion(vehicule.consommation, bilan.km, 100);
       bilan.carburant = produit(bilan.litres, vehicule.prixLitre);
+      bilan.entretien = vehicule.fraisKm ? proportion(vehicule.fraisKm, bilan.km, 1) : fourchetteNulle();
+      bilan.total = somme(bilan.carburant, bilan.entretien);
     }
     return bilans;
   }
