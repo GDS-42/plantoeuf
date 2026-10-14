@@ -576,11 +576,17 @@
       piece: "pièce",
     },
     // Messages des erreurs, par code (voir store.js).
+    // R1 (EX-39, EX-40) : dates saisies jour, mois, année.
+    dates: {
+      modele: "jj/mm/aaaa",
+      calendrier: "Choisir dans le calendrier",
+    },
     erreurs: {
       fourchette_invalide: "Écrivez un nombre, ou trois nombres séparés par « / » : basse / médiane / haute.",
       fourchette_desordonnee: "Une fourchette va de la plus petite valeur à la plus grande : basse / médiane / haute.",
       import_invalide: "Ce fichier n'est pas un export plantoeuf lisible. Rien n'a été changé.",
       import_version: "Ce fichier vient d'une version plus récente de plantoeuf. Rien n'a été changé.",
+      date_invalide: "Écrivez la date jour/mois/année, par exemple 15/03/2026.",
       dates_desordonnees: "Les dates doivent se suivre : arrivée, puis premier jour de ponte, puis réforme (le même jour est permis).",
       inconnue: "L'enregistrement n'a pas pu se faire.",
     },

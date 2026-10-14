@@ -101,6 +101,34 @@
     return fourchette(...brut.split("/").map(lireNombre));
   }
 
+  // R1 (EX-39) : date saisie jour, mois, année — « 15/03/2026 », « 15-3-26 », « 15.03.2026 »,
+  // huit chiffres « 15032026 » (clavier numérique d'un téléphone) ou ISO « 2026-03-15 ».
+  // Rend la date ISO enregistrée (AAAA-MM-JJ) ; vide → null ; date illisible ou impossible → date_invalide.
+  function lireDate(texte) {
+    const brut = String(texte ?? "").trim();
+    if (brut === "") return null;
+    let morceaux = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(brut);
+    let jour, mois, annee;
+    if (morceaux) [, annee, mois, jour] = morceaux;
+    else if ((morceaux = /^(\d{2})(\d{2})(\d{4})$/.exec(brut))) [, jour, mois, annee] = morceaux;
+    else if ((morceaux = /^(\d{1,2})[/.\s-]+(\d{1,2})[/.\s-]+(\d{2}|\d{4})$/.exec(brut))) [, jour, mois, annee] = morceaux;
+    else throw erreur("date_invalide", "Une date s'écrit jour/mois/année.");
+    [jour, mois, annee] = [Number(jour), Number(mois), Number(annee)];
+    if (annee < 100) annee += 2000;
+    const date = new Date(Date.UTC(annee, mois - 1, jour));
+    if (date.getUTCFullYear() !== annee || date.getUTCMonth() !== mois - 1 || date.getUTCDate() !== jour) {
+      throw erreur("date_invalide", "Cette date n'existe pas.");
+    }
+    return date.toISOString().slice(0, 10);
+  }
+
+  // R1 (EX-40) : une date enregistrée (ISO), écrite jour/mois/année dans un champ de saisie.
+  function ecrireDate(iso) {
+    if (!iso) return "";
+    const [annee, mois, jour] = String(iso).split("-");
+    return `${jour}/${mois}/${annee}`;
+  }
+
   function estFourchette(valeur) {
     return valeur !== null && typeof valeur === "object" &&
       "basse" in valeur && "mediane" in valeur && "haute" in valeur;
@@ -280,5 +308,5 @@
     };
   }
 
-  return { ouvrir, fourchette, fourchetteOrdonnee, lireFourchette, lireNombre, OBJETS, CLE, VERSION, DELAI_RAPPEL_JOURS };
+  return { ouvrir, fourchette, fourchetteOrdonnee, lireFourchette, lireNombre, lireDate, ecrireDate, OBJETS, CLE, VERSION, DELAI_RAPPEL_JOURS };
 });

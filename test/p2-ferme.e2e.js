@@ -236,7 +236,7 @@ test("[T36] EX-35 : un clic ou la touche Entrée sur une barre ouvre la modifica
   await expect(page.locator("#tiroir-plantations")).toBeVisible();
   await expect(page.locator("#tiroir-plantations h2")).toHaveText("Modifier la plantation");
   await expect(page.locator("#plantation-surface")).toHaveValue("30");
-  await expect(page.locator("#plantation-date")).toHaveValue("2026-05-01");
+  await expect(page.locator("#plantation-date")).toHaveValue("01/05/2026");
   await expect(ligne(page, "plantations", "Black Beauty")).toHaveAttribute("aria-current", "true");
   await page.keyboard.press("Escape");
   await expect(page.locator("#tiroir-plantations")).toBeHidden();

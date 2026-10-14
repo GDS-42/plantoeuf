@@ -213,6 +213,7 @@
       const champ = entree.dataset.champ;
       if (entree.dataset.format === "nombre") champs[champ] = entree.value === "" ? null : Number(entree.value);
       else if (entree.dataset.format === "fourchette") champs[champ] = Store.lireFourchette(entree.value);
+      else if (entree.dataset.format === "date") champs[champ] = Store.lireDate(entree.value);
       else champs[champ] = entree.value.trim();
     }
     return champs;
@@ -222,7 +223,9 @@
     for (const entree of formulaire.querySelectorAll("[data-champ]")) {
       const valeur = enregistrement[entree.dataset.champ];
       if (valeur === null || valeur === undefined) entree.value = "";
-      else entree.value = entree.dataset.format === "fourchette" ? saisieFourchette(valeur) : String(valeur);
+      else if (entree.dataset.format === "fourchette") entree.value = saisieFourchette(valeur);
+      else if (entree.dataset.format === "date") entree.value = Store.ecrireDate(valeur);
+      else entree.value = String(valeur);
     }
   }
 
@@ -307,7 +310,12 @@
     // choisies, avant même d'enregistrer (dates et volumes calculés par calc.js).
     function apercuPlantation(formulaire) {
       const zone = document.getElementById("plantation-apercu");
-      const champs = lireFormulaire(formulaire);
+      let champs;
+      try {
+        champs = lireFormulaire(formulaire);
+      } catch {
+        champs = {}; // date en cours de saisie : pas d'aperçu tant qu'elle n'est pas lisible
+      }
       const variete = champs.varieteId && ferme().obtenir("varietes", champs.varieteId);
       const culture = variete && ferme().obtenir("cultures", variete.cultureId);
       zone.hidden = !culture || !/^\d{4}-\d{2}-\d{2}$/.test(champs.date);
@@ -399,7 +407,48 @@
       });
     }
 
+    // R1 (EX-39, EX-40) : un champ de date se saisit en texte, jour/mois/année, quel que soit le
+    // navigateur. Quitter le champ réécrit une date lisible jj/mm/aaaa ; le bouton voisin ouvre le
+    // calendrier du navigateur (un champ date invisible), dont le choix revient jj/mm/aaaa.
+    function brancherDate(entree) {
+      entree.placeholder = T.dates.modele;
+      const lire = () => {
+        try {
+          return Store.lireDate(entree.value);
+        } catch {
+          return null;
+        }
+      };
+      entree.addEventListener("blur", () => {
+        const iso = lire();
+        if (iso) entree.value = Store.ecrireDate(iso);
+      });
+
+      const enveloppe = element("span", { class: "champ-date" });
+      entree.replaceWith(enveloppe);
+      const selecteur = element("input", { type: "date", class: "selecteur-date", tabindex: "-1", "aria-hidden": "true", "data-calendrier-de": entree.id });
+      const bouton = element("button", { type: "button", class: "bouton-icone bouton-calendrier", "data-calendrier": entree.id, title: T.dates.calendrier, "aria-label": T.dates.calendrier },
+        icone("plantations"));
+      enveloppe.append(entree, bouton, selecteur);
+      if (typeof selecteur.showPicker !== "function") bouton.hidden = true;
+      bouton.addEventListener("click", () => {
+        selecteur.value = lire() || "";
+        try {
+          selecteur.showPicker();
+        } catch {
+          entree.focus(); // calendrier indisponible : on saisit au clavier
+        }
+      });
+      selecteur.addEventListener("change", () => {
+        if (!selecteur.value) return;
+        entree.value = Store.ecrireDate(selecteur.value);
+        entree.dispatchEvent(new Event("input", { bubbles: true }));
+        entree.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    }
+
     function brancher(racine) {
+      racine.querySelectorAll('input[data-format="date"]').forEach(brancherDate);
       racine.querySelectorAll("form[data-objet]").forEach(brancherFormulaire);
       // Hors des listes, un élément [data-modifier="<objet>"][data-id] ouvre la modification de cet
       // enregistrement : les barres des calendriers de culture et des lots (EX-35).

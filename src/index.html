@@ -276,6 +276,11 @@
   }
   input:hover, select:hover { border-color: var(--encre-pale); }
   input[type="file"] { padding: 0.4rem; }
+  /* R1 (EX-39, EX-40) : une date se saisit jj/mm/aaaa ; le bouton ouvre le calendrier du navigateur. */
+  .champ-date { position: relative; display: flex; gap: 0.4rem; align-items: center; }
+  .champ-date > input[data-format="date"] { flex: 1 1 auto; font-variant-numeric: tabular-nums; }
+  .champ-date .bouton-calendrier { border-color: var(--trait-fort); }
+  .champ-date .selecteur-date { position: absolute; right: 0; bottom: 0; width: 1px; height: 1px; min-height: 0; padding: 0; border: 0; opacity: 0; pointer-events: none; }
   .aide { color: var(--encre-douce); font-size: 0.875rem; font-weight: 400; }
   .erreur { padding: 0.6rem 0.8rem; border-radius: var(--rayon-petit); background: var(--rouge-doux); color: var(--rouge-texte); font-weight: 600; }
 
@@ -1557,7 +1562,7 @@
         <input id="plantation-surface" data-champ="surface" data-format="nombre" type="number" min="0" step="any" required>
       </label>
       <label><span data-texte="plantations.date"></span>
-        <input id="plantation-date" data-champ="date" type="date" required>
+        <input id="plantation-date" data-champ="date" data-format="date" type="text" inputmode="numeric" autocomplete="off" required>
       </label>
       <div id="plantation-apercu" class="large apercu" aria-live="polite" hidden></div>
       <p id="plantation-erreur" class="erreur" role="alert" hidden></p>
@@ -1614,10 +1619,10 @@
         <select id="seance-jour" data-champ="jour" data-format="nombre" data-options="joursSemaine"></select>
       </label>
       <label><span data-texte="seances.debut"></span>
-        <input id="seance-debut" data-champ="debut" type="date" required>
+        <input id="seance-debut" data-champ="debut" data-format="date" type="text" inputmode="numeric" autocomplete="off" required>
       </label>
       <label><span data-texte="seances.fin"></span>
-        <input id="seance-fin" data-champ="fin" type="date" required>
+        <input id="seance-fin" data-champ="fin" data-format="date" type="text" inputmode="numeric" autocomplete="off" required>
       </label>
       <label class="large"><span data-texte="seances.frais"></span>
         <input id="seance-frais" data-champ="frais" data-format="fourchette" required>
@@ -1685,13 +1690,13 @@
         <input id="lot-effectif" data-champ="effectif" data-format="nombre" type="number" min="1" step="1" required>
       </label>
       <label><span data-texte="poules.arrivee"></span>
-        <input id="lot-arrivee" data-champ="arrivee" type="date" required>
+        <input id="lot-arrivee" data-champ="arrivee" data-format="date" type="text" inputmode="numeric" autocomplete="off" required>
       </label>
       <label><span data-texte="poules.debutPonte"></span>
-        <input id="lot-debutPonte" data-champ="debutPonte" type="date" required>
+        <input id="lot-debutPonte" data-champ="debutPonte" data-format="date" type="text" inputmode="numeric" autocomplete="off" required>
       </label>
       <label><span data-texte="poules.reforme"></span>
-        <input id="lot-reforme" data-champ="reforme" type="date" required>
+        <input id="lot-reforme" data-champ="reforme" data-format="date" type="text" inputmode="numeric" autocomplete="off" required>
       </label>
       <label><span data-texte="poules.ponte"></span>
         <input id="lot-ponte" data-champ="ponte" data-format="fourchette" required>
