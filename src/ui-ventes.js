@@ -298,11 +298,13 @@
 
   // ---- Lignes de la page Ventes (P2) : un titre, puis des faits alignés
 
-  function resumePointVente(pointVente, bilan, debouches) {
+  // vehicule : le véhicule du point de vente (R1, EX-42), s'il en a un, même supprimé.
+  function resumePointVente(pointVente, bilan, debouches, vehicule) {
     const L = V.lignes;
     const faits = [
       [L.distance, remplir(L.km, { valeur: formats.nombre.format(pointVente.distanceKm) })],
-      [L.coutKm, elementFourchette(pointVente.coutKm, formats.nombre, L.parKm)],
+      ...(vehicule ? [[L.vehicule, nomDe(vehicule)]] : []),
+      ...(pointVente.coutKm ? [[L.coutKm, elementFourchette(pointVente.coutKm, formats.nombre, L.parKm)]] : []),
       [L.seances, nombreDe(V.points.seances, bilan ? bilan.total.seances : 0)],
       [L.debouches, nombreDe(L.nbDebouches, debouches)],
     ];
@@ -580,6 +582,26 @@
     });
     brancherMatrice();
 
+    // R1 (EX-42) : le véhicule d'un point de vente. Avec un véhicule, le coût du km n'est plus demandé ;
+    // sans aucun véhicule enregistré, le tiroir propose d'en ajouter un.
+    const formPoint = document.getElementById("form-pointVente");
+    const choixVehicule = document.getElementById("pointVente-vehiculeId");
+    function montrerCoutKm() {
+      const avecVehicule = choixVehicule.value !== "";
+      document.getElementById("pointVente-champCoutKm").hidden = avecVehicule;
+      document.getElementById("pointVente-coutKm").required = !avecVehicule;
+    }
+    for (const type of ["change", "ouverture"]) formPoint.addEventListener(type, montrerCoutKm);
+
+    function afficherChoixVehicule(vehicules) {
+      const courant = choixVehicule.value;
+      choixVehicule.replaceChildren(element("option", { value: "" }, T.pointsVente.sansVehicule),
+        ...vehicules.map((v) => element("option", { value: v.id }, v.nom)));
+      choixVehicule.value = vehicules.some((v) => v.id === courant) ? courant : "";
+      document.getElementById("pointVente-sansVehicule").hidden = vehicules.length > 0;
+      montrerCoutKm();
+    }
+
     function afficher(donnees) {
       const pointsVente = donnees.pointsVente.slice().sort(parNom);
       const cultures = donnees.cultures.slice().sort(parNom);
@@ -589,7 +611,10 @@
       const bilans = new Map(vuePoints.points.map((p) => [p.pointVenteId, p]));
 
       const nombreDeDebouches = Calc.nombreDeDebouches(donnees);
-      afficherListe("pointsVente", pointsVente, (p) => resumePointVente(p, bilans.get(p.id), nombreDeDebouches.get(p.id) || 0), saisie.enEdition("pointsVente"));
+      const tousVehicules = parId("vehicules");
+      afficherListe("pointsVente", pointsVente, (p) => resumePointVente(p, bilans.get(p.id), nombreDeDebouches.get(p.id) || 0,
+        p.vehiculeId ? tousVehicules.get(p.vehiculeId) : null), saisie.enEdition("pointsVente"));
+      afficherChoixVehicule(donnees.vehicules.slice().sort(parNom));
 
       const nomPoint = (s) => nomDe(tousPoints.get(s.pointVenteId));
       const seances = donnees.seances.slice().sort((a, b) => nomPoint(a).localeCompare(nomPoint(b), "fr") || a.jour - b.jour || a.debut.localeCompare(b.debut));

@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R1 (dates à l’européenne, véhicules) · Sessions consommées : 1 / 6 · P2 terminée (T38 validée par l’humain, 14/10) · N3 reportée après R1 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R1 (dates à l’européenne, véhicules) · Sessions consommées : 2 / 6 · P2 terminée (T38 validée par l’humain, 14/10) · N3 reportée après R1 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4650,4 +4650,22 @@ Preuve (`./verify.sh T39`, puis suite complète) :
   5 passed (4.8s)
 == T39 : vérification verte ==
 Suite complète : 107 tests unitaires et 139 de bout en bout, tous verts.
+```
+
+## 14/10/2026 · T40 — Véhicules : modèle et saisie (EX-41, EX-42)
+
+- Session 2 / 6 du seuil d'alerte de R1.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (points d'attention pour T41 : coût d'une séance d'un point à véhicule sans coût du km, coût du km affiché, véhicule supprimé).
+- Résultat : liste `vehicules` dans le store (nom, consommation en L/100 km et prix du litre, en fourchettes ; UUID, dates, suppression logique) ; format exporté en version 4, un fichier de version 1 à 3 s'importe par migration ; section « Véhicules » en tête de la page Ventes ; le tiroir d'un point de vente propose « Véhicule utilisé pour y aller » : avec un véhicule, le coût du km n'est plus demandé.
+- Fichiers : `src/store.js`, `src/ui-vehicules.js` (nouveau), `src/ui-ventes.js`, `src/ui-navigation.js`, `src/index.html`, `src/i18n.js`, `test/vehicules.test.js`, `test/vehicules.e2e.js`.
+- Rouge d'abord : 5 tests unitaires et 4 de bout en bout rouges avant le code.
+- Pas encore en ligne : poussé avec T41 (voir ✎ Décisions du runbook).
+
+Preuve (`./verify.sh R1`) :
+
+```text
+# tests 112
+# pass 112
+# fail 0
+  143 passed (1.5m)
 ```

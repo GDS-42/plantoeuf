@@ -76,6 +76,7 @@
       seances: { ajouter: "Ajouter une séance", modifier: "Modifier la séance" },
       debouches: { ajouter: "Ajouter un débouché", modifier: "Modifier le débouché" },
       lots: { ajouter: "Ajouter un lot de poules", modifier: "Modifier le lot de poules" },
+      vehicules: { ajouter: "Ajouter un véhicule", modifier: "Modifier le véhicule" },
     },
     annonces: {
       ajoute: "Ajouté.",
@@ -143,8 +144,24 @@
       nom: "Nom du point de vente",
       distanceKm: "Distance aller (km)",
       coutKm: "Coût du km, en € (estimation)",
+      vehicule: "Véhicule utilisé pour y aller",
+      sansVehicule: "Aucun : je saisis le coût du km",
+      proposerVehicule: "Ajoutez votre véhicule, sa consommation et le prix du litre : le coût du km se calculera tout seul.",
       ajouter: "Ajouter le point de vente",
       aucun: "Aucun point de vente : chaque culture se vend alors toute, à son prix. Ajoutez vos marchés, paniers ou magasins, avec leur distance depuis la ferme, pour voir ce que chacun rapporte et ce qu'il coûte.",
+    },
+    // R1 (EX-41 à EX-44) : véhicules qui vont aux points de vente.
+    vehicules: {
+      titre: "Véhicules",
+      nom: "Nom du véhicule",
+      consommation: "Consommation, en litres aux 100 km (estimation)",
+      prixLitre: "Prix du litre de carburant, en € (estimation)",
+      aide: "Un nombre, ou trois : basse / médiane / haute (ex. 7 / 8 / 9). Choisissez ensuite le véhicule de chaque point de vente : le coût de ses trajets se calcule tout seul.",
+      ajouter: "Ajouter le véhicule",
+      aucun: "Vos véhicules apparaîtront ici. Indiquez leur consommation et le prix du litre : le coût des trajets vers vos points de vente se calculera tout seul.",
+      consommationValeur: "L/100 km",
+      parLitre: "€/L",
+      faits: { consommation: "Consommation", prixLitre: "Prix du litre" },
     },
     seances: {
       titre: "Séances",
@@ -423,6 +440,7 @@
       lignes: {
         distance: "Distance aller",
         coutKm: "Coût du km",
+        vehicule: "Véhicule",
         seances: "Séances datées",
         debouches: "Débouchés",
         resultat: "Résultat estimé",

@@ -7,7 +7,7 @@
   // La page où se trouve la liste de chaque objet du modèle : « Ajouter » et « Modifier » y mènent.
   const PAGE_DE = {
     espaces: "espaces", cultures: "cultures", varietes: "cultures", plantations: "plantations",
-    pointsVente: "ventes", seances: "ventes", debouches: "ventes", lots: "poules",
+    pointsVente: "ventes", seances: "ventes", debouches: "ventes", lots: "poules", vehicules: "ventes",
   };
 
   function creer() {

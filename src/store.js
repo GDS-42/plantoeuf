@@ -10,7 +10,7 @@
   const CLE = "plantoeuf";
   const APPLICATION = "plantoeuf";
   // Version du format enregistré et exporté. L'import accepte les versions précédentes (MIGRATIONS).
-  const VERSION = 3;
+  const VERSION = 4;
   // EX-08 : délai sans export, en jours, au-delà duquel un rappel s'affiche si des données ont changé.
   const DELAI_RAPPEL_JOURS = 7;
   const JOUR_MS = 24 * 3600 * 1000;
@@ -27,11 +27,13 @@
     }),
     // Version 3 (S3) : lots de poules.
     2: (fichier) => ({ ...fichier, version: 3, lots: fichier.lots || [] }),
+    // Version 4 (R1) : véhicules.
+    3: (fichier) => ({ ...fichier, version: 4, vehicules: fichier.vehicules || [] }),
   };
   // Les objets du modèle : ceux de N1 (SPEC N1, « Modèle de données du noyau »), ceux de N2
-  // (points de vente, séances, débouchés), puis ceux de S3 (lots de poules). Un fichier qui n'a pas
-  // une liste la reçoit vide.
-  const OBJETS = ["espaces", "cultures", "varietes", "plantations", "pointsVente", "seances", "debouches", "lots"];
+  // (points de vente, séances, débouchés), ceux de S3 (lots de poules), puis ceux de R1 (véhicules).
+  // Un fichier qui n'a pas une liste la reçoit vide.
+  const OBJETS = ["espaces", "cultures", "varietes", "plantations", "pointsVente", "seances", "debouches", "lots", "vehicules"];
   // Dates d'un enregistrement qui se suivent, dans l'ordre (un même jour est permis).
   const DATES_ORDONNEES = { lots: ["arrivee", "debutPonte", "reforme"] };
   // Champs tenus par le store, jamais par la saisie.

@@ -1310,6 +1310,18 @@
         <p class="page-description" data-texte="pages.ventes.description"></p>
       </div>
     </header>
+    <section id="section-vehicules" class="carte panneau" data-objet="vehicules">
+      <div class="carte-entete">
+        <h2 data-texte="vehicules.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton" data-ouvrir="vehicules"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.vehicules.ajouter"></span></button>
+      </div>
+      <div id="vehicules-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-ventes"></use></svg>
+        <p data-texte="vehicules.aucun"></p>
+      </div>
+      <ul id="liste-vehicules" class="liste"></ul>
+    </section>
     <section id="section-pointsVente" class="carte panneau" data-objet="pointsVente">
       <div class="carte-entete">
         <h2 data-texte="pointsVente.titre"></h2>
@@ -1574,6 +1586,32 @@
   </form>
 </dialog>
 
+<dialog id="tiroir-vehicules" class="tiroir" aria-labelledby="tiroir-vehicules-titre">
+  <form id="form-vehicule" data-objet="vehicules">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-vehicules-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
+      <label class="large"><span data-texte="vehicules.nom"></span>
+        <input id="vehicule-nom" data-champ="nom" required>
+      </label>
+      <label><span data-texte="vehicules.consommation"></span>
+        <input id="vehicule-consommation" data-champ="consommation" data-format="fourchette" required>
+      </label>
+      <label><span data-texte="vehicules.prixLitre"></span>
+        <input id="vehicule-prixLitre" data-champ="prixLitre" data-format="fourchette" required>
+      </label>
+      <p class="aide" data-texte="vehicules.aide"></p>
+      <p id="vehicule-erreur" class="erreur" role="alert" hidden></p>
+    </div>
+    <footer class="tiroir-pied">
+      <button id="vehicule-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="vehicule-ajouter" type="submit" class="bouton principal" data-texte="vehicules.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
+
 <dialog id="tiroir-pointsVente" class="tiroir" aria-labelledby="tiroir-pointsVente-titre">
   <form id="form-pointVente" data-objet="pointsVente">
     <header class="tiroir-entete">
@@ -1587,9 +1625,18 @@
       <label><span data-texte="pointsVente.distanceKm"></span>
         <input id="pointVente-distanceKm" data-champ="distanceKm" data-format="nombre" type="number" min="0" step="any" required>
       </label>
-      <label><span data-texte="pointsVente.coutKm"></span>
+      <label class="large"><span data-texte="pointsVente.vehicule"></span>
+        <select id="pointVente-vehiculeId" data-champ="vehiculeId"></select>
+      </label>
+      <div id="pointVente-sansVehicule" class="tiroir-manque large" hidden>
+        <svg class="icone" aria-hidden="true"><use href="#i-info"></use></svg>
+        <p data-texte="pointsVente.proposerVehicule"></p>
+        <button type="button" class="bouton" data-ouvrir="vehicules"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.vehicules.ajouter"></span></button>
+      </div>
+      <label id="pointVente-champCoutKm"><span data-texte="pointsVente.coutKm"></span>
         <input id="pointVente-coutKm" data-champ="coutKm" data-format="fourchette" required>
       </label>
+      <p id="pointVente-coutVehicule" class="aide large" hidden></p>
       <p class="aide" data-texte="cultures.aideFourchette"></p>
       <p id="pointVente-erreur" class="erreur" role="alert" hidden></p>
     </div>
@@ -1736,6 +1783,7 @@
 <script src="ui-sauvegarde.js"></script>
 <script src="ui-ventes.js"></script>
 <script src="ui-poules.js"></script>
+<script src="ui-vehicules.js"></script>
 <script src="ui-synthese.js"></script>
 <script src="ui-calendrier.js"></script>
 <script>
@@ -1749,6 +1797,7 @@
   const saisie = UiSaisie.creer({ ferme: fermeOuverte, rafraichir });
   const ventes = UiVentes.creer({ ferme: fermeOuverte, saisie });
   const poules = UiPoules.creer({ saisie });
+  const vehicules = UiVehicules.creer({ saisie });
   const sauvegarde = UiSauvegarde.creer({
     ferme: fermeOuverte,
     apresImport: () => {
@@ -1782,6 +1831,7 @@
     saisie.afficher(donnees);
     ventes.afficher(donnees);
     poules.afficher(donnees);
+    vehicules.afficher(donnees);
     sauvegarde.afficher(donnees);
     const tableau = Calc.tableau(donnees);
     UiTableau.afficher(tableau);

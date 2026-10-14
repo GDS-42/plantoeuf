@@ -69,6 +69,9 @@ Le format exporté passe en version 4 : un fichier de version 1, 2 ou 3 s'import
 
 ## ✎ Décisions
 
+- T40 · La section « Véhicules » ouvre la page Ventes, avant les points de vente. Le véhicule d'un point de vente se choisit dans son tiroir (« Aucun : je saisis le coût du km » par défaut, valeur vide) ; avec un véhicule, le champ du coût du km se masque et n'est plus obligatoire, mais une valeur déjà saisie est gardée (elle resservira si le véhicule est supprimé). Sans aucun véhicule, le tiroir propose d'en ajouter un. Les listes de la ferme d'exemple et des comptes de la sauvegarde ne changent pas.
+- T40 · T40 n'est pas poussé seul : un point de vente à véhicule sans coût du km ferait échouer le calcul d'une séance tant que T41 n'est pas là (relevé par le relecteur). T40 et T41 partent en ligne ensemble.
+
 - T39 · L'écriture d'une date (ISO → jj/mm/aaaa) s'appelle `Store.ecrireDate`, à côté de `Store.lireDate` dans `src/store.js`, au lieu de `saisieDate` dans `src/ui-commun.js` prévue par la spec : même rôle, testable sans navigateur (remarque du relecteur, non bloquante). Le bouton calendrier réutilise l'icône du calendrier des plantations ; il disparaît si le navigateur n'a pas `showPicker`.
 
 ## ✎ Bilan de fin de tranche
