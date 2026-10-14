@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R1 (dates à l’européenne, véhicules) · Sessions consommées : 0 / 6 · P2 terminée (T38 validée par l’humain, 14/10) · N3 reportée après R1 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R1 (dates à l’européenne, véhicules) · Sessions consommées : 1 / 6 · P2 terminée (T38 validée par l’humain, 14/10) · N3 reportée après R1 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4631,3 +4631,23 @@ dist/index.html : 328621 octets
 - Demande de l'humain du 14/10/2026, prioritaire sur N3 : « Mettre les plannings en ordre européen, c'est-à-dire jour, mois, années. Possibilité de rentrer son véhicule et la consommation du véhicule ainsi que le prix par litre d'essence. Ce qui permet de calculer automatiquement les dépenses qui en découlent. »
 - Plan approuvé par l'humain le 14/10/2026 : il vaut accord pour la modification du modèle de données (objet `vehicules`, champ `vehiculeId`, format exporté en version 4) et pour une seule retouche de test existant (`test/p2-ferme.e2e.js`, champ date en « 01/05/2026 »).
 - Spec, runbook et tâches (T39 à T42, EX-39 à EX-44, scénarios S10 et S11, seuil de 6 sessions) dans `docs/specs/R1/`. `verify.sh` accepte désormais les tranches R.
+
+## 14/10/2026 · T39 — Dates saisies et relues jour, mois, année (EX-39, EX-40)
+
+- Session 1 / 6 du seuil d'alerte de R1.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (remarques non bloquantes : nom `ecrireDate` dans `store.js` au lieu de `saisieDate` dans `ui-commun.js`, consigné en ✎ Décisions ; commentaire mal placé dans `i18n.js`, corrigé ; commit fait pendant la relecture à cause du crochet de fin de session, contenu identique au diff relu).
+- Résultat : les six champs de date (plantation, séance, lot) sont des champs texte jj/mm/aaaa, lus par `Store.lireDate` (jj/mm/aaaa et autres séparateurs, jjmmaaaa, ISO ; année à deux chiffres = 20aa ; date impossible refusée : « Écrivez la date jour/mois/année, par exemple 15/03/2026. ») et réécrits jj/mm/aaaa en modification et en quittant le champ ; un bouton « Choisir dans le calendrier » ouvre le calendrier du navigateur. Les dates restent enregistrées en ISO. Vérifié sur une capture avec un navigateur réglé en anglais (390 × 844).
+- Fichiers : `src/store.js`, `src/ui-saisie.js`, `src/index.html`, `src/i18n.js`, `test/dates.test.js`, `test/dates.e2e.js`, `test/p2-ferme.e2e.js` (retouche approuvée : « 01/05/2026 »).
+- Rouge d'abord : 5 tests unitaires et 5 de bout en bout rouges sur l'ancien code (vérifié en remettant `src/` d'avant).
+- Commits : 333190a, puis ce commit (journal, commentaire).
+
+Preuve (`./verify.sh T39`, puis suite complète) :
+
+```text
+# tests 13
+# pass 13
+# fail 0
+  5 passed (4.8s)
+== T39 : vérification verte ==
+Suite complète : 107 tests unitaires et 139 de bout en bout, tous verts.
+```

@@ -575,12 +575,12 @@
       botte: "botte",
       piece: "pièce",
     },
-    // Messages des erreurs, par code (voir store.js).
     // R1 (EX-39, EX-40) : dates saisies jour, mois, année.
     dates: {
       modele: "jj/mm/aaaa",
       calendrier: "Choisir dans le calendrier",
     },
+    // Messages des erreurs, par code (voir store.js).
     erreurs: {
       fourchette_invalide: "Écrivez un nombre, ou trois nombres séparés par « / » : basse / médiane / haute.",
       fourchette_desordonnee: "Une fourchette va de la plus petite valeur à la plus grande : basse / médiane / haute.",

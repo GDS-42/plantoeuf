@@ -64,6 +64,11 @@ Le format exporté passe en version 4 : un fichier de version 1, 2 ou 3 s'import
 
 ## ✎ Surprises et découvertes
 
+- T39 · Les dates affichées étaient déjà jj/mm/aaaa ; seuls les champs `type="date"` suivaient la langue du navigateur. Un nom accessible ne se lit pas sur un bouton caché : le test vérifie les boutons calendrier tiroir ouvert.
+- T39 · Le crochet de fin de session exige un arbre propre : le commit de T39 a précédé la fin de la relecture Fable (contenu identique au diff relu, verdict CONFORME).
+
 ## ✎ Décisions
+
+- T39 · L'écriture d'une date (ISO → jj/mm/aaaa) s'appelle `Store.ecrireDate`, à côté de `Store.lireDate` dans `src/store.js`, au lieu de `saisieDate` dans `src/ui-commun.js` prévue par la spec : même rôle, testable sans navigateur (remarque du relecteur, non bloquante). Le bouton calendrier réutilise l'icône du calendrier des plantations ; il disparaît si le navigateur n'a pas `showPicker`.
 
 ## ✎ Bilan de fin de tranche
