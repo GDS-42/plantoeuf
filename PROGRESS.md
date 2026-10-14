@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : P2 terminée (T38 validée par l’humain, 14/10) · Sessions consommées : 6 / 10 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R1 (dates à l’européenne, véhicules) · Sessions consommées : 0 / 6 · P2 terminée (T38 validée par l’humain, 14/10) · N3 reportée après R1 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4623,3 +4623,11 @@ dist/index.html : 328621 octets
 - Retour de l'humain après essai de plantoeuf.vercel.app : « Okay, c'est bien mieux pour la présentation ». Validation retenue : `passe: true` pour T38. P2 est terminée.
 - Déploiement : l'humain a relié le projet Vercel au dépôt GitHub. `vercel.json` (commit 5e68c7a) indique la construction : `bash build.sh`, sortie `dist`. Ce commit sert aussi de premier essai du déploiement par Git.
 - 14/10/2026 : l'humain a réglé la branche de production Vercel sur `ccr-997aaccf-xva49c`. Désormais, chaque push sur cette branche publie plantoeuf.vercel.app, sans passer par le connecteur.
+
+---
+
+# Tranche R1 — Retours d'essai : dates à l'européenne et véhicules
+
+- Demande de l'humain du 14/10/2026, prioritaire sur N3 : « Mettre les plannings en ordre européen, c'est-à-dire jour, mois, années. Possibilité de rentrer son véhicule et la consommation du véhicule ainsi que le prix par litre d'essence. Ce qui permet de calculer automatiquement les dépenses qui en découlent. »
+- Plan approuvé par l'humain le 14/10/2026 : il vaut accord pour la modification du modèle de données (objet `vehicules`, champ `vehiculeId`, format exporté en version 4) et pour une seule retouche de test existant (`test/p2-ferme.e2e.js`, champ date en « 01/05/2026 »).
+- Spec, runbook et tâches (T39 à T42, EX-39 à EX-44, scénarios S10 et S11, seuil de 6 sessions) dans `docs/specs/R1/`. `verify.sh` accepte désormais les tranches R.

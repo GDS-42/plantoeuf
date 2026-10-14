@@ -1,0 +1,119 @@
+{
+  "tranche": "R1",
+  "seuil_alerte_sessions": 6,
+  "parallelisme_max": 1,
+  "evaluateur": {
+    "modele": "fable",
+    "effort": "high"
+  },
+  "taches": [
+    {
+      "id": "T39",
+      "exigences": [
+        "EX-39",
+        "EX-40"
+      ],
+      "description": "Dates saisies et relues jour, mois, année (scénario S10) : lecture de jj/mm/aaaa, jjmmaaaa et ISO, refus des dates impossibles, champs écrits jj/mm/aaaa, bouton calendrier",
+      "verification": [
+        "./verify.sh T39"
+      ],
+      "depend_de": [],
+      "fichiers": [
+        "src/store.js",
+        "src/ui-commun.js",
+        "src/ui-saisie.js",
+        "src/index.html",
+        "src/i18n.js",
+        "test/dates.test.js",
+        "test/dates.e2e.js",
+        "test/p2-ferme.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T40",
+      "exigences": [
+        "EX-41",
+        "EX-42"
+      ],
+      "description": "Modèle et saisie des véhicules : liste dans le store, format exporté en version 4 avec migration ; section « Véhicules » de la page Ventes ; choix du véhicule d'un point de vente, coût du km alors facultatif",
+      "verification": [
+        "./verify.sh T40"
+      ],
+      "depend_de": [],
+      "fichiers": [
+        "src/store.js",
+        "src/ui-vehicules.js",
+        "src/ui-ventes.js",
+        "src/ui-navigation.js",
+        "src/index.html",
+        "src/i18n.js",
+        "test/vehicules.test.js",
+        "test/vehicules.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T41",
+      "exigences": [
+        "EX-43",
+        "EX-44"
+      ],
+      "description": "Coût du km déduit du véhicule, coût des séances partout où il compte ; bilan de saison de chaque véhicule (km, litres, carburant) (scénario S11)",
+      "verification": [
+        "./verify.sh T41"
+      ],
+      "depend_de": [
+        "T40"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "src/ui-vehicules.js",
+        "src/ui-ventes.js",
+        "src/i18n.js",
+        "test/vehicules.test.js",
+        "test/vehicules.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T42",
+      "exigences": [
+        "EX-39",
+        "EX-40",
+        "EX-41",
+        "EX-42",
+        "EX-43",
+        "EX-44"
+      ],
+      "description": "Vérification de bout en bout de la tranche, puis revue par l'évaluateur séparé, restreinte à la conformité à la spec",
+      "verification": [
+        "./verify.sh R1"
+      ],
+      "depend_de": [
+        "T39",
+        "T40",
+        "T41"
+      ],
+      "fichiers": [],
+      "modele": "fable",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    }
+  ],
+  "mode": "simple",
+  "modele_minimum": {
+    "modele": "opus",
+    "effort": "high"
+  }
+}

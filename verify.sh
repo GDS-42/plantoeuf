@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Vérifie une tâche (T01…) ou une tranche (N1…).
 # Les tests portent l'identifiant de tâche entre crochets dans leur nom : "[T04] …".
-# Une tranche (N1, P1, N2, S3…) lance tous les tests sans filtre.
+# Une tranche (N1, P1, N2, S3, R1…) lance tous les tests sans filtre.
 # Les tests unitaires sont désignés par motif (test/*.test.js) : Node 22 refuse un dossier
 # en argument de --test, et le motif écarte les tests Playwright (*.e2e.js).
 set -euo pipefail
@@ -15,7 +15,7 @@ fi
 
 case "$ID" in
   T*) FILTER="\\[$ID\\]" ;;
-  N*|P*|S*) FILTER="" ;;
+  N*|P*|S*|R*) FILTER="" ;;
   *)  echo "identifiant inconnu : $ID" >&2; exit 2 ;;
 esac
 
