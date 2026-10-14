@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 7 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 8 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4870,5 +4870,30 @@ Preuve (`./verify.sh N3` sur le commit f823692) :
 # pass 137
 # fail 0
   161 passed (1.6m)
+== N3 : vérification verte ==
+```
+
+## 14/10/2026 · T48 (fin) — Ferme d'exemple : coûts de mise en place des cultures (EX-50)
+
+- Session 8 / 10 du seuil d'alerte de N3.
+- **Décision de l'humain, 14/10/2026 : « oui pour T34 »**, accord pour ajouter le terme « + cultures » aux deux assertions du test `[T34]` qui figeaient « coûts = séances + aliment » sur la ferme d'exemple. Aucune autre retouche de test.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecture : non requise (`relecture: false`) ; la clôture de la tranche (T49) fait relire ce diff par l'évaluateur.
+- Résultat : les sept cultures de l'exemple ont leurs coûts de mise en place (tomate, laitue, brède, courgette et piment en plants ; carotte et haricot en semis ; densité, prix d'une graine ou d'un plant, intrants par m², en fourchette) : 289 € sur la saison (206 à 372) pour 7 907 € de chiffre d'affaires ; la marge de l'exemple passe de 4 682 € (1 380 à 7 839) à 4 393 € (1 008 à 7 633). La page Plantations liste 10 besoins de semences et plants sur 4 mois, 229 € (171 à 288). Toujours pas de charge fixe dans l'exemple (point tranché de la spec : les quatre tuiles restent).
+- Retouche de test approuvée : `test/p2-synthese.test.js` (déstructuration de `cultures`, terme `+ cultures` dans la somme des coûts) et `test/p2-synthese.e2e.js` (lecture du pied « cultures », même terme). Avant elle, avec les coûts dans l'exemple, l'assertion `[T34]` unitaire échouait (136 / 137), comme prévu.
+- Fichiers : `src/exemple.js`, `test/exemple-n3.e2e.js`, `test/p2-synthese.test.js`, `test/p2-synthese.e2e.js`.
+- Rouge d'abord : le nouveau test `[T48]` (coûts de mise en place, pied du tableau, détail de la tuile, 10 besoins) rouge sur le code de la première moitié.
+
+Preuve (`./verify.sh T48`, puis `./verify.sh N3`) :
+
+```text
+# tests 12
+# pass 12
+# fail 0
+  3 passed (3.0s)
+== T48 : vérification verte ==
+# tests 137
+# pass 137
+# fail 0
+  162 passed (1.7m)
 == N3 : vérification verte ==
 ```

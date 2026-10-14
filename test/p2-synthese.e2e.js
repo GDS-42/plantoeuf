@@ -42,8 +42,9 @@ test("[T34] EX-33 : les chiffres clés donnent le chiffre d'affaires, les coûts
   expect(await fourchette(tuile("marge"))).toEqual(await fourchette(pied(page, "marge")));
   const seances = await fourchette(pied(page, "couts"));
   const aliment = await fourchette(pied(page, "aliment"));
+  const cultures = await fourchette(pied(page, "cultures"));
   const couts = await fourchette(tuile("couts"));
-  for (const niveau of NIVEAUX) expect(couts[niveau]).toBeCloseTo(seances[niveau] + aliment[niveau], 6);
+  for (const niveau of NIVEAUX) expect(couts[niveau]).toBeCloseTo(seances[niveau] + aliment[niveau] + cultures[niveau], 6);
   const oeufs = page.locator('#tableau tbody tr[data-culture="oeufs"][data-mesure="volume"] td[data-mois="total"]');
   expect(await fourchette(tuile("oeufs"))).toEqual(await fourchette(oeufs));
 

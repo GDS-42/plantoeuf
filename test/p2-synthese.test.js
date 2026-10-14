@@ -27,13 +27,13 @@ function tableauDe(total, poules = null) {
 test("[T34] EX-33 : les chiffres clés reprennent le total de la saison du tableau, coûts comptés en somme des séances et de l'aliment", () => {
   const tableau = Calc.tableau(fermeExemple());
   const cles = Calc.chiffresCles(tableau);
-  const { ca, couts, aliment, marge } = tableau.total.total;
+  const { ca, couts, aliment, marge, cultures } = tableau.total.total;
   assert.deepEqual(cles.ca, ca);
   assert.deepEqual(cles.marge, marge);
   assert.deepEqual(cles.couts.seances, couts);
   assert.deepEqual(cles.couts.aliment, aliment);
   for (const niveau of ["basse", "mediane", "haute"]) {
-    assert.ok(Math.abs(cles.couts.total[niveau] - (couts[niveau] + aliment[niveau])) < 1e-9, niveau);
+    assert.ok(Math.abs(cles.couts.total[niveau] - (couts[niveau] + aliment[niveau] + (cultures ? cultures[niveau] : 0))) < 1e-9, niveau);
   }
   assert.deepEqual(cles.oeufs, { volume: tableau.poules.total.volume, vendus: false, effectif: 100, lots: 1 });
   // Le chiffre d'affaires se partage entre les cultures et les œufs.

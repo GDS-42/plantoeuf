@@ -1,8 +1,9 @@
 // Ferme d'exemple (La Réunion) : 5 espaces, 7 cultures, 10 plantations sur la saison fraîche,
 // d'avril à octobre, la plus favorable au maraîchage (sèche, sans cyclone), vendues sur un marché,
 // en paniers et à une épicerie de l'Ouest ; un lot de 100 poules pondeuses, dont les œufs se vendent
-// sans débouché, au prix de l'œuf du lot (voir PROGRESS.md, T31). N3 : une camionnette va aux trois
-// points de vente (ses cultures n'ont pas encore de coûts de mise en place : voir PROGRESS.md, T48).
+// sans débouché, au prix de l'œuf du lot (voir PROGRESS.md, T31). N3 : chaque culture a ses coûts de
+// mise en place (semis ou plants, densité, prix d'une graine ou d'un plant, intrants par m²), et une
+// camionnette va aux trois points de vente.
 // C'est le seul fichier où figurent des valeurs agronomiques et des prix : ce sont des ordres
 // de grandeur pour montrer l'outil, pas des références.
 (function (racine, fabrique) {
@@ -31,6 +32,18 @@
     haricot: { nom: "Haricot vert", famille: "Fabacées", unite: "kg", rendement: f(0.8, 1.2, 1.5), prix: f(4, 5, 6), joursAvantRecolte: 55, semainesRecolte: 5, pertes: 10 },
     courgette: { nom: "Courgette", famille: "Cucurbitacées", unite: "kg", rendement: f(2, 3, 4), prix: f(2, 2.5, 3), joursAvantRecolte: 50, semainesRecolte: 8, pertes: 10 },
     piment: { nom: "Piment", famille: "Solanacées", unite: "kg", rendement: f(0.5, 1, 1.5), prix: f(8, 10, 12), joursAvantRecolte: 90, semainesRecolte: 16, pertes: 10 },
+  };
+
+  // N3 : coûts de mise en place de chaque culture — semis ou plants, graines ou plants par m², prix d'une
+  // graine ou d'un plant (€), intrants par m² (terreau, engrais, paillage, en €).
+  const COUTS = {
+    tomate: { implantation: "plant", densite: 2.5, prixUnite: f(0.6, 0.8, 1), intrants: f(0.3, 0.5, 0.7) },
+    laitue: { implantation: "plant", densite: 10, prixUnite: f(0.08, 0.1, 0.12), intrants: f(0.1, 0.2, 0.3) },
+    brede: { implantation: "plant", densite: 10, prixUnite: f(0.05, 0.07, 0.09), intrants: f(0.1, 0.2, 0.3) },
+    carotte: { implantation: "semis", densite: 300, prixUnite: f(0.002, 0.003, 0.004), intrants: f(0.1, 0.2, 0.3) },
+    haricot: { implantation: "semis", densite: 25, prixUnite: f(0.02, 0.03, 0.04), intrants: f(0.1, 0.15, 0.2) },
+    courgette: { implantation: "plant", densite: 1, prixUnite: f(0.4, 0.5, 0.6), intrants: f(0.2, 0.3, 0.4) },
+    piment: { implantation: "plant", densite: 2, prixUnite: f(0.5, 0.7, 0.9), intrants: f(0.2, 0.3, 0.4) },
   };
 
   const SANS_SURCHARGE = { rendement: null, prix: null, joursAvantRecolte: null, semainesRecolte: null, pertes: null };
@@ -119,7 +132,7 @@
     const espaces = {};
     for (const [cle, espace] of Object.entries(ESPACES)) espaces[cle] = cree("espaces", espace);
     const cultures = {};
-    for (const [cle, culture] of Object.entries(CULTURES)) cultures[cle] = cree("cultures", culture);
+    for (const [cle, culture] of Object.entries(CULTURES)) cultures[cle] = cree("cultures", { ...culture, ...COUTS[cle] });
     const varietes = {};
     for (const [cle, { culture, ...variete }] of Object.entries(VARIETES)) {
       varietes[cle] = cree("varietes", { ...variete, cultureId: cultures[culture] });

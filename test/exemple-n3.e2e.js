@@ -26,3 +26,15 @@ test("[T48] EX-50 : effacer la ferme d'exemple efface aussi sa camionnette", asy
   await expect(page.locator("#liste-vehicules li")).toHaveCount(0);
   expect(await page.evaluate(() => Store.ouvrir(localStorage).lister("vehicules").length)).toBe(0);
 });
+
+test("[T48] EX-50 : les cultures de la ferme d'exemple ont des coûts de mise en place, déduits de la marge et listés en semences et plants à prévoir", async ({ page }) => {
+  await exemple(page);
+  const sansCout = await page.evaluate(() => Store.ouvrir(localStorage).lister("cultures").filter((c) => !(c.densite > 0 && c.prixUnite && c.intrants)).map((c) => c.nom));
+  expect(sansCout).toEqual([]);
+  await aller(page, "synthese");
+  await expect(page.locator('#tableau tfoot tr[data-mesure="cultures"] td[data-mois="total"]')).toBeVisible();
+  await expect(page.locator('#tuiles .tuile[data-chiffre="couts"] [data-cout="cultures"]')).toBeVisible();
+  await aller(page, "plantations");
+  await expect(page.locator("#section-besoins")).toBeVisible();
+  expect(await page.locator("#section-besoins .besoins-mois li").count()).toBe(10);
+});
