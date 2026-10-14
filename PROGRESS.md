@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : P2 · Sessions consommées : 6 / 10 (seuil d'alerte) · T38 (validation humaine sur captures) en attente · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : P2 terminée (T38 validée par l’humain, 14/10) · Sessions consommées : 6 / 10 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4617,3 +4617,8 @@ dist/index.html : 328621 octets
 - Avant l'envoi, une simulation locale du même assemblage donne un `dist/index.html` identique à celui du dépôt : SHA-1 a87f276a36cffd354e3308fde161ee5e01b7f4c6, 328 621 octets.
 - Résultat : déploiement dpl_8qT4zHboumvz4yo1ET1kLs8rMcV2 READY, alias plantoeuf.vercel.app. La page servie n'a pas pu être relue d'ici (réseau de la session et accès de lecture Vercel refusés) ; vérification visuelle laissée à l'humain.
 - À savoir pour un prochain envoi en ligne : le transport décode une fois de trop les séquences `\uXXXX`. Pour qu'un ` ` littéral arrive tel quel, il faut écrire `\\u005cu00a0` dans la chaîne JSON.
+
+## 14/10/2026 · T38 — Validation humaine de la présentation (EX-38)
+
+- Retour de l'humain après essai de plantoeuf.vercel.app : « Okay, c'est bien mieux pour la présentation ». Validation retenue : `passe: true` pour T38. P2 est terminée.
+- Déploiement : l'humain a relié le projet Vercel au dépôt GitHub. `vercel.json` (commit 5e68c7a) indique la construction : `bash build.sh`, sortie `dist`. Ce commit sert aussi de premier essai du déploiement par Git.
