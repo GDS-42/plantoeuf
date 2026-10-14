@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R1 (dates à l’européenne, véhicules) · Sessions consommées : 3 / 6 · P2 terminée (T38 validée par l’humain, 14/10) · N3 reportée après R1 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : aucune · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · N3 reportée après R1 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4691,5 +4691,22 @@ Preuve (`./verify.sh T41`, puis `./verify.sh R1`) :
 # pass 117
 # fail 0
   146 passed (1.6m)
+== R1 : vérification verte ==
+```
+
+## 14/10/2026 · T42 — Vérification de la tranche R1, évaluateur séparé
+
+- Session 4 / 6 du seuil d'alerte de R1.
+- Évaluateur : Fable, effort élevé, contexte frais → **CONFORME**, aucun écart. Chaque exigence (EX-39 à EX-44) et chaque scénario (S10, S11) est réalisé et prouvé par un test `[T39]`, `[T40]` ou `[T41]` ; invariants `date_enregistree_iso` et `sans_vehicule_comme_avant` tenus ; une seule retouche de test existant, celle approuvée. Remarques non bloquantes consignées au bilan du runbook.
+- Captures (390 × 844 et 1366 × 768, navigateur réglé en anglais) envoyées à l'humain : champ de date d'une plantation, section Véhicules, tiroir d'un point de vente.
+- Mise en ligne : déploiement Vercel du commit 32316be READY sur plantoeuf.vercel.app (T40 et T41).
+
+Preuve (`./verify.sh R1`, relancée par l'évaluateur) :
+
+```text
+# tests 117
+# pass 117
+# fail 0
+  146 passed (1.5m)
 == R1 : vérification verte ==
 ```

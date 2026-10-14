@@ -80,3 +80,11 @@ Le format exporté passe en version 4 : un fichier de version 1, 2 ou 3 s'import
 - T39 · L'écriture d'une date (ISO → jj/mm/aaaa) s'appelle `Store.ecrireDate`, à côté de `Store.lireDate` dans `src/store.js`, au lieu de `saisieDate` dans `src/ui-commun.js` prévue par la spec : même rôle, testable sans navigateur (remarque du relecteur, non bloquante). Le bouton calendrier réutilise l'icône du calendrier des plantations ; il disparaît si le navigateur n'a pas `showPicker`.
 
 ## ✎ Bilan de fin de tranche
+
+**14/10/2026 — tranche R1 livrée en 4 sessions sur 6, sans écart.** T39 à T42 sont passées ; l'évaluateur Fable juge la tranche CONFORME. `./verify.sh R1` → exit 0 (117 tests unitaires, 146 de bout en bout). En ligne sur plantoeuf.vercel.app.
+
+- **Ce que la tranche apporte** : toute date se saisit et se relit jour, mois, année, quelle que soit la langue du navigateur (jj/mm/aaaa, jjmmaaaa au clavier numérique, bouton calendrier, date impossible refusée) ; les véhicules (consommation, prix du litre) se déclarent sur la page Ventes ; le coût du km d'un point de vente se déduit de son véhicule, le coût des séances suit partout, et chaque véhicule montre ses kilomètres, ses litres et son carburant de la saison ; format exporté en version 4.
+- **Décisions de l'humain** (14/10/2026) : plan approuvé, valant accord pour le modèle de données (véhicules, `vehiculeId`, version 4) et pour une retouche de test (`test/p2-ferme.e2e.js`, « 01/05/2026 »).
+- **Reprises** : aucune. Relectures Fable conformes pour T39, T40, T41.
+- **Remarques de l'évaluateur, non bloquantes** : l'export par l'interface n'est pas testé de bout en bout avec un véhicule (couvert en unitaire) ; la synthèse n'est pas vérifiée directement avec un véhicule (elle lit le tableau, testé) ; « quelle que soit la langue » est prouvé par construction et par une capture en anglais, Playwright tournant en français ; `src/ui-commun.js` figure dans les fichiers de T39 sans avoir été touché.
+- **À décider par l'humain** : compter aussi l'usure et l'entretien au km (aujourd'hui, carburant seulement) ; donner un véhicule à la ferme d'exemple ; reprise de N3.
