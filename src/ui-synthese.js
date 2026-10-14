@@ -107,7 +107,7 @@
   function afficherTuiles(cles) {
     const conteneur = document.getElementById("tuiles");
     // Les euros partagent une échelle : la longueur des repères se compare d'une tuile à l'autre.
-    const montants = [cles.ca, cles.couts.total, cles.marge];
+    const montants = [cles.ca, cles.couts.total, cles.marge, ...(cles.revenu ? [cles.revenu] : [])];
     const ech = echelle(Math.min(0, ...montants.map((f) => f.basse)), Math.max(0, ...montants.map((f) => f.haute)));
     const tuiles = [
       tuile({ chiffre: "ca", titre: V.chiffres.ca, f: cles.ca, format: euros, ech, detail: detailCa(cles.parts) }),
@@ -116,6 +116,11 @@
       tuile({ chiffre: "marge", titre: V.chiffres.marge, f: cles.marge, format: euros, ech,
         detail: element("p", { class: "tuile-note" }, V.detail.marge) }),
     ];
+    // N3 (EX-48) : ce qui reste pour vivre, la marge moins les charges fixes, s'il y en a.
+    if (cles.revenu) {
+      tuiles.push(tuile({ chiffre: "revenu", titre: V.chiffres.revenu, f: cles.revenu, format: euros, ech,
+        detail: detail([["data-cout", "charges", V.detail.charges, cles.charges]]) }));
+    }
     if (cles.oeufs) {
       const { volume, vendus, effectif, lots } = cles.oeufs;
       const enOeufs = (v) => remplir(V.oeufs, { valeur: formats.entiers.format(v) });

@@ -169,6 +169,15 @@
     return liste;
   }
 
+  // N3 (EX-48) : une charge fixe comptée chaque mois (montant mensuel, ou annuel ÷ 12), et sur un an.
+  function chargeParMois(charge) {
+    return charge.periodicite === "an" ? proportion(charge.montant, 1, 12) : charge.montant;
+  }
+
+  function chargeParAn(charge) {
+    return proportion(chargeParMois(charge), 12, 1);
+  }
+
   function caseVide() {
     return { volume: fourchetteNulle(), ca: fourchetteNulle() };
   }
@@ -250,7 +259,16 @@
 
     const tousLesMois = [...[...parCulture.values()].flatMap((c) => [...c.mois.keys()]), ...couts.keys(), ...poulesParMois.keys(),
       ...[...coutsCultures.values()].flatMap((parMois) => [...parMois.keys()])].sort();
-    const mois = tousLesMois.length ? moisEntre(tousLesMois[0], tousLesMois[tousLesMois.length - 1]) : [];
+    // N3 (EX-48) : avec au moins une charge fixe, la projection couvre au moins 12 mois d'affilée à partir de
+    // son premier mois, pour ne pas sous-compter une charge annuelle.
+    const charges = (donnees.charges || []).filter((c) => !c.supprimeLe);
+    let dernierMois = tousLesMois[tousLesMois.length - 1];
+    if (charges.length && tousLesMois.length) {
+      let douzieme = tousLesMois[0];
+      for (let i = 0; i < 11; i++) douzieme = moisSuivant(douzieme);
+      if (douzieme > dernierMois) dernierMois = douzieme;
+    }
+    const mois = tousLesMois.length ? moisEntre(tousLesMois[0], dernierMois) : [];
     const avecMarge = (c) => ({ volume: c.volume, ca: c.ca, marge: { ...c.ca } });
     // Une culture qui a des coûts de mise en place les déduit de sa marge (N3) ; sans coût, la case garde sa forme.
     const avecCouts = (c, cout) => ({ volume: c.volume, ca: c.ca, couts: cout, marge: soustraire(c.ca, cout) });
@@ -317,6 +335,15 @@
     const total = { mois: {}, total: bilan(totalFerme.total.ca, [...couts.values()].reduce(somme, fourchetteNulle()), poules && poules.total, coutsFerme && coutsFerme.total) };
     for (const m of mois) total.mois[m] = bilan(totalFerme.mois[m].ca, couts.get(m) || fourchetteNulle(), poules && poules.mois[m], coutsFerme && coutsFerme.mois[m]);
 
+    // N3 (EX-48) : revenu = marge de la ferme − charges fixes, chaque mois et sur toute la projection, du
+    // pire au meilleur. Les clés charges et revenu n'existent que si la ferme a une charge fixe.
+    if (charges.length) {
+      const parMois = charges.map(chargeParMois).reduce(somme, fourchetteNulle());
+      const avecRevenu = (b, montant) => Object.assign(b, { charges: { ...montant }, revenu: soustraire(b.marge, montant) });
+      for (const m of mois) avecRevenu(total.mois[m], parMois);
+      avecRevenu(total.total, proportion(parMois, mois.length, 1));
+    }
+
     return { mois, lignes, poules, total };
   }
 
@@ -337,7 +364,9 @@
     const caMedian = (m) => t.total.mois[m].ca.mediane;
     const meilleurMois = t.mois.reduce((meilleur, m) => (caMedian(m) > (meilleur ? caMedian(meilleur) : 0) ? m : meilleur), null);
     const moisMargeNegative = t.mois.filter((m) => t.total.mois[m].marge.mediane < 0);
-    return { ca, parts: { cultures, oeufs: t.poules ? t.poules.total.ca : null }, couts: { total, seances, aliment: atelier, ...(miseEnPlace ? { cultures: miseEnPlace } : {}) }, marge, oeufs, meilleurMois, moisMargeNegative };
+    // N3 (EX-48) : les charges fixes et le revenu, seulement si la ferme a une charge fixe.
+    const revenu = t.total.total.revenu ? { charges: t.total.total.charges, revenu: t.total.total.revenu } : {};
+    return { ca, parts: { cultures, oeufs: t.poules ? t.poules.total.ca : null }, couts: { total, seances, aliment: atelier, ...(miseEnPlace ? { cultures: miseEnPlace } : {}) }, marge, oeufs, meilleurMois, moisMargeNegative, ...revenu };
   }
 
   // ---- Sur-occupation des espaces (EX-06)
@@ -806,6 +835,8 @@
     chiffresCles,
     coutsDeCulture,
     coutParM2,
+    chargeParMois,
+    chargeParAn,
     surOccupations,
   };
 });

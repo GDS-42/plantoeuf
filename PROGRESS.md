@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 3 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 4 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4781,5 +4781,28 @@ Preuve (`./verify.sh T45`, puis `./verify.sh N3`) :
 # pass 129
 # fail 0
   154 passed (1.9m)
+== N3 : vérification verte ==
+```
+
+## 14/10/2026 · T46 — Charges fixes et revenu (EX-48)
+
+- Session 4 / 10 du seuil d'alerte de N3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais, sur le diff de la tâche avant commit → **CONFORME** ; ses deux remarques non bloquantes sont prises en compte (le montant des charges est copié dans chaque bilan ; la tuile « Revenu » détaille les charges déduites en fourchette, comme la tuile des coûts), puis le diff final lui est soumis à nouveau → **CONFORME**.
+- Résultat : une charge mensuelle compte son montant chaque mois, une charge annuelle son douzième ; avec une charge fixe, la projection couvre au moins 12 mois d'affilée ; le revenu = marge de la ferme − charges fixes, chaque mois et sur la projection, du pire au meilleur ; le pied du tableau porte « Charges fixes » et « Revenu », la synthèse une tuile « Revenu (ce qui reste pour vivre) », la ligne d'une charge son montant par mois et sur un an. Scénario S13 vérifié : mars 2026 à février 2027, 200 € par mois, 2 400 € ; revenu −1 930 / −1 785 / −1 640 €. Sans charge fixe, rien ne change (`sans_cout_comme_r1`).
+- Fichiers : `src/calc.js`, `src/ui-tableau.js`, `src/ui-synthese.js`, `src/ui-charges.js`, `src/i18n.js`, `test/charges.test.js`, `test/charges.e2e.js`.
+- Rouge d'abord, sur le code de T45 : 4 tests unitaires sur 5 et 2 de bout en bout sur 3 rouges (les tests restants vérifient l'invariant `sans_cout_comme_r1`).
+
+Preuve (`./verify.sh T46`, puis `./verify.sh N3`) :
+
+```text
+# tests 16
+# pass 16
+# fail 0
+  3 passed (2.0s)
+== T46 : vérification verte ==
+# tests 134
+# pass 134
+# fail 0
+  157 passed (1.7m)
 == N3 : vérification verte ==
 ```

@@ -188,7 +188,7 @@
   function pied(tableau, colonnes) {
     const avecCouts = tableau.total.total.couts.haute > 0;
     const mesures = ["ca", ...(avecCouts ? ["couts"] : []), ...(tableau.total.total.cultures ? ["cultures"] : []),
-      ...(tableau.poules ? ["aliment"] : []), "marge"];
+      ...(tableau.poules ? ["aliment"] : []), "marge", ...(tableau.total.total.revenu ? ["charges", "revenu"] : [])];
     return [
       element("tr", { class: "pied-titre" }, element("th", { colspan: String(colonnes), scope: "colgroup" }, element("span", {}, V.pied.titre))),
       ...mesures.map((mesure) => ligne({ "data-culture": "ferme", "data-mesure": mesure, class: `pied-${mesure}` },

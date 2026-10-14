@@ -7,10 +7,18 @@
   const { afficherListe, contenuLigne } = UiSaisie.outils;
   const C = T.charges;
 
-  // « 600 € par an » : la fourchette du montant, puis la périodicité.
+  // « 600 € par an » : la fourchette du montant, puis la périodicité ; et ce qu'elle compte chaque mois et
+  // sur un an (EX-48).
   function resumeCharge(charge) {
     const montant = element("span", {}, elementFourchette(charge.montant, formats.nombre, "€"), " ", T.periodicites[charge.periodicite] || "");
-    return contenuLigne({ titre: charge.nom, faits: [[C.faits.montant, montant, "montant"]] });
+    return contenuLigne({
+      titre: charge.nom,
+      faits: [
+        [C.faits.montant, montant, "montant"],
+        [C.faits.parMois, elementFourchette(Calc.chargeParMois(charge), formats.nombre, "€"), "parMois"],
+        [C.faits.parAn, elementFourchette(Calc.chargeParAn(charge), formats.nombre, "€"), "parAn"],
+      ],
+    });
   }
 
   // saisie : le module de saisie (élément en cours de modification).

@@ -84,3 +84,72 @@ test("[T43] EX-45 : un fichier de version 4 s'importe par migration, avec une li
   assert.equal(autre.lister("vehicules").length, 1);
   assert.equal(autre.exporter().version, Store.VERSION);
 });
+
+// ---- T46 : charges fixes et revenu (EX-48, scénario S13)
+
+const Calc = require("../src/calc.js");
+
+function proche(obtenu, attendu, message) {
+  assert.ok(Math.abs(obtenu - attendu) < 1e-9, `${message || ""} ${obtenu} ≠ ${attendu}`);
+}
+function procheFourchette(obtenue, attendue, message) {
+  for (const cle of ["basse", "mediane", "haute"]) proche(obtenue[cle], attendue[cle], `${message || ""} ${cle}`);
+}
+
+// Scénario S12 : la courgette du scénario S1 de N1 (100 m² le 1er mars 2026), en plants ; S13 : plus deux charges fixes.
+const COURGETTE = { id: "c1", nom: "courgette", unite: "kg", rendement: f(3), prix: f(2, 2.5, 3), joursAvantRecolte: 60, semainesRecolte: 8, pertes: 10,
+  implantation: "plant", densite: 1, prixUnite: f(0.3, 0.4, 0.5), intrants: f(0.2) };
+const VARIETE = { id: "v1", cultureId: "c1", nom: "Black Beauty" };
+const PLANTATION = { id: "p1", varieteId: "v1", espaceId: "e1", surface: 100, date: "2026-03-01" };
+const S12 = { espaces: [{ id: "e1", nom: "planche 1", surface: 100 }], cultures: [COURGETTE], varietes: [VARIETE], plantations: [PLANTATION] };
+const CHARGES = [{ id: "ch1", nom: "Assurance", montant: f(600), periodicite: "an" }, { id: "ch2", nom: "Cotisation", montant: f(150), periodicite: "mois" }];
+const S13 = { ...S12, charges: CHARGES };
+
+test("[T46] EX-48 : une charge mensuelle compte son montant chaque mois, une charge annuelle un douzième", () => {
+  procheFourchette(Calc.chargeParMois(CHARGES[0]), f(50));
+  procheFourchette(Calc.chargeParMois(CHARGES[1]), f(150));
+  procheFourchette(Calc.chargeParAn(CHARGES[0]), f(600));
+  procheFourchette(Calc.chargeParAn(CHARGES[1]), f(1800));
+  procheFourchette(Calc.chargeParMois({ ...CHARGES[0], montant: f(540, 600, 660) }), f(45, 50, 55));
+});
+
+test("[T46] S13 : la projection couvre 12 mois, de mars 2026 à février 2027, chacun avec 200 € de charges fixes", () => {
+  const t = Calc.tableau(S13);
+  assert.equal(t.mois.length, 12);
+  assert.equal(t.mois[0], "2026-03");
+  assert.equal(t.mois[11], "2027-02");
+  for (const m of t.mois) procheFourchette(t.total.mois[m].charges, f(200), m);
+  procheFourchette(t.total.total.charges, f(2400));
+  // Les cultures et le chiffre d'affaires ne changent pas : les mois ajoutés sont vides.
+  procheFourchette(t.lignes[0].total.ca, f(540, 675, 810));
+  procheFourchette(t.lignes[0].mois["2026-12"].ca, f(0));
+});
+
+test("[T46] S13 : le revenu = marge − charges fixes : −1 930 / −1 785 / −1 640 € sur la projection", () => {
+  const t = Calc.tableau(S13);
+  procheFourchette(t.total.total.marge, f(470, 615, 760));
+  procheFourchette(t.total.total.revenu, f(-1930, -1785, -1640));
+  procheFourchette(t.total.mois["2026-03"].revenu, f(-270, -260, -250));
+  procheFourchette(t.total.mois["2026-12"].revenu, f(-200));
+  const cles = Calc.chiffresCles(t);
+  procheFourchette(cles.charges, f(2400));
+  procheFourchette(cles.revenu, f(-1930, -1785, -1640));
+});
+
+test("[T46] EX-48 : une projection déjà longue de 12 mois ou plus garde ses mois ; une charge supprimée ne compte pas", () => {
+  const longue = { ...S12, plantations: [PLANTATION, { ...PLANTATION, id: "p2", date: "2027-06-01" }] };
+  assert.deepEqual(Calc.tableau({ ...longue, charges: CHARGES }).mois, Calc.tableau(longue).mois);
+  const supprimee = { ...S13, charges: [CHARGES[0], { ...CHARGES[1], supprimeLe: "2026-10-14T00:00:00.000Z" }] };
+  procheFourchette(Calc.tableau(supprimee).total.mois["2026-03"].charges, f(50));
+});
+
+test("[T46] sans_cout_comme_r1 : sans charge fixe, ni charges, ni revenu, ni mois ajoutés", () => {
+  const t = Calc.tableau(S12);
+  assert.equal(t.mois.length, 4);
+  assert.equal("charges" in t.total.total, false);
+  assert.equal("revenu" in t.total.total, false);
+  const cles = Calc.chiffresCles(t);
+  assert.equal("charges" in cles, false);
+  assert.equal("revenu" in cles, false);
+  assert.deepEqual(Calc.tableau({ ...S12, charges: [{ ...CHARGES[0], supprimeLe: "2026-10-14T00:00:00.000Z" }] }), t);
+});

@@ -193,7 +193,7 @@
       aide: "Un nombre, ou trois : basse / médiane / haute (ex. 550 / 600 / 650). Une charge payée à l'année compte pour un douzième chaque mois.",
       ajouter: "Ajouter la charge",
       aucun: "Vos charges fixes apparaîtront ici : assurance, cotisations, fermage, remboursement d'emprunt… Elles se déduisent de la marge pour donner ce qui vous reste pour vivre.",
-      faits: { montant: "Montant" },
+      faits: { montant: "Montant", parMois: "Par mois", parAn: "Sur 12 mois" },
     },
     periodicites: {
       mois: "par mois",
@@ -317,6 +317,7 @@
         marge: "Marge",
         oeufs: "Œufs pondus",
         oeufsVendus: "Œufs vendus",
+        revenu: "Revenu (ce qui reste pour vivre)",
       },
       entre: "entre {basse} et {haute}",
       sur: "sans fourchette : valeur sûre",
@@ -334,6 +335,7 @@
         seulesCultures: "Semences, plants et intrants des cultures",
         aucunCout: "Aucune séance de vente, ni poule, ni coût de mise en place : rien à déduire.",
         marge: "Chiffre d'affaires moins les coûts déduits",
+        charges: "Charges fixes déduites",
         poules: "{poules} · {lots}",
       },
       // Graphique mois par mois.
@@ -383,6 +385,8 @@
         aliment: "− Aliment des poules",
         cultures: "− Semences, plants et intrants",
         marge: "= Marge de la ferme",
+        charges: "− Charges fixes",
+        revenu: "= Revenu (ce qui reste pour vivre)",
       },
       lecteur: {
         ca: "chiffre d'affaires estimé (€)",
@@ -390,6 +394,8 @@
         couts: "coût des séances de vente estimé (€)",
         aliment: "coût de l'aliment estimé (€)",
         cultures: "coût des semences, plants et intrants estimé (€)",
+        charges: "charges fixes (€)",
+        revenu: "revenu estimé (€)",
       },
       vide: {
         espaces: "Ajouter un espace",
