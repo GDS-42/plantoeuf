@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 8 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4891,6 +4891,25 @@ Preuve (`./verify.sh T48`, puis `./verify.sh N3`) :
 # fail 0
   3 passed (3.0s)
 == T48 : vérification verte ==
+# tests 137
+# pass 137
+# fail 0
+  162 passed (1.7m)
+== N3 : vérification verte ==
+```
+
+## 14/10/2026 · T49 (clôture) — Vérification de la tranche N3, évaluateur séparé
+
+- Session 9 / 10 du seuil d'alerte de N3.
+- Modèle : Opus 5.5, effort élevé ; évaluateur : Fable, effort élevé, contexte frais, sur `git diff 34c1d2d 0b255ab` (fin de T48, la tranche jusqu'à 34c1d2d étant déjà jugée CONFORME) → **CONFORME, aucun écart**. EX-50 entière : les sept cultures de l'exemple ont leurs quatre champs de coût, enregistrés au chargement, déduits de la marge et listés dans les besoins ; la retouche `[T34]` se limite au terme « + cultures » ; aucune valeur hors de `src/exemple.js` ; pas de charge fixe dans l'exemple (4 tuiles) ; chiffres de l'entrée T48 (fin) recalculés et exacts ; test `[T48]` rouge sur le code précédent, reproduit.
+- Remarques non bloquantes (consignées dans le bilan du RUNBOOK) : garde `cultures ? … : 0` dans `[T34]` unitaire, couverte par les tests de bout en bout ; densités de l'exemple du côté bas pour la carotte, plants bon marché pour la laitue et la brède.
+- Captures de la ferme d'exemple à 390 et 1366 px (synthèse : 4 tuiles, « Semences, plants et intrants » 289 € dans les coûts déduits ; Plantations : 10 besoins sur 4 mois, 229,25 € ; Cultures) : aucune erreur de console, aucune requête réseau, aucun défilement horizontal.
+- Déploiement Vercel du commit 0b255ab : READY en production (connecteur, liste des déploiements du projet).
+- Bilan de fin de tranche écrit dans `docs/specs/N3/RUNBOOK.md`.
+
+Preuve (`./verify.sh N3` sur le commit 0b255ab) :
+
+```text
 # tests 137
 # pass 137
 # fail 0
