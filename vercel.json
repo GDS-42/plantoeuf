@@ -1,6 +1,6 @@
 {
   "framework": null,
   "installCommand": "true",
-  "buildCommand": "bash build.sh",
+  "buildCommand": "node --test test/*.test.js && bash build.sh",
   "outputDirectory": "dist"
 }

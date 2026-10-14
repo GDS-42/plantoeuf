@@ -17,6 +17,9 @@ Cible à terme : application web installable et synchronisée (ADR-001).
 - vérifier une tâche : `./verify.sh <ID>` (ex. `./verify.sh T04`)
 - vérifier une tranche : `./verify.sh <N1|N2|…>`
 - assembler le fichier livrable : `./build.sh` (simple concaténation des modules dans `dist/index.html`)
+- mettre en ligne : `git push` sur `ccr-997aaccf-xva49c` publie plantoeuf.vercel.app (Vercel relié au dépôt, réglages dans `vercel.json`).
+  Le build Vercel relance les tests unitaires : s'ils échouent, le site en ligne ne change pas. Contrôle : connecteur Vercel,
+  `list_deployments` filtré par le sha du commit, état READY.
 
 ## Conventions non évidentes
 
