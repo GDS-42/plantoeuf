@@ -4622,3 +4622,4 @@ dist/index.html : 328621 octets
 
 - Retour de l'humain après essai de plantoeuf.vercel.app : « Okay, c'est bien mieux pour la présentation ». Validation retenue : `passe: true` pour T38. P2 est terminée.
 - Déploiement : l'humain a relié le projet Vercel au dépôt GitHub. `vercel.json` (commit 5e68c7a) indique la construction : `bash build.sh`, sortie `dist`. Ce commit sert aussi de premier essai du déploiement par Git.
+- 14/10/2026 : l'humain a réglé la branche de production Vercel sur `ccr-997aaccf-xva49c`. Désormais, chaque push sur cette branche publie plantoeuf.vercel.app, sans passer par le connecteur.
