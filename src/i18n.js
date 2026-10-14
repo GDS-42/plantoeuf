@@ -27,6 +27,7 @@
       ferme: "Ma ferme",
       ventes: "Ventes",
       atelier: "Atelier",
+      budget: "Budget",
       donnees: "Données",
     },
     pages: {
@@ -60,6 +61,11 @@
         titre: "Poules pondeuses",
         description: "Vos lots de poules : dates, ponte, aliment et prix de l'œuf.",
       },
+      charges: {
+        nav: "Charges fixes",
+        titre: "Charges fixes",
+        description: "Ce que la ferme paie, qu'elle produise ou non : assurance, cotisations, fermage, emprunt, électricité… Elles se déduisent de la marge pour donner le revenu.",
+      },
       sauvegarde: {
         nav: "Sauvegarde",
         titre: "Sauvegarde",
@@ -77,6 +83,7 @@
       debouches: { ajouter: "Ajouter un débouché", modifier: "Modifier le débouché" },
       lots: { ajouter: "Ajouter un lot de poules", modifier: "Modifier le lot de poules" },
       vehicules: { ajouter: "Ajouter un véhicule", modifier: "Modifier le véhicule" },
+      charges: { ajouter: "Ajouter une charge fixe", modifier: "Modifier la charge fixe" },
     },
     annonces: {
       ajoute: "Ajouté.",
@@ -118,6 +125,12 @@
       semainesRecolte: "Semaines de récolte",
       pertes: "Pertes et invendus (%)",
       aideFourchette: "Un nombre, ou trois : basse / médiane / haute (ex. 2 / 2,5 / 3).",
+      // N3 (EX-45) : coûts de mise en place, facultatifs.
+      coutsTitre: "Coûts de mise en place (facultatif)",
+      implantation: "Mise en place",
+      densite: "Graines ou plants par m²",
+      prixUnite: "Prix d'une graine ou d'un plant, en € (estimation)",
+      intrants: "Intrants par m², en € (estimation) : terreau, engrais, paillage…",
       ajouter: "Ajouter la culture",
       aucun: "Vos cultures apparaîtront ici, avec leur rendement, leur prix de vente et leur période de récolte.",
     },
@@ -157,6 +170,7 @@
       nom: "Nom du véhicule",
       consommation: "Consommation, en litres aux 100 km (estimation)",
       prixLitre: "Prix du litre de carburant, en € (estimation)",
+      fraisKm: "Entretien, pneus, usure et assurance, en € par km (estimation, facultatif)",
       aide: "Un nombre, ou trois : basse / médiane / haute (ex. 7 / 8 / 9). Choisissez ensuite le véhicule de chaque point de vente : le coût de ses trajets se calcule tout seul.",
       ajouter: "Ajouter le véhicule",
       aucun: "Vos véhicules apparaîtront ici. Indiquez leur consommation et le prix du litre : le coût des trajets vers vos points de vente se calculera tout seul.",
@@ -165,6 +179,26 @@
       kmValeur: "{valeur} km",
       litres: "L",
       faits: { coutKm: "Coût du km", km: "Kilomètres de la saison", litres: "Carburant consommé", carburant: "Coût du carburant" },
+    },
+    // N3 (EX-45, EX-48) : charges fixes de la ferme.
+    charges: {
+      titre: "Charges fixes",
+      nom: "Nom de la charge",
+      montant: "Montant, en € (estimation)",
+      periodicite: "Payée",
+      aide: "Un nombre, ou trois : basse / médiane / haute (ex. 550 / 600 / 650). Une charge payée à l'année compte pour un douzième chaque mois.",
+      ajouter: "Ajouter la charge",
+      aucun: "Vos charges fixes apparaîtront ici : assurance, cotisations, fermage, remboursement d'emprunt… Elles se déduisent de la marge pour donner ce qui vous reste pour vivre.",
+      faits: { montant: "Montant" },
+    },
+    periodicites: {
+      mois: "par mois",
+      an: "par an",
+    },
+    implantations: {
+      "": "— non précisé —",
+      semis: "Semis direct (graines)",
+      plant: "Plants",
     },
     seances: {
       titre: "Séances",

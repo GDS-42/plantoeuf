@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 0 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · N3 reportée après R1 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : N3 (coûts, charges fixes, revenu) · Sessions consommées : 1 / 10 · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4718,3 +4718,22 @@ Preuve (`./verify.sh R1`, relancée par l'évaluateur) :
 - Réponse de l'humain du 14/10/2026 aux propositions de fin de R1 : « 1 oui c'est pertinent de rajouter un coût en plus au kilomètre ; 2 véhicule à ajouter dans la ferme d'exemple ; ok pour N3 ». Les trois entrent dans N3.
 - Plan approuvé par l'humain le 14/10/2026 : il vaut accord pour la modification du modèle de données (`fraisKm` du véhicule, quatre champs de coût de la culture, objet `charges`, format exporté en version 5). Aucun test existant ne change.
 - Spec, runbook et tâches (T43 à T49, EX-45 à EX-50, scénarios S12 à S14, seuil de 10 sessions) dans `docs/specs/N3/`.
+
+## 14/10/2026 · T43 — Modèle et saisie des coûts (EX-45)
+
+- Session 1 / 10 du seuil d'alerte de N3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (remarque prise en compte : « assurance » ajoutée au libellé des frais au km).
+- Résultat : frais d'entretien et d'usure au km sur le véhicule ; quatre champs facultatifs de coût de mise en place sur la culture (mise en place, graines ou plants par m², prix d'une graine ou d'un plant, intrants par m²) ; charges fixes (nom, montant, payée par mois ou par an) sur une nouvelle page « Charges fixes », groupe « Budget » ; format exporté en version 5, un fichier de version 1 à 4 s'importe par migration.
+- Fichiers : `src/store.js`, `src/index.html`, `src/ui-navigation.js`, `src/ui-charges.js` (nouveau), `src/i18n.js`, `test/charges.test.js`, `test/charges.e2e.js`.
+- Rouge d'abord : 4 tests unitaires sur 5 et 3 de bout en bout rouges avant le code (le cinquième vérifiait un enregistrement que le store générique savait déjà faire).
+
+Preuve (`./verify.sh T43`, puis suite complète) :
+
+```text
+# tests 15
+# pass 15
+# fail 0
+  3 passed
+== T43 : vérification verte ==
+Suite complète : 122 tests unitaires et 149 de bout en bout, tous verts.
+```

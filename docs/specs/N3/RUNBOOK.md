@@ -69,4 +69,7 @@ Le format exporté passe en version 5 : un fichier de version 1 à 4 s'importe p
 
 ## ✎ Décisions
 
+- T43 · La page « Charges fixes » forme un groupe de navigation « Budget », entre « Atelier » et « Données ». Les coûts de mise en place de la culture forment un bloc « Coûts de mise en place (facultatif) » à la fin de son tiroir ; vidés, ils s'enregistrent vides (`""` ou `null`) et comptent pour 0. Les frais au km du véhicule sont un champ facultatif de son tiroir.
+- T44 à T47 · Préparés et vérifiés sur une copie du dépôt pendant la relecture de la tâche précédente, puis appliqués un à un, chacun relu avant son commit.
+
 ## ✎ Bilan de fin de tranche
