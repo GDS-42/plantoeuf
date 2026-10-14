@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R1 (dates à l’européenne, véhicules) · Sessions consommées : 2 / 6 · P2 terminée (T38 validée par l’humain, 14/10) · N3 reportée après R1 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R1 (dates à l’européenne, véhicules) · Sessions consommées : 3 / 6 · P2 terminée (T38 validée par l’humain, 14/10) · N3 reportée après R1 · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4668,4 +4668,28 @@ Preuve (`./verify.sh R1`) :
 # pass 112
 # fail 0
   143 passed (1.5m)
+```
+
+## 14/10/2026 · T41 — Véhicules : calcul automatique des dépenses (EX-43, EX-44)
+
+- Session 3 / 6 du seuil d'alerte de R1.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (remarques non bloquantes : un véhicule supprimé reste nommé sur ses points de vente, avec « (supprimé) » ; bornes distinctes vérifiées en test unitaire seulement). Commit 32316be, poussé avec T40 : déploiement Vercel READY.
+- Résultat : `Calc.coutDuKm` déduit le coût du km d'un point de vente de son véhicule (consommation × prix du litre ÷ 100, en fourchette) ; sans véhicule ou si le sien est supprimé, le coût du km saisi sert (0 s'il manque). Le coût des séances en découle partout : liste des séances, tableau économique, synthèse, vue « Points de vente ». `Calc.vehicules` donne pour chaque véhicule son coût du km et, sur la saison, ses kilomètres, ses litres et son coût de carburant ; la ligne du véhicule les affiche, la ligne d'un point de vente dit « En Camionnette » et son coût du km calculé, et le tiroir du point de vente montre « Coût du km avec ce véhicule ».
+- Scénario S11 vérifié : 0,144 €/km ; 18,456 € par séance ; 216 km, 17,28 L et 31,104 € de carburant sur la saison.
+- Fichiers : `src/calc.js`, `src/ui-ventes.js`, `src/ui-vehicules.js`, `src/index.html`, `src/i18n.js`, `test/vehicules.test.js`, `test/vehicules.e2e.js`.
+- Rouge d'abord : 4 tests unitaires sur 5 et 3 de bout en bout rouges sur le code de T40 (le cinquième, invariant `sans_vehicule_comme_avant`, était vert par construction).
+
+Preuve (`./verify.sh T41`, puis `./verify.sh R1`) :
+
+```text
+# tests 14
+# pass 14
+# fail 0
+  3 passed (2.2s)
+== T41 : vérification verte ==
+# tests 117
+# pass 117
+# fail 0
+  146 passed (1.6m)
+== R1 : vérification verte ==
 ```

@@ -64,10 +64,15 @@ Le format exporté passe en version 4 : un fichier de version 1, 2 ou 3 s'import
 
 ## ✎ Surprises et découvertes
 
+- T41 · Avec six informations, la ligne d'un point de vente passait sur deux rangées ; le véhicule est devenu le sous-titre de la ligne (« En Camionnette »), le coût du km calculé reste parmi les informations.
+
 - T39 · Les dates affichées étaient déjà jj/mm/aaaa ; seuls les champs `type="date"` suivaient la langue du navigateur. Un nom accessible ne se lit pas sur un bouton caché : le test vérifie les boutons calendrier tiroir ouvert.
 - T39 · Le crochet de fin de session exige un arbre propre : le commit de T39 a précédé la fin de la relecture Fable (contenu identique au diff relu, verdict CONFORME).
 
 ## ✎ Décisions
+
+- T41 · Le coût du km d'un point de vente à véhicule se calcule dans `Calc.coutDuKm` (consommation × prix du litre ÷ 100, niveau par niveau) ; sans véhicule actif, le coût du km saisi sert, 0 s'il manque. `Calc.coutSeance` prend la liste des véhicules en troisième argument, facultatif : un appel de N2 donne le même résultat. La ligne d'un véhicule affiche, sous son nom, sa consommation et le prix du litre, puis son coût du km, ses kilomètres, ses litres et son coût de carburant sur la saison. Un véhicule supprimé reste nommé sur ses points de vente avec « (supprimé) », et le coût du km saisi reprend la main.
+- T41 · T40 et T41 sont partis en ligne ensemble (commit 32316be), pendant la relecture de T41 (crochet de fin de session) ; verdict CONFORME, contenu identique au diff relu.
 
 - T40 · La section « Véhicules » ouvre la page Ventes, avant les points de vente. Le véhicule d'un point de vente se choisit dans son tiroir (« Aucun : je saisis le coût du km » par défaut, valeur vide) ; avec un véhicule, le champ du coût du km se masque et n'est plus obligatoire, mais une valeur déjà saisie est gardée (elle resservira si le véhicule est supprimé). Sans aucun véhicule, le tiroir propose d'en ajouter un. Les listes de la ferme d'exemple et des comptes de la sauvegarde ne changent pas.
 - T40 · T40 n'est pas poussé seul : un point de vente à véhicule sans coût du km ferait échouer le calcul d'une séance tant que T41 n'est pas là (relevé par le relecteur). T40 et T41 partent en ligne ensemble.
