@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R4 (rotation et associations) · Sessions consommées : 6 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : aucune · R4 terminée en 7 / 10 (rotation et associations), CONFORME · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5552,3 +5552,35 @@ $ ./verify.sh R4
 == R4 : vérification verte ==
 exit 0
 ```
+
+## 15/10/2026 · T64 — Vérification de la tranche R4, évaluateur séparé
+
+- Session 7 / 10 du seuil d'alerte de R4. T63 en ligne : déploiement Vercel READY (sha ef7325a).
+- Modèle : Opus 5.5, effort élevé (vérification, captures) · Évaluateur : Fable, effort élevé, contexte frais, sur `git diff 36ae485 ef7325a` → **CONFORME**, aucun écart. Il a relancé les tests, importé dans R4 un export de version 5 produit par le store de R3 (tableau et sur-occupations identiques à ceux de R3, aucune alerte), éprouvé les règles aux limites (même jour, délai exact, surface exacte, 365 et 366 jours, sens des associations, plantation en modification), mesuré les contrastes des nouveaux éléments (≥ 5,78:1 en clair, ≥ 7,31:1 en sombre) et le calcul des aides de l'exemple (24 à 27 ms, seuil 100 ms).
+- Vérification : `./init.sh` puis `./verify.sh R4` → exit 0.
+- Mise en ligne : déploiements Vercel READY en production pour 8ca7750 (T61), 775a3d3 (T62) et ef7325a (T63), contrôlés par le connecteur.
+- Captures à 390 et 1366 px, thème clair, et sombre à 1366 (pages Cultures, Espaces, Plantations ; « Que planter ici ? » ; tiroir prérempli ; tiroir d'une plantation qui revient trop tôt), ferme d'exemple chargée en 2026 : aucune erreur, aucune requête réseau, aucun défilement de page.
+
+```text
+$ ./verify.sh R4
+# tests 175
+# pass 175
+# fail 0
+192 passed (2.2m)
+== R4 : vérification verte ==
+exit 0
+$ node capture-r4.js (dist/index.html)
+390-light {"alertesEspaces":["Parcelle 2","Tunnel 1","Tunnel 2"],"barresRetour":10,"alertesPlantations":14,"familles":"7","associations":"27","rotations":"1"}
+390-light que planter (Parcelle 4, 01/10/2026) : Piment, Tomate, Salade batavia, Ail péi … 11
+390-light tiroir : Récolte prévue du 14/07/2026 au 27/07/2026 Récolte estimée 192 bottes 128 à 256 Avant Brède petsaï ; Brède petsaï ; Brède petsaï ; Brède petsaï ; Brède petsaï À côté Brède petsaï ; Brède petsaï ; Brède petsaï ; Brède petsaï Délai de retour trop tôt : 640 m² de Brassicacées ici en moins de 4 ans, pour 600 m²
+1366-light {"alertesEspaces":["Parcelle 2","Tunnel 1","Tunnel 2"],"barresRetour":10,"alertesPlantations":14,"familles":"7","associations":"27","rotations":"1"}
+1366-light que planter (Parcelle 4, 01/10/2026) : Piment, Tomate, Salade batavia, Ail péi … 11
+1366-light tiroir : Récolte prévue du 14/07/2026 au 27/07/2026 Récolte estimée 192 bottes 128 à 256 Avant Brède petsaï ; Brède petsaï ; Brède petsaï ; Brède petsaï ; Brède petsaï À côté Brède petsaï ; Brède petsaï ; Brède petsaï ; Brède petsaï Délai de retour trop tôt : 640 m² de Brassicacées ici en moins de 4 ans, pour 600 m²
+1366-dark {"alertesEspaces":["Parcelle 2","Tunnel 1","Tunnel 2"],"barresRetour":10,"alertesPlantations":14,"familles":"7","associations":"27","rotations":"1"}
+1366-dark que planter (Parcelle 4, 01/10/2026) : Piment, Tomate, Salade batavia, Ail péi … 11
+1366-dark tiroir : Récolte prévue du 14/07/2026 au 27/07/2026 Récolte estimée 192 bottes 128 à 256 Avant Brède petsaï ; Brède petsaï ; Brède petsaï ; Brède petsaï ; Brède petsaï À côté Brède petsaï ; Brède petsaï ; Brède petsaï ; Brède petsaï Délai de retour trop tôt : 640 m² de Brassicacées ici en moins de 4 ans, pour 600 m²
+ERREURS : aucune
+```
+
+- Points de l'évaluateur, pour l'humain (pas des écarts) : (1) le « Délai de retour » du tiroir n'a pas d'assertion de bout en bout (calcul couvert par les tests unitaires) ; (2) répétitions à regrouper (« bon précédent : Carotte » deux fois, alerte de la Parcelle 2, tiroir) ; (3) l'invitation à saisir les familles paraît sur une ferme d'avant R4 ; (4) « Que planter ici ? » part de la date du jour ; (5) le store accepte une famille au nom vide ou un délai négatif hors formulaire ; (6) l'aide du délai donne « ex. 3 / 4 / 5 », sur le modèle des autres aides ; (7) le lien « Que planter ici ? » du calendrier est à 12 px, au plancher d'EX-37.
+- `features.json` : `passe` de T64 → `true`. **R4 terminée en 7 sessions sur 10, CONFORME.**

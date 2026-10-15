@@ -80,3 +80,14 @@ Le format exporté passe en version 6 ; un fichier de version 1 à 5 s'importe p
 - T58 · Quand le rapport proposait une borne estimée et qu'une variante entièrement sourcée existait, la variante sourcée est retenue (Astéracées 3 / 3 / 4, Amaryllidacées 4 / 5 / 5, Fabacées 5 / 5 / 5). Associations retenues : seulement celles appuyées par un essai ou une fiche technique ; aucune avec le chouchou.
 
 ## ✎ Bilan de fin de tranche
+
+Tranche terminée le 15/10/2026 en 7 sessions sur 10 : T58 (1 reprise), T59 (0), T60 (0), T61 (0), T62 (0), T63 (1 reprise), T64. `./verify.sh R4` → exit 0 (175 tests unitaires, 192 de bout en bout). Évaluateur Fable : CONFORME, aucun écart. Déploiements READY sur plantoeuf.vercel.app.
+
+Résultat : la page Cultures saisit les familles et leur délai de retour, le groupe de chaque culture, les associations (voisinage, précédent) et l'ordre des rotations ; une plantation qui revient trop tôt est signalée sur sa ligne, sur celle de son espace et sur sa barre du calendrier, sans rien refuser ; un précédent ou un voisin défavorable est signalé sur la ligne ; le tiroir d'une plantation dit ce qui la précède, ce qui pousse à côté et le verdict du délai de retour ; « Que planter ici ? », sur chaque espace et dans le calendrier, classe les cultures avec leurs raisons et préremplit le tiroir de plantation sans rien enregistrer. La ferme d'exemple porte des règles sourcées (§ 14 du dossier de données de R2) : dix retours trop tôt (deux tunnels, Parcelle 2) et quatre précédents défavorables dans les tunnels. Sans règle, rien de tout cela ne s'affiche.
+
+À suivre (pour l'humain) :
+- Regrouper les répétitions : l'alerte de la Parcelle 2 nomme huit fois « Brède petsaï du … » ; le tiroir liste « Brède petsaï ; Brède petsaï ; … » ; « Que planter ici ? » peut donner deux fois « bon précédent : Carotte ». Un regroupement par culture (« Brède petsaï × 8, du 04/06/2026 au 29/10/2026 ») demande une tâche avec son test.
+- « Que planter ici ? » propose la date du jour, même quand l'année choisie est une autre.
+- Une ferme d'avant R4 voit, sur la page Cultures, l'invitation « Ces familles de vos cultures n'ont pas encore de délai de retour » : à confirmer.
+- Un test de bout en bout pourrait vérifier aussi le « Délai de retour » du tiroir (le calcul est couvert par les tests unitaires).
+- Délais à faire confirmer : Fabacées 5 ans (valeur de plein champ en métropole), Astéracées (un seul BSV) ; aucune source réunionnaise ne chiffre un délai de retour (§ 14.6).
