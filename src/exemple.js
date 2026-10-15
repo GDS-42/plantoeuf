@@ -4,7 +4,8 @@
 // épicerie. Chaque valeur agronomique, prix et coût vient du dossier `docs/specs/R2/DONNEES.md`, qui en
 // donne les sources (DAAF de La Réunion, ARMEFLHOR, Chambre d'agriculture, CGSS, préfecture…).
 // C'est le seul fichier où figurent des valeurs agronomiques et des prix ; ce sont des repères pour
-// montrer l'outil, pas des références pour une ferme réelle.
+// montrer l'outil, pas des références pour une ferme réelle. R4 : ses règles de rotation (familles et
+// délais de retour, groupes, ordre de rotation, associations) viennent du § 14 du même dossier.
 (function (racine, fabrique) {
   if (typeof module === "object" && module.exports) module.exports = fabrique(require("./calc.js"));
   else racine.Exemple = fabrique(racine.Calc);
@@ -236,6 +237,60 @@
     { nom: "Achat des poulettes", montant: f(1700, 2210, 3100), periodicite: "an" },
   ];
 
+  // R4 (EX-66) : règles de rotation de la ferme d'exemple, toutes du dossier de données de R2 (§ 14).
+  // Délai de retour de chaque famille, en années, compté depuis la fin de récolte (§ 14.1).
+  const FAMILLES = [
+    { nom: "Solanacées", delaiRetour: f(3, 4, 5), note: "Flétrissement bactérien, verticilliose (dossier de données R2, § 14.1 : K1, K4, K5, K7, K15)." },
+    { nom: "Brassicacées", delaiRetour: f(3, 4, 5), note: "Maladies du sol des crucifères ; la hernie, qui demanderait bien plus, n'est pas documentée à La Réunion (§ 14.1 : K1, K8, K9)." },
+    { nom: "Astéracées", delaiRetour: f(3, 3, 4), note: "Sclérotinia, noctuelles (§ 14.1 : K1, K11)." },
+    { nom: "Apiacées", delaiRetour: f(3, 4, 5), note: "Maladies du sol des apiacées (§ 14.1 : K2, K4, K10)." },
+    { nom: "Fabacées", delaiRetour: f(5, 5, 5), note: "Graisse, botrytis, sclérotinia ; valeur de plein champ en métropole, sans doute sévère, à faire confirmer (§ 14.1 : K10 ; rapport de recherche 7)." },
+    { nom: "Cucurbitacées", delaiRetour: f(2, 3, 4), note: "Fusariose ; le chouchou, vivace sur treille, n'y est soumis qu'à son arrachage (§ 14.1 : K4, K6)." },
+    { nom: "Amaryllidacées", delaiRetour: f(4, 5, 5), note: "Pourriture blanche des Allium (§ 14.1 : K1, K3, K11)." },
+  ];
+
+  // Groupe de rotation de chaque culture (§ 14.2) et ordre des groupes (§ 14.3, choix de l'agent [E]).
+  const GROUPES = {
+    tomate: "fruit", courgette: "fruit", concombre: "fruit", piment: "fruit", chouchou: "fruit",
+    salade: "feuille", chou: "feuille", brede: "feuille", carotte: "racine", ail: "bulbe", haricot: "legumineuse",
+  };
+  const ROTATIONS = [
+    { nom: "Exigence décroissante", groupes: ["fruit", "feuille", "racine", "bulbe", "legumineuse", "engrais_vert"] },
+  ];
+
+  // Associations appuyées par un essai ou une fiche technique (§ 14.4) : cultures A et B, effet, sources.
+  const VOISINAGES = [
+    ["chou", "ail", "favorable", "L'ail intercalé réduit la teigne des crucifères (§ 14.4 : K22, K30)."],
+    ["piment", "salade", "favorable", "Meilleure utilisation du sol (§ 14.4 : K23)."],
+    ["piment", "chou", "favorable", "Meilleure utilisation du sol, moins de teigne sur le chou (§ 14.4 : K23, K26)."],
+    ["tomate", "salade", "favorable", "Rendement de la tomate inchangé, salade en plus (§ 14.4 : K24)."],
+    ["carotte", "salade", "favorable", "Meilleure utilisation du sol en bio (§ 14.4 : K25)."],
+  ];
+  const PRECEDENTS = [
+    ["tomate", "concombre", "defavorable", "Nématodes à galles et flétrissement bactérien (§ 14.4 : K16, K18)."],
+    ["tomate", "courgette", "defavorable", "Nématodes à galles et flétrissement bactérien (§ 14.4 : K16, K20)."],
+    ["piment", "concombre", "defavorable", "Solanacée puis cucurbitacée (§ 14.4 : K16, K18)."],
+    ["piment", "courgette", "defavorable", "Solanacée puis cucurbitacée (§ 14.4 : K16)."],
+    ["concombre", "tomate", "defavorable", "Bioagresseurs du sol communs (§ 14.4 : K19)."],
+    ["courgette", "tomate", "defavorable", "Bioagresseurs du sol communs (§ 14.4 : K19)."],
+    ["concombre", "piment", "defavorable", "Cucurbitacées à éviter avant le poivron (§ 14.4 : K18)."],
+    ["courgette", "piment", "defavorable", "Cucurbitacées à éviter avant le poivron (§ 14.4 : K18)."],
+    ["ail", "tomate", "favorable", "Moins de nématodes à galles pour la culture suivante (§ 14.4 : K20, K21)."],
+    ["ail", "concombre", "favorable", "Moins de nématodes à galles pour la culture suivante (§ 14.4 : K21)."],
+    ["ail", "piment", "favorable", "Bulbes cités en précédents favorables (§ 14.4 : K18)."],
+    ["ail", "courgette", "favorable", "Liliacées citées en précédents favorables (§ 14.4 : K20)."],
+    ["carotte", "tomate", "favorable", "La carotte n'est pas hôte du flétrissement bactérien (§ 14.4 : K20, K27)."],
+    ["carotte", "piment", "favorable", "Légumes racines cités pour le poivron (§ 14.4 : K18, K27)."],
+    ["salade", "tomate", "favorable", "En tête des précédents de la fiche tomate de Guyane (§ 14.4 : K19)."],
+    ["salade", "carotte", "favorable", "Légumes-feuilles favorables avant la carotte (§ 14.4 : K18)."],
+    ["chou", "carotte", "favorable", "Le chou est un mauvais hôte des nématodes à galles (§ 14.4 : K18, K28)."],
+    ["salade", "concombre", "favorable", "Légumes-feuilles cités en précédents favorables (§ 14.4 : K18)."],
+    ["salade", "courgette", "favorable", "Légumes-feuilles cités en précédents favorables (§ 14.4 : K20)."],
+    ["chou", "concombre", "favorable", "Légumes-feuilles cités en précédents favorables (§ 14.4 : K18)."],
+    ["chou", "courgette", "favorable", "Légumes-feuilles cités en précédents favorables (§ 14.4 : K20)."],
+    ["haricot", "carotte", "defavorable", "« À éviter : haricot » avant la carotte (§ 14.4 : K18)."],
+  ];
+
   // Enregistre la ferme d'exemple dans `ferme` (store ouvert) pour l'année `annee`, et retient
   // les identifiants créés pour pouvoir l'effacer d'un geste. R3 (EX-60) : le 1er janvier et le
   // 31 décembre des séances et des lots sont les bornes de l'année (Calc.bornesDeLAnnee), pour que
@@ -243,7 +298,10 @@
   function charger(ferme, annee) {
     const bornes = Calc.bornesDeLAnnee(annee);
     const dateDeLAnnee = (jourMois) => (jourMois === "01-01" ? bornes.debut : jourMois === "12-31" ? bornes.fin : `${annee}-${jourMois}`);
-    const ids = { espaces: [], cultures: [], varietes: [], plantations: [], pointsVente: [], seances: [], debouches: [], lots: [], vehicules: [], charges: [] };
+    const ids = {
+      espaces: [], cultures: [], varietes: [], plantations: [], pointsVente: [], seances: [], debouches: [], lots: [], vehicules: [], charges: [],
+      familles: [], associations: [], rotations: [],
+    };
     const cree = (objet, champs) => {
       const enregistrement = ferme.ajouter(objet, champs);
       ids[objet].push(enregistrement.id);
@@ -252,7 +310,7 @@
     const espaces = {};
     for (const [cle, espace] of Object.entries(ESPACES)) espaces[cle] = cree("espaces", espace);
     const cultures = {};
-    for (const [cle, culture] of Object.entries(CULTURES)) cultures[cle] = cree("cultures", { ...culture, ...COUTS[cle] });
+    for (const [cle, culture] of Object.entries(CULTURES)) cultures[cle] = cree("cultures", { ...culture, ...COUTS[cle], groupe: GROUPES[cle] });
     const varietes = {};
     for (const [cle, { culture, ...variete }] of Object.entries(VARIETES)) {
       varietes[cle] = cree("varietes", { ...variete, cultureId: cultures[culture] });
@@ -279,6 +337,12 @@
       cree("lots", { ...lot, arrivee: dateDeLAnnee(arrivee), debutPonte: dateDeLAnnee(debutPonte), reforme: dateDeLAnnee(reforme) });
     }
     for (const charge of CHARGES) cree("charges", charge);
+    // R4 (EX-66) : les règles de rotation.
+    for (const famille of FAMILLES) cree("familles", famille);
+    for (const rotation of ROTATIONS) cree("rotations", rotation);
+    for (const [type, liste] of [["voisinage", VOISINAGES], ["precedent", PRECEDENTS]]) {
+      for (const [a, b, effet, note] of liste) cree("associations", { type, cultureA: cultures[a], cultureB: cultures[b], effet, note });
+    }
     ferme.noterExemple(ids);
     return ids;
   }
@@ -297,7 +361,7 @@
   function effacer(ferme) {
     const ids = ferme.exemple();
     if (!ids) return;
-    for (const objet of ["charges", "lots", "debouches", "seances", "pointsVente", "vehicules", "plantations", "varietes", "cultures", "espaces"]) {
+    for (const objet of ["associations", "rotations", "familles", "charges", "lots", "debouches", "seances", "pointsVente", "vehicules", "plantations", "varietes", "cultures", "espaces"]) {
       for (const id of ids[objet] || []) {
         const enregistrement = ferme.obtenir(objet, id);
         if (enregistrement && !enregistrement.supprimeLe) ferme.supprimer(objet, id);

@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R4 (rotation et associations) · Sessions consommées : 5 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R4 (rotation et associations) · Sessions consommées : 6 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5493,6 +5493,62 @@ $ ./verify.sh R4
 # pass 169
 # fail 0
 189 passed (2.1m)
+== R4 : vérification verte ==
+exit 0
+```
+
+## 15/10/2026 · T63 — Règles de rotation de la ferme d'exemple (EX-66, S21)
+
+- Session 6 / 10 du seuil d'alerte de R4. T62 en ligne : déploiement Vercel READY (sha 775a3d3).
+- Modèle : Opus 5.5, effort élevé · Reprises : 1 · Relecteur : Fable, contexte frais → **ÉCART** puis, après reprise, **CONFORME**.
+  - Écart : un regroupement par culture de l'alerte de retour trop tôt d'un espace (`src/ui-saisie.js`, `src/i18n.js`), hors de la liste de fichiers de T63 et sans test. Reprise : retiré de T63 ; proposé à l'humain comme suite, avec son propre test (RUNBOOK, ✎ Surprises). Le relecteur craignait aussi des bornes de dates fausses : non fondé, les plantations sont triées par date avant le regroupement ; il l'a reconnu.
+  - Remarque levée : le § 14.5 dit ce que le test vérifie (nombres, espaces, familles) et d'où viennent les dates.
+- Fait :
+  - `src/exemple.js` : sept familles avec leur délai de retour et une note qui cite leurs sources (§ 14.1), le groupe des onze cultures (§ 14.2), la rotation « Exigence décroissante » (§ 14.3), 5 voisinages et 22 précédents avec leur effet et leurs sources (§ 14.4) ; effacement des associations, rotations et familles avant les cultures. Toujours 51 plantations ; aucune case du tableau ne change.
+  - `docs/specs/R2/DONNEES.md` § 14.5 : décompte des alertes de la ferme de 2026 — dix retours trop tôt (la seconde tomate de chaque tunnel, huit brèdes de la Parcelle 2) et quatre précédents défavorables dans les tunnels.
+- Tests nouveaux : `test/exemple-r4.test.js` (6) et `test/exemple-r4.e2e.js` (3) ; aucun test existant modifié. Les tests « aucune case du tableau ne change » et « effacer retire les règles » passaient déjà au rouge : ce sont des garde-fous.
+- Mesure : avec les règles de l'exemple, le calcul des aides prend 16 ms et le rafraîchissement complet de la page 163 ms (141 ms sans règles).
+
+Preuve rouge (avant le code) :
+
+```text
+not ok 7 - [T63] S21, EX-66 : chaque famille de l'exemple a le délai de retour du dossier de données (§ 14.1)
+not ok 8 - [T63] S21, EX-66 : chaque culture de l'exemple a le groupe du dossier de données (§ 14.2), et la ferme a sa rotation (§ 14.3)
+not ok 9 - [T63] S21, EX-66 : l'exemple porte les 5 voisinages et les 22 précédents sourcés du dossier de données (§ 14.4)
+not ok 10 - [T63] S21 : les retours trop tôt de l'exemple portent sur les deux tunnels et la Parcelle 2, et les précédents défavorables sur les tunnels (§ 14.5)
+not ok 12 - [T63] EX-66 : l'effacement de l'exemple retire ses familles, associations et sa rotation, et seulement elles
+# pass 16
+# fail 5
+✘  1 test/exemple-r4.e2e.js:12:1 › [T63] S21, EX-66 : la ferme d'exemple montre ses familles, ses associations et sa rotation sur la page Cultures (5.7s)
+✘  2 test/exemple-r4.e2e.js:24:1 › [T63] S21 : la ferme d'exemple signale les retours trop tôt des deux tunnels et de la Parcelle 2, et les précédents défavorables des tunnels (6.2s)
+✓  3 test/exemple-r4.e2e.js:43:1 › [T63] EX-66 : effacer la ferme d'exemple retire ses règles de rotation (783ms)
+2 failed
+1 passed (15.0s)
+```
+
+Preuve verte (après la reprise) :
+
+```text
+$ ./verify.sh T63
+ok 7 - [T63] S21, EX-66 : chaque famille de l'exemple a le délai de retour du dossier de données (§ 14.1)
+ok 8 - [T63] S21, EX-66 : chaque culture de l'exemple a le groupe du dossier de données (§ 14.2), et la ferme a sa rotation (§ 14.3)
+ok 9 - [T63] S21, EX-66 : l'exemple porte les 5 voisinages et les 22 précédents sourcés du dossier de données (§ 14.4)
+ok 10 - [T63] S21 : les retours trop tôt de l'exemple portent sur les deux tunnels et la Parcelle 2, et les précédents défavorables sur les tunnels (§ 14.5)
+ok 11 - [T63] les règles de l'exemple ne changent aucune case du tableau (dérogation au BRIEF)
+ok 12 - [T63] EX-66 : l'effacement de l'exemple retire ses familles, associations et sa rotation, et seulement elles
+# pass 21
+# fail 0
+✓  1 test/exemple-r4.e2e.js:12:1 › [T63] S21, EX-66 : la ferme d'exemple montre ses familles, ses associations et sa rotation sur la page Cultures (839ms)
+✓  2 test/exemple-r4.e2e.js:24:1 › [T63] S21 : la ferme d'exemple signale les retours trop tôt des deux tunnels et de la Parcelle 2, et les précédents défavorables des tunnels (948ms)
+✓  3 test/exemple-r4.e2e.js:43:1 › [T63] EX-66 : effacer la ferme d'exemple retire ses règles de rotation (883ms)
+3 passed (3.5s)
+== T63 : vérification verte ==
+exit 0
+$ ./verify.sh R4
+# tests 175
+# pass 175
+# fail 0
+192 passed (2.2m)
 == R4 : vérification verte ==
 exit 0
 ```

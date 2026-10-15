@@ -441,6 +441,8 @@ Avec ces délais et la règle à la surface de l'outil, la ferme de 2026 signale
 
 Elle signale aussi des **précédents défavorables** dans les tunnels, où tomates, concombres et courgettes se succèdent : exactement la succession que les sources antillaises et guyanaise proscrivent. Ces alertes sont gardées : la ferme d'exemple montre ce que l'outil repère, sans réécrire son plan (§ 5, R2).
 
+Décompte de la ferme de 2026 (les nombres, les espaces et les familles sont vérifiés par `test/exemple-r4.test.js` ; les dates, recalculées par l'agent et par le relecteur de T63) : **dix plantations** reviennent trop tôt — la seconde tomate de chaque tunnel (10 juin et 1er août) et les huit brèdes de la Parcelle 2 plantées à partir du 4 juin — et **quatre plantations** ont un précédent défavorable : la tomate du 10 juin (après le concombre, Tunnel 1), la tomate du 1er août (après la courgette, Tunnel 2), la courgette du 1er septembre (après la tomate, Tunnel 1) et le concombre du 1er octobre (après la tomate, Tunnel 2). Aucun voisinage défavorable : les cinq voisinages retenus sont favorables. Les règles ne changent aucune case du tableau économique.
+
 ### 14.6 Limites et sources de la rotation
 
 - Cycles courts : la brède et la salade font plusieurs cycles par an ; un délai en années est grossier pour elles (la règle suisse ne compte une culture de 14 semaines ou moins que si deux cultures courtes de la même famille ont lieu la même année) [K17] [NR]. L'outil applique la règle à la surface, qui laisse une parcelle se remplir avant d'alerter.
