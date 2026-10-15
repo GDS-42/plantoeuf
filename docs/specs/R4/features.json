@@ -1,0 +1,188 @@
+{
+  "tranche": "R4",
+  "seuil_alerte_sessions": 10,
+  "parallelisme_max": 1,
+  "evaluateur": {
+    "modele": "fable",
+    "effort": "high"
+  },
+  "taches": [
+    {
+      "id": "T58",
+      "exigences": [
+        "EX-66"
+      ],
+      "description": "Données de rotation sourcées : délais de retour des familles, groupes des 11 cultures, ordre de rotation, associations et précédents ; recherche par deux agents en parallèle, synthèse dans DONNEES.md § 14",
+      "verification": [
+        "relecture Fable du dossier sans écart"
+      ],
+      "depend_de": [],
+      "fichiers": [
+        "docs/specs/R2/DONNEES.md",
+        "docs/specs/R2/recherche/recherche-7-rotation.md",
+        "docs/specs/R2/recherche/recherche-8-associations.md"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T59",
+      "exigences": [
+        "EX-61"
+      ],
+      "description": "Modèle version 6 : groupe de la culture, familles, associations, rotations ; migration des versions 1 à 5",
+      "verification": [
+        "./verify.sh T59"
+      ],
+      "depend_de": [],
+      "fichiers": [
+        "src/store.js",
+        "test/rotation.test.js",
+        "test/rotation.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T60",
+      "exigences": [
+        "EX-62",
+        "EX-63",
+        "EX-64",
+        "EX-65"
+      ],
+      "description": "Règles de calcul : famille d'une culture, retour trop tôt (règle à la surface), précédents, voisins, surface libre, suggestions",
+      "verification": [
+        "./verify.sh T60"
+      ],
+      "depend_de": [
+        "T59"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "test/rotation.test.js",
+        "test/rotation.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T61",
+      "exigences": [
+        "EX-61"
+      ],
+      "description": "Saisie sur la page Cultures : familles et délai de retour, groupe de la culture, associations, rotations",
+      "verification": [
+        "./verify.sh T61"
+      ],
+      "depend_de": [
+        "T59"
+      ],
+      "fichiers": [
+        "src/index.html",
+        "src/ui-saisie.js",
+        "src/ui-navigation.js",
+        "src/ui-commun.js",
+        "src/i18n.js",
+        "test/rotation.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T62",
+      "exigences": [
+        "EX-62",
+        "EX-63",
+        "EX-64",
+        "EX-65"
+      ],
+      "description": "Affichage des aides : précédents et voisins dans le tiroir de plantation, alertes des lignes de plantation et d'espace, marque du calendrier, « Que planter ici ? »",
+      "verification": [
+        "./verify.sh T62"
+      ],
+      "depend_de": [
+        "T60",
+        "T61"
+      ],
+      "fichiers": [
+        "src/ui-rotation.js",
+        "src/ui-saisie.js",
+        "src/ui-calendrier.js",
+        "src/index.html",
+        "src/i18n.js",
+        "test/rotation.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T63",
+      "exigences": [
+        "EX-66"
+      ],
+      "description": "Règles de la ferme d'exemple : familles, groupes, rotation, associations sourcées ; effacement",
+      "verification": [
+        "./verify.sh T63"
+      ],
+      "depend_de": [
+        "T58",
+        "T60",
+        "T62"
+      ],
+      "fichiers": [
+        "src/exemple.js",
+        "docs/specs/R2/DONNEES.md",
+        "test/exemple-r4.test.js",
+        "test/exemple-r4.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T64",
+      "exigences": [
+        "EX-61",
+        "EX-62",
+        "EX-63",
+        "EX-64",
+        "EX-65",
+        "EX-66"
+      ],
+      "description": "Vérification de bout en bout de la tranche, captures à 390 et 1366 px, puis revue par l'évaluateur séparé, restreinte à la conformité à la spec",
+      "verification": [
+        "./verify.sh R4"
+      ],
+      "depend_de": [
+        "T58",
+        "T59",
+        "T60",
+        "T61",
+        "T62",
+        "T63"
+      ],
+      "fichiers": [],
+      "modele": "fable",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    }
+  ],
+  "mode": "simple",
+  "modele_minimum": {
+    "modele": "opus",
+    "effort": "high"
+  }
+}

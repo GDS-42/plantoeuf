@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R4 (rotation et associations), à ouvrir · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R4 (rotation et associations) · Sessions consommées : 0 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5284,3 +5284,10 @@ ERREURS : aucune
 
 - Points de l'évaluateur, pour l'humain : (1) une année sans donnée entre deux années de la ferme montre l'état vide de la synthèse, sans ses charges fixes (décision de T55, la spec ne tranchant pas) ; (2) pour prolonger un plan sur l'année suivante, il faut redater chaque séance et chaque lot (une ferme sur deux années dont les séances s'arrêtent au 31/12 n'a aucune vente l'année suivante) ; (3) au téléphone, une année est plus large que la boîte (mois lisibles) ; (4) les libellés « saison » désignent désormais l'année choisie.
 - `features.json` : `passe` de T57 → `true`. **R3 terminée en 5 sessions sur 7, CONFORME.**
+
+## 15/10/2026 · R4 — Spec, runbook et tâches : rotation et associations
+
+- Demande de l'humain (15/10/2026) : « penser à quelque chose pour gérer l'association culturelle et les syntaxons, pour aider à la rotation des cultures sur le calendrier de culture » ; choix du même jour : famille botanique et groupe de rotation ; les quatre aides (voisins, précédent, alerte de rotation, culture suivante proposée) ; règles saisies par le maraîcher, celles de l'exemple sourcées. Plan approuvé par l'humain le 15/10 : accord pour le modèle de données version 6 et la dérogation au BRIEF (règle d'admission levée pour les objets d'aide ; « rotation automatique » toujours exclue).
+- `docs/specs/R4/` : `SPEC.md` (EX-61 à EX-66, scénarios S18 à S21, invariants `alerte_seulement`, `suggestion_sans_plantation`, `sans_regle_comme_r3`, `famille_par_nom`), `RUNBOOK.md` (seuil d'alerte : 10 sessions), `features.json` (T58 à T64).
+- Aucun test existant ne fige la version 5 du format ni la liste des objets (contrôlé) : aucun test existant à modifier.
+- Recherche de T58 lancée : deux agents en parallèle (délais de retour, groupes et ordre de rotation ; associations et précédents).
