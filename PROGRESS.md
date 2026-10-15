@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R3 (plusieurs années) · Sessions consommées : 0 / 7 · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R3 (plusieurs années) · Sessions consommées : 1 / 7 · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5066,3 +5066,57 @@ exit 0
 - Demande de l'humain (15/10/2026), en réponse à la question sur la colonne « déc. 2026 » : « Oui, prochaine tranche + il faut penser et planifier la possibilité d'avancer l'année en scrollant afin de voir les cultures qui vont suivre », puis, à la question des années : « Calendrier continu + année ». Plan approuvé par l'humain le 15/10 (R3 « Plusieurs années », puis R4 « Rotation et associations »).
 - `docs/specs/R3/` : `SPEC.md` (EX-55 à EX-60, scénarios S15 à S17, invariants `sans_annee_comme_r2`, `somme_des_annees`, `exemple_dans_son_annee`), `RUNBOOK.md` (seuil d'alerte : 7 sessions), `features.json` (T53 à T57).
 - Règle du jeudi gardée ; aucun test existant à modifier.
+
+## 15/10/2026 · T53 — Calcul par année (EX-55 à EX-57, scénarios S15 et S16)
+
+- Session 1 / 7 du seuil d'alerte de R3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (comparaison de l'ancien et du nouveau calcul sans année sur 403 fermes, dont 400 aléatoires sur plusieurs années : 0 écart ; `somme_des_annees` sur 603 fermes et 2 398 années : 0 écart).
+- Fait (`src/calc.js`) : `Calc.annees`, `Calc.anneeParDefaut` ; option `{ annee }` de `tableau` (mois de l'année : 12 avec une charge fixe, sinon du premier au dernier mois à valeur ; lignes et atelier poules seulement avec une valeur ; lots présents dans l'année ; total des coûts de séances limité aux mois de l'année), `pointsDeVente`, `offreDemande` (semaines au jeudi dans l'année, produits présents dans l'année), `vehicules`, `besoinsParMois`. Sans année, chaque calcul suit exactement son ancien chemin.
+- Écart à la liste `fichiers` de T53 : le test de bout en bout [T53] (calcul par année dans le fichier livré) est dans `test/annees.e2e.js`, listé pour T55 et T56 ; `./verify.sh T53` exige au moins un test de bout en bout de la tâche (« No tests found » sinon). Consigné au RUNBOOK (✎ Décisions).
+- Remarques du relecteur pour T55 : une année sans coût de culture garde une clé « coûts de culture » à zéro si la ferme en a une autre année (ne pas afficher une ligne de zéros) ; `anneeParDefaut` attend une date « AAAA-MM-JJ » ; une culture avec débouché mais sans vente dans l'année n'a pas de ligne (lettre de la spec) ; une semaine de récolte à cheval d'une culture sans débouché peut tomber dans une année au tableau (jour du milieu) et dans l'autre à la matrice (jeudi), règles gardées.
+
+Preuve rouge (avant le code) :
+
+```text
+$ node --test test/annees.test.js
+not ok 1 - [T53] EX-55 : les années de la ferme vont de la première à la dernière qui porte une valeur ou une barre du calendrier
+not ok 2 - [T53] EX-55 : l'année proposée est l'année retenue, sinon l'année en cours, sinon la plus proche
+not ok 3 - [T53] S15 : la séance du samedi 2 janvier 2027 compte en décembre 2026 ; 2027 va de janvier à décembre sans elle
+not ok 4 - [T53] S16 : deux années, chacune de janvier à décembre avec 2 400 € de charges fixes, et le même revenu
+not ok 5 - [T53] EX-56 : une culture ou l'atelier poules n'ont de ligne que les années où ils portent une valeur ; l'effectif est celui de l'année
+not ok 6 - [T53] somme_des_annees : chaque ligne et chaque total de la ferme se partagent entre ses années, sans perte ni double compte
+not ok 7 - [T53] sans_annee_comme_r2 : sans année, chaque calcul donne son résultat d'avant ; une ferme d'une année sans charge fixe a la même vue
+not ok 8 - [T53] EX-57 : points de vente, matrice offre-demande et son bilan, véhicules et besoins suivent l'année
+# tests 8
+# pass 0
+# fail 8
+$ npx playwright test --grep "\[T53\]" (ancien calc.js) → 1 failed
+```
+
+Preuve verte :
+
+```text
+$ ./verify.sh T53
+ok 1 - [T53] EX-55 : les années de la ferme vont de la première à la dernière qui porte une valeur ou une barre du calendrier
+ok 2 - [T53] EX-55 : l'année proposée est l'année retenue, sinon l'année en cours, sinon la plus proche
+ok 3 - [T53] S15 : la séance du samedi 2 janvier 2027 compte en décembre 2026 ; 2027 va de janvier à décembre sans elle
+ok 4 - [T53] S16 : deux années, chacune de janvier à décembre avec 2 400 € de charges fixes, et le même revenu
+ok 5 - [T53] EX-56 : une culture ou l'atelier poules n'ont de ligne que les années où ils portent une valeur ; l'effectif est celui de l'année
+ok 6 - [T53] somme_des_annees : chaque ligne et chaque total de la ferme se partagent entre ses années, sans perte ni double compte
+ok 7 - [T53] sans_annee_comme_r2 : sans année, chaque calcul donne son résultat d'avant ; une ferme d'une année sans charge fixe a la même vue
+ok 8 - [T53] EX-57 : points de vente, matrice offre-demande et son bilan, véhicules et besoins suivent l'année
+# tests 21
+# pass 21
+# fail 0
+✓  1 test/annees.e2e.js:4:1 › [T53] EX-56 : le fichier livré calcule une année à la fois, la semaine du nouvel an comptant dans l'année de son jeudi (206ms)
+1 passed (1.0s)
+== T53 : vérification verte ==
+exit 0
+$ ./verify.sh R3
+# tests 151
+# pass 151
+# fail 0
+166 passed (2.0m)
+== R3 : vérification verte ==
+exit 0
+```

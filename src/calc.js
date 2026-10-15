@@ -152,18 +152,50 @@
 
   // Les besoins regroupés par mois de mise en place, avec le coût connu de chaque mois et de la saison
   // (null si aucun besoin n'a de prix) : { mois: [{ mois, besoins, cout }], cout }.
-  function besoinsParMois(donnees) {
+  // R3 (EX-57) : avec une année, seulement les plantations mises en place dans cette année.
+  function besoinsParMois(donnees, { annee } = {}) {
     const coutConnu = (liste) => {
       const avecPrix = liste.filter((b) => b.cout);
       return avecPrix.length ? avecPrix.map((b) => b.cout).reduce(somme, fourchetteNulle()) : null;
     };
-    const tous = besoins(donnees);
+    const tous = besoins(donnees).filter((b) => dansLAnnee(annee, b.mois));
     const parMois = new Map();
     for (const b of tous) {
       if (!parMois.has(b.mois)) parMois.set(b.mois, []);
       parMois.get(b.mois).push(b);
     }
     return { mois: [...parMois].map(([mois, liste]) => ({ mois, besoins: liste, cout: coutConnu(liste) })), cout: coutConnu(tous) };
+  }
+
+  // ---- Années (R3)
+
+  // Vrai si le mois ou la date (« AAAA-MM… ») tombe dans l'année ; toujours vrai sans année.
+  function dansLAnnee(annee, moisOuDate) {
+    return annee === undefined || annee === null || moisOuDate.startsWith(`${annee}-`);
+  }
+
+  // R3 (EX-55) : les années de la ferme, de la première à la dernière qui porte un mois du tableau (sans le
+  // prolongement à 12 mois des charges fixes) ou une barre du calendrier (plantation de sa mise en place à
+  // sa fin de récolte, lot de son arrivée à sa réforme). Une ferme vide n'en a aucune.
+  function annees(donnees) {
+    const bornes = [];
+    const { mois } = tableau({ ...donnees, charges: [] });
+    if (mois.length) bornes.push(mois[0], mois[mois.length - 1]);
+    for (const { plantation, p } of plantationsCalculables(donnees)) bornes.push(plantation.date, datesRecolte(plantation, p).fin);
+    for (const lot of (donnees.lots || []).filter((l) => !l.supprimeLe)) bornes.push(lot.arrivee, lot.reforme);
+    if (!bornes.length) return [];
+    const liste = bornes.map((b) => Number(b.slice(0, 4)));
+    const [premiere, derniere] = [Math.min(...liste), Math.max(...liste)];
+    return Array.from({ length: derniere - premiere + 1 }, (_, i) => premiere + i);
+  }
+
+  // R3 (EX-55) : l'année retenue si elle est encore une année de la ferme, sinon l'année en cours si c'en
+  // est une, sinon la plus proche (la plus tardive à égalité) ; null sans année. aujourdhui : « AAAA-MM-JJ ».
+  function anneeParDefaut(liste, aujourdhui, retenue) {
+    if (!liste.length) return null;
+    if (retenue !== undefined && retenue !== null && liste.includes(Number(retenue))) return Number(retenue);
+    const courante = Number(String(aujourdhui).slice(0, 4));
+    return liste.reduce((meilleure, a) => (Math.abs(a - courante) <= Math.abs(meilleure - courante) ? a : meilleure));
   }
 
   function plantationsCalculables({ cultures = [], varietes = [], plantations = [] }) {
@@ -228,7 +260,13 @@
   // S3 (EX-27) : l'atelier poules, à part des cultures (`poules`, null sans lot actif) — œufs, chiffre
   // d'affaires, aliment et marge de l'atelier par mois, chaque semaine dans le mois de son jeudi ; la marge
   // de la ferme déduit aussi l'aliment.
-  function tableau(donnees) {
+  // R3 (EX-56) : avec une année, seules comptent les valeurs de cette année (chacune dans l'année de son
+  // mois) ; les mois vont de janvier à décembre si la ferme a une charge fixe, sinon du premier au dernier
+  // mois de l'année qui porte une valeur ; une culture ou l'atelier poules n'ont de ligne que s'ils portent
+  // une valeur dans l'année. Sans année, le tableau de toute la projection, comme avant R3.
+  function tableau(donnees, { annee } = {}) {
+    const parAnnee = annee !== undefined && annee !== null;
+    const garder = (m) => dansLAnnee(annee, m);
     const ventesParCulture = ventes(donnees);
     const parCulture = new Map();
     const entree = (culture, aDebouche) => {
@@ -289,18 +327,21 @@
       if (vente.vendu.haute > 0) ajouterAuxPoules(lundi, vente.vendu, vente.ca, nulle);
     }
 
-    const tousLesMois = [...[...parCulture.values()].flatMap((c) => [...c.mois.keys()]), ...couts.keys(), ...poulesParMois.keys(),
-      ...[...coutsCultures.values()].flatMap((parMois) => [...parMois.keys()])].sort();
+    const cles = (iterable) => [...iterable].filter(garder);
+    const tousLesMois = [...[...parCulture.values()].flatMap((c) => cles(c.mois.keys())), ...cles(couts.keys()), ...cles(poulesParMois.keys()),
+      ...[...coutsCultures.values()].flatMap((parMois) => cles(parMois.keys()))].sort();
     // N3 (EX-48) : avec au moins une charge fixe, la projection couvre au moins 12 mois d'affilée à partir de
     // son premier mois, pour ne pas sous-compter une charge annuelle.
     const charges = (donnees.charges || []).filter((c) => !c.supprimeLe);
     let dernierMois = tousLesMois[tousLesMois.length - 1];
-    if (charges.length && tousLesMois.length) {
+    if (charges.length && tousLesMois.length && !parAnnee) {
       let douzieme = tousLesMois[0];
       for (let i = 0; i < 11; i++) douzieme = moisSuivant(douzieme);
       if (douzieme > dernierMois) dernierMois = douzieme;
     }
-    const mois = tousLesMois.length ? moisEntre(tousLesMois[0], dernierMois) : [];
+    // R3 (EX-56) : une année avec charges fixes montre ses 12 mois.
+    const mois = parAnnee && charges.length ? moisEntre(`${annee}-01`, `${annee}-12`)
+      : tousLesMois.length ? moisEntre(tousLesMois[0], dernierMois) : [];
     const avecMarge = (c) => ({ volume: c.volume, ca: c.ca, marge: { ...c.ca } });
     // Une culture qui a des coûts de mise en place les déduit de sa marge (N3) ; sans coût, la case garde sa forme.
     const avecCouts = (c, cout) => ({ volume: c.volume, ca: c.ca, couts: cout, marge: soustraire(c.ca, cout) });
@@ -308,7 +349,10 @@
     for (const m of mois) totalFerme.mois[m] = caseVide();
     const coutsFerme = coutsCultures.size ? { mois: Object.fromEntries(mois.map((m) => [m, fourchetteNulle()])), total: fourchetteNulle() } : null;
 
+    const aUneValeur = ({ culture, mois: parMois }) => !parAnnee || cles(parMois.keys()).length > 0 ||
+      (coutsCultures.has(culture.id) && cles(coutsCultures.get(culture.id).keys()).length > 0);
     const lignes = [...parCulture.values()]
+      .filter(aUneValeur)
       .sort((a, b) => a.culture.nom.localeCompare(b.culture.nom, "fr"))
       .map(({ culture, aDebouche, mois: parMois }) => {
         const ligne = { cultureId: culture.id, nom: culture.nom, unite: culture.unite, aDebouche, mois: {}, total: caseVide() };
@@ -334,11 +378,14 @@
       });
 
     let poules = null;
-    if (lots.length) {
+    // R3 (EX-56) : l'année d'un lot va de celle de son arrivée à celle de sa réforme, chacune prise au jeudi de sa semaine.
+    const lotsDeLAnnee = parAnnee
+      ? lots.filter((l) => moisDuJeudi(lundiDe(l.arrivee)) <= `${annee}-12` && moisDuJeudi(lundiDe(l.reforme)) >= `${annee}-01`) : lots;
+    if (lots.length && (!parAnnee || cles(poulesParMois.keys()).length > 0)) {
       const vide = () => ({ volume: fourchetteNulle(), ca: fourchetteNulle(), aliment: fourchetteNulle() });
       const avecMargeAtelier = (c) => ({ ...c, marge: soustraire(c.ca, c.aliment) });
       const cumul = vide();
-      poules = { lots: lots.length, effectif: lots.reduce((n, l) => n + l.effectif, 0), aDebouche: Boolean(ventesOeufs), mois: {} };
+      poules = { lots: lotsDeLAnnee.length, effectif: lotsDeLAnnee.reduce((n, l) => n + l.effectif, 0), aDebouche: Boolean(ventesOeufs), mois: {} };
       for (const m of mois) {
         const c = poulesParMois.get(m) || vide();
         poules.mois[m] = avecMargeAtelier(c);
@@ -364,7 +411,8 @@
       resultat.marge = marge;
       return resultat;
     };
-    const total = { mois: {}, total: bilan(totalFerme.total.ca, [...couts.values()].reduce(somme, fourchetteNulle()), poules && poules.total, coutsFerme && coutsFerme.total) };
+    const coutsDesSeances = parAnnee ? [...couts].filter(([m]) => garder(m)).map(([, c]) => c) : [...couts.values()];
+    const total = { mois: {}, total: bilan(totalFerme.total.ca, coutsDesSeances.reduce(somme, fourchetteNulle()), poules && poules.total, coutsFerme && coutsFerme.total) };
     for (const m of mois) total.mois[m] = bilan(totalFerme.mois[m].ca, couts.get(m) || fourchetteNulle(), poules && poules.mois[m], coutsFerme && coutsFerme.mois[m]);
 
     // N3 (EX-48) : revenu = marge de la ferme − charges fixes, chaque mois et sur toute la projection, du
@@ -498,7 +546,8 @@
   // séances datées des points de vente actifs qui l'utilisent, les kilomètres (2 × distance par séance),
   // les litres (km × consommation ÷ 100) et le coût du carburant (litres × prix du litre), en fourchette ;
   // N3 (EX-46) : l'entretien et l'usure (km × frais au km, 0 sans frais) et le coût total des trajets.
-  function vehicules({ vehicules: liste = [], pointsVente = [], seances = [] }) {
+  // R3 (EX-57) : avec une année, les séances dont le jeudi de la semaine tombe dans cette année.
+  function vehicules({ vehicules: liste = [], pointsVente = [], seances = [] }, { annee } = {}) {
     const actifs = vehiculesActifs(liste);
     const bilans = new Map([...actifs.values()].map((v) => [v.id, { vehiculeId: v.id, coutKm: coutDuKm({ vehiculeId: v.id }, actifs), seances: 0, km: 0 }]));
     const pointsParId = new Map(pointsVente.filter((p) => !p.supprimeLe).map((p) => [p.id, p]));
@@ -506,7 +555,7 @@
       const pointVente = pointsParId.get(seance.pointVenteId);
       const bilan = pointVente && bilans.get(pointVente.vehiculeId);
       if (!bilan) continue;
-      const nombre = seancesDatees(seance).length;
+      const nombre = seancesDatees(seance).filter((date) => dansLAnnee(annee, moisDuJeudi(lundiDe(date)))).length;
       bilan.seances += nombre;
       bilan.km += nombre * 2 * pointVente.distanceKm;
     }
@@ -667,7 +716,8 @@
   // favorable pour lui (production basse, sa demande basse, demande haute des débouchés servis avant lui)
   // au plus favorable (l'inverse) ; la médiane est celle du calcul médian. Ces fourchettes ne s'additionnent
   // pas d'un point de vente à l'autre.
-  function pointsDeVente(donnees) {
+  // R3 (EX-57) : avec une année, les mois de cette année seulement.
+  function pointsDeVente(donnees, { annee } = {}) {
     const parPoint = new Map((donnees.pointsVente || []).filter((p) => !p.supprimeLe).sort((a, b) => a.nom.localeCompare(b.nom, "fr"))
       .map((pointVente) => [pointVente.id, { pointVente, mois: new Map() }]));
     const caseDuMois = (pointVenteId, mois) => {
@@ -695,7 +745,7 @@
       }
     }
 
-    const tousLesMois = [...parPoint.values()].flatMap((p) => [...p.mois.keys()]).sort();
+    const tousLesMois = [...parPoint.values()].flatMap((p) => [...p.mois.keys()]).filter((m) => dansLAnnee(annee, m)).sort();
     const mois = tousLesMois.length ? moisEntre(tousLesMois[0], tousLesMois[tousLesMois.length - 1]) : [];
     const bilan = (c) => ({ seances: c.seances, ca: c.ca, couts: c.couts, resultat: soustraire(c.ca, c.couts) });
     const points = [...parPoint.values()].map(({ pointVente, mois: parMois }) => {
@@ -785,16 +835,21 @@
 
   // Par culture et par semaine : l'offre, la demande (null pour une culture sans débouché), l'écart des
   // médianes, l'état (depasse, manque, equilibre, sans_debouche) et sa sûreté (fourchettes disjointes).
-  function offreDemande(donnees) {
+  // R3 (EX-57) : avec une année, les semaines dont le jeudi tombe dans cette année, et les produits qui y ont
+  // une offre ou une demande.
+  function offreDemande(donnees, { annee } = {}) {
+    const parAnnee = annee !== undefined && annee !== null;
+    const garder = (lundi) => dansLAnnee(annee, moisDuJeudi(lundi));
     const offre = offreParSemaine(donnees);
     const demande = demandeParSemaine(donnees);
-    const lundis = [...offre.values(), ...demande.values()].flatMap((m) => [...m.keys()]).sort();
+    const lundis = [...offre.values(), ...demande.values()].flatMap((m) => [...m.keys()]).filter(garder).sort();
     const semaines = lundis.length ? semainesEntre(lundis[0], lundis[lundis.length - 1]) : [];
-    const cultures = (donnees.cultures || []).filter((c) => !c.supprimeLe && (offre.has(c.id) || demande.has(c.id)))
+    const present = (parSemaine) => (parAnnee ? Boolean(parSemaine) && [...parSemaine.keys()].some(garder) : Boolean(parSemaine));
+    const cultures = (donnees.cultures || []).filter((c) => !c.supprimeLe && (present(offre.get(c.id)) || present(demande.get(c.id))))
       .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
     // Les œufs viennent après les cultures ; leur nom et leur unité sont des textes de l'interface.
     const produits = cultures.map((c) => ({ produitId: c.id, nom: c.nom, unite: c.unite }));
-    if (offre.has(OEUFS) || demande.has(OEUFS)) produits.push({ produitId: OEUFS, nom: null, unite: null });
+    if (present(offre.get(OEUFS)) || present(demande.get(OEUFS))) produits.push({ produitId: OEUFS, nom: null, unite: null });
 
     const lignes = produits.map(({ produitId, nom, unite }) => {
       const ligne = { produitId, nom, unite, semaines: {} };
@@ -872,5 +927,7 @@
     besoins,
     besoinsParMois,
     surOccupations,
+    annees,
+    anneeParDefaut,
   };
 });

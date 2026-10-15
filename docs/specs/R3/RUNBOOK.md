@@ -67,4 +67,6 @@ Le format exporté ne change pas (version 5) ; l'année choisie vit dans l'état
 
 ## ✎ Décisions
 
+- T53 · Le test de bout en bout de T53 (calcul par année dans le fichier livré) va dans `test/annees.e2e.js`, fichier listé pour T55 et T56 : `./verify.sh T53` exige au moins un test de bout en bout de la tâche.
+
 ## ✎ Bilan de fin de tranche
