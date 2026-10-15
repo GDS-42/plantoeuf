@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R4 (rotation et associations) · Sessions consommées : 0 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R4 (rotation et associations) · Sessions consommées : 1 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5291,3 +5291,24 @@ ERREURS : aucune
 - `docs/specs/R4/` : `SPEC.md` (EX-61 à EX-66, scénarios S18 à S21, invariants `alerte_seulement`, `suggestion_sans_plantation`, `sans_regle_comme_r3`, `famille_par_nom`), `RUNBOOK.md` (seuil d'alerte : 10 sessions), `features.json` (T58 à T64).
 - Aucun test existant ne fige la version 5 du format ni la liste des objets (contrôlé) : aucun test existant à modifier.
 - Recherche de T58 lancée : deux agents en parallèle (délais de retour, groupes et ordre de rotation ; associations et précédents).
+
+## 15/10/2026 · T58 — Données de rotation sourcées (EX-66)
+
+- Session 1 / 10 du seuil d'alerte de R4.
+- Modèle : Opus 5.5, effort élevé · Agents de recherche : deux en parallèle (délais de retour, groupes et ordre de rotation : 58 recherches ; associations et précédents : 67 recherches) · Reprises : 1 · Relecteur : Fable, contexte frais → **ÉCARTS** de forme à la première relecture (règle suisse citée sans référence et numérotation [K16] → [K18] ; ordre à six groupes non marqué [E] ; chapeau qui ne citait qu'un appui réunionnais sur trois), aucune valeur ni relation infidèle aux rapports ; repris, puis **CONFORME**. Le relecteur a recalculé les alertes attendues de l'exemple à partir du § 5 (mêmes résultats que le script de l'agent).
+- **Surprise** : aucune source réunionnaise ne chiffre un délai de retour ni n'énonce une association entre les 11 cultures ; les valeurs viennent de Polynésie, des Antilles, de Guyane, de métropole et d'essais étrangers [NR] [N]. Comme en R2, aucun document n'a pu être ouvert en entier (proxy) : tout vient des extraits du moteur de recherche ; documents à relire listés au § 14.6.
+- Résultat : `docs/specs/R2/DONNEES.md` § 14 — délais de retour des sept familles (Solanacées 3 / 4 / 5 ans, Brassicacées 3 / 4 / 5, Astéracées 3 / 3 / 4, Apiacées 3 / 4 / 5, Fabacées 5 / 5 / 5, Cucurbitacées 2 / 3 / 4, Amaryllidacées 4 / 5 / 5 ; bornes estimées des rapports écartées), groupes des 11 cultures (piment, chouchou et petsaï par analogie [E]), une rotation « fruit → feuille → racine → bulbe → légumineuse → engrais vert » [E], 5 voisinages favorables (essais) et 22 précédents (essais ou fiches techniques), 30 sources [K1] à [K30]. Rapports : `docs/specs/R2/recherche/recherche-7-rotation.md`, `recherche-8-associations.md`.
+- Alertes attendues sur l'exemple (règle à la surface, médianes des délais) : retours trop tôt sur Tunnel 1, Tunnel 2 (tomates, 240 m² sur 200) et Parcelle 2 (brèdes, jusqu'à 1 200 m² sur 600), aucun autre espace ; précédents défavorables dans les tunnels (tomate et cucurbitacées qui se succèdent) :
+
+```text
+$ node alertes-exemple.js (scratchpad r4)
+Espaces : Parcelle 2, Tunnel 1, Tunnel 2
+Précédents défavorables :
+  Tunnel 1 : Concombre (fin 2026-04-01) → Tomate du 2026-06-10
+  Tunnel 2 : Courgette (fin 2026-05-03) → Tomate du 2026-08-01
+  Tunnel 1 : Tomate (fin 2026-06-05) → Courgette du 2026-09-01
+  Tunnel 2 : Tomate (fin 2026-07-25) → Concombre du 2026-10-01
+$ node --test test/*.test.js → 155 pass, 0 fail (dossier seul modifié)
+```
+
+- Points pour l'humain : le délai des Fabacées (5 ans, valeur de plein champ en métropole) est sans doute sévère pour un petit maraîcher tropical ; la ligne Astéracées repose sur la seule édition 2026 d'un BSV.

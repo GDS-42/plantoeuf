@@ -67,6 +67,10 @@ Le format exporté passe en version 6 ; un fichier de version 1 à 5 s'importe p
 
 ## ✎ Surprises et découvertes
 
+- T58 · Aucune source réunionnaise ne chiffre un délai de retour ni n'énonce une association entre les cultures de l'exemple ; tout vient de sources non réunionnaises ou nationales, lues dans les extraits du moteur de recherche (proxy).
+
 ## ✎ Décisions
+
+- T58 · Quand le rapport proposait une borne estimée et qu'une variante entièrement sourcée existait, la variante sourcée est retenue (Astéracées 3 / 3 / 4, Amaryllidacées 4 / 5 / 5, Fabacées 5 / 5 / 5). Associations retenues : seulement celles appuyées par un essai ou une fiche technique ; aucune avec le chouchou.
 
 ## ✎ Bilan de fin de tranche

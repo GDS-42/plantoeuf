@@ -367,3 +367,114 @@ Consultées le 15/10/2026, par les extraits du moteur de recherche.
 - [V2] Spritmonitor, relevés de consommation de Renault Kangoo diesel. https://www.spritmonitor.de/fr/detail/1032823.html?cdetail=1
 - [V4] CNR, *Les coûts du déménagement, actualisation juin 2026*. https://www.cnr.fr/download/file/publications/CNR%20-%20les%20co%C3%BBts%20du%20d%C3%A9m%C3%A9nagement%20-%20actualisation%20juin%202026.pdf
 - [V5] Barème kilométrique fiscal (arrêté du 27/03/2023, reconduit en 2026) [N] : Weblex, *Barème fiscal 2026*. https://www.weblex.fr/chiffres-cles/bareme-fiscal-de-remboursement-des-frais-kilometriques-2026
+
+## 14. Rotation et associations (tranche R4)
+
+Ajouté en R4 (tâche T58). Rapports de recherche : `recherche/recherche-7-rotation.md` (délais de retour, groupes, ordre) et `recherche/recherche-8-associations.md` (voisinages, précédents). Comme pour les § 1 à 13, aucun document n'a pu être ouvert en entier (proxy) : les valeurs viennent des extraits du moteur de recherche, à relire sur les documents (§ 14.6). **Aucune source réunionnaise ne chiffre un délai de retour ni n'énonce une association entre ces cultures** : les valeurs sont non réunionnaises [NR] ou nationales [N], tropicales quand c'est possible (Polynésie, Antilles, Guyane). Les seuls appuis réunionnais [R] décrivent le contexte, non une règle : gravité du flétrissement bactérien de la tomate en saison chaude [K15], souches de *Ralstonia* présentes [K29], présence de la teigne des crucifères [K30].
+
+### 14.1 Délai de retour par famille (`familles`)
+
+Le délai se compte en années à partir de la fin de récolte (règle de l'outil, spec R4) ; la médiane sert à l'alerte, la fourchette est affichée. Les sources écrivent « rotation de N ans » ou « N ans minimum » sans toujours dire si la famille revient l'année N : la valeur N est reprise telle quelle.
+
+| Famille (cultures de la ferme) | Délai (ans) bas / médiane / haute | Sources et passage à la fourchette |
+| --- | --- | --- |
+| Solanacées (tomate, piment) | 3 / 4 / 5 | 3 : « rotations de 3 à 4 ans minimum » pour l'aubergine en bio tropical [K4] [NR], ≥ 3 ans contre le flétrissement bactérien [K7] [NR] ; 4 : ≥ 4 ans contre la verticilliose de la tomate [K5] [N] ; 5 : 4 à 5 ans pour la pomme de terre [K1] [N]. Gravité à La Réunion : le flétrissement bactérien est le principal facteur limitant de la tomate en saison chaude [K15] [R] |
+| Brassicacées (brède petsaï, chou pommé) | 3 / 4 / 5 | 3 : minimum 3 ans pour le chou, 10 ans si hernie [K1] [N] ; 4 : 4 ans minimum entre crucifères [K8] [NR] ; 5 : 4 à 5 ans sans crucifères [K9] [NR]. La présence de la hernie à La Réunion n'est pas documentée |
+| Astéracées (salade batavia) | 3 / 3 / 4 | 3 : retour tous les 3 ans contre sclérotinia et noctuelles [K1] [N] ; 4 : « 4 ou 5 ans » pour la laitue (conseil de jardin) [K11] [NR]. Variante entièrement sourcée du rapport (sa borne basse 2 était une estimation) |
+| Apiacées (carotte) | 3 / 4 / 5 | 3 : « 3 ans minimum avec un optimum de 5 ans » (carotte bio, Polynésie) [K4] [NR] ; 4 : céleri, 4 ans minimum (Hauts-de-France) [K10] [N] ; 5 : 5 ans entre deux apiacées [K2] [N] et optimum polynésien [K4] |
+| Fabacées (haricot vert) | 5 / 5 / 5 | Seule valeur trouvée : « 5 ans minimum » entre deux haricots (graisse, botrytis, mildiou) [K10] [N], et 5 ans entre deux haricots et entre deux légumineuses (sclérotinia, fiche haricot d'Agrobio Bretagne, rapport 7 source 21) [N] ; 10 ans si fusariose (UNILET, rapport 7 source 22) [N]. Le rapport proposait 3 / 4 / 5 avec deux bornes estimées : non retenues. Fourchette d'un seul nombre (forme admise) ; valeur de plein champ en métropole, sans doute sévère pour un petit maraîcher tropical, à faire confirmer |
+| Cucurbitacées (courgette, concombre, chouchou) | 2 / 3 / 4 | 2 : concombre bio, 2 ans minimum [K4] [NR] ; 3 : courgette bio, 2 à 3 ans [K4] [NR] et 3 à 4 ans (fusariose) [K6] [N] ; 4 : [K6]. Le chouchou est vivace sur treille : le délai ne joue qu'après son arrachage |
+| Amaryllidacées (ail péi) | 4 / 5 / 5 | 4 : « 4 ou 5 ans » [K11] [NR] ; 5 : 5 ans minimum entre deux Allium (pourriture blanche) [K3] [K1] [N]. Variante sourcée du rapport (sa borne haute 6 était une estimation) |
+
+### 14.2 Groupe de rotation des cultures (`groupe`)
+
+| Culture | Groupe | Source |
+| --- | --- | --- |
+| Tomate, courgette, concombre | fruit | « Légumes fruits : concombres, courges, melons, tomates » [K12] ; [K14] [N] |
+| Piment, chouchou | fruit | Aucune source ne les nomme ; les sources classent les légumes par organe consommé, et l'on en consomme le fruit [E] |
+| Salade batavia, chou pommé, brède petsaï | feuille | « Légumes feuilles : choux, salades… » [K14] [N] ; le petsaï est un chou chinois (*Brassica rapa*) [E] |
+| Carotte | racine | [K12] [K14] [N] |
+| Ail péi | bulbe | « Légumes bulbes : ail, oignon, échalote » [K12] [N] (d'autres fiches rangent les bulbes avec les racines) |
+| Haricot vert | légumineuse | « Légumineuses : haricot, fèves, pois, lentilles » [K12] [N] |
+
+### 14.3 Ordre de rotation (`rotations`)
+
+Une rotation, « Exigence décroissante » : **fruit → feuille → racine → bulbe → légumineuse → engrais vert**, puis retour au fruit **[E]**. Les sources appuient la décroissance fruit → feuille → racine → légumineuse ; la place du bulbe avant la légumineuse et de l'engrais vert en fin est un choix de l'agent, compatible avec les règles tropicales de précédent (ail et engrais vert avant le retour des solanacées). Justification : les légumes-fruits sont les plus exigeants, suivis des légumes-feuilles, puis des racines, puis des légumineuses, qui poussent en sol plus pauvre [K13] [NR] ; plantes « gourmandes » la première année après le compost, « sobres » la deuxième, « frugales » la troisième (ail, haricot) [K12] [N]. Aucun ordre réunionnais publié n'a été trouvé ; d'autres ordres existent (feuille → fruit → racine → légumineuse pour les jardins des pays du Sud). La ferme cultive cinq « fruits » de deux familles : le délai de famille (§ 14.1) et les précédents (§ 14.4) priment sur l'ordre des groupes.
+
+### 14.4 Associations (`associations`)
+
+Retenues : les relations appuyées par un essai (E1) ou par la fiche d'un service technique ou d'une chambre d'agriculture (E2) ; toutes [NR]. Écartées : les affirmations de jardinage sans essai (ail et haricot qui se gênent, tomate et carotte…), les effets contrastés (chou et tomate, tomate et ail), les essais en pots ou en laboratoire (concombre et ail, petsaï et ail), toute paire avec le chouchou (aucune source) ; détail dans `recherche-8-associations.md`.
+
+**Voisinage (deux cultures en place en même temps sur le même espace), toutes favorables :**
+
+| Cultures | Mécanisme | Sources |
+| --- | --- | --- |
+| Chou pommé et ail péi | L'ail intercalé réduit les larves de teigne des crucifères (*Plutella xylostella*), ravageur présent à La Réunion | Essais (Inde, Zambie, Bangladesh) [K22] ; teigne à La Réunion [K30] |
+| Piment et salade batavia | Indice d'utilisation du sol 2,64 (poivron et laitue) | Essai, Brésil [K23] |
+| Piment et chou pommé | Indice 1,92 ; moins de larves de teigne sur le chou | Essais, Brésil [K23] et Myanmar [K26] |
+| Tomate et salade batavia | Rendement commercial de la tomate inchangé par la salade ; le meilleur indice d'utilisation du sol quand la salade est plantée au plus 14 jours après la tomate | Essai, Brésil [K24] |
+| Carotte et salade batavia | Indice d'utilisation du sol supérieur à 1,60 en bio | Essais, Brésil tropical [K25] |
+
+**Précédents (A cultivée avant B sur le même espace) :**
+
+| A (avant) | B (après) | Effet | Mécanisme | Sources |
+| --- | --- | --- | --- | --- |
+| Tomate | Concombre, courgette | défavorable | Hôtes communs des nématodes à galles ; aux Antilles, « cucurbitacées après solanacées à proscrire » (flétrissement bactérien). La souche antillaise qui touche les cucurbitacées n'est pas établie à La Réunion [K29] [R] | [K16] [K18] (concombre) [K20] (courgette) |
+| Piment | Concombre, courgette | défavorable | Idem (solanacée puis cucurbitacée) | [K16] ; [K18] (concombre) |
+| Concombre, courgette | Tomate | défavorable | Bioagresseurs du sol communs ; la fiche de Guyane exclut les cucurbitacées comme précédent de la tomate | [K19] |
+| Concombre, courgette | Piment | défavorable | La fiche poivron de Polynésie range les cucurbitacées dans les précédents à éviter | [K18] |
+| Ail péi | Tomate, concombre | favorable | L'ail à la place de la tomate fait baisser les nématodes à galles transmis à la culture suivante ; rendements en hausse | Essai pluriannuel, Inde [K21] ; [K20] (liliacées avant tomate) |
+| Ail péi | Piment, courgette | favorable | Bulbes et liliacées cités en précédents favorables | [K18] (poivron) ; [K20] (courgette) |
+| Carotte | Tomate, piment | favorable | La carotte n'est pas hôte du flétrissement bactérien (biovar 2) et est conseillée en culture non hôte ; légumes racines cités pour le poivron. Elle reste très sensible aux nématodes à galles, comme la tomate | [K27] ; [K20] ; [K18] |
+| Salade batavia | Tomate | favorable | En tête des précédents retenus par la fiche tomate de Guyane | [K19] |
+| Salade batavia, chou pommé | Carotte | favorable | « Favorables : légumes feuilles (laitue, chou…) » ; le chou est un mauvais hôte des nématodes à galles | [K18] (carotte) ; [K28] |
+| Salade batavia, chou pommé | Concombre, courgette | favorable | Légumes-feuilles cités en précédents favorables | [K18] (concombre) ; [K20] (courgette) |
+| Haricot vert | Carotte | défavorable | « À éviter : haricot » (la fiche ne dit pas pourquoi) | [K18] (carotte) |
+
+Soit 5 voisinages et 22 précédents (une case à deux cultures compte une relation par culture). Les relations « même famille » (solanacée après solanacée, etc.) ne sont pas répétées : le délai de famille les couvre.
+
+### 14.5 Ce que la ferme d'exemple montre
+
+Avec ces délais et la règle à la surface de l'outil, la ferme de 2026 signale des **retours trop tôt** sur trois espaces :
+- Tunnel 1 et Tunnel 2 (200 m²) : deux tomates de 120 m² dans l'année (240 m² de Solanacées dans le délai de 4 ans) — le risque de flétrissement bactérien que les sources mettent au premier rang [K15] ;
+- Parcelle 2 (600 m²) : quinze brèdes petsaï de 80 m² (1 200 m² de Brassicacées dans le délai), alors que la Parcelle 1 (quinze salades de 40 m², 600 m²) reste dans sa surface.
+
+Elle signale aussi des **précédents défavorables** dans les tunnels, où tomates, concombres et courgettes se succèdent : exactement la succession que les sources antillaises et guyanaise proscrivent. Ces alertes sont gardées : la ferme d'exemple montre ce que l'outil repère, sans réécrire son plan (§ 5, R2).
+
+### 14.6 Limites et sources de la rotation
+
+- Cycles courts : la brède et la salade font plusieurs cycles par an ; un délai en années est grossier pour elles (la règle suisse ne compte une culture de 14 semaines ou moins que si deux cultures courtes de la même famille ont lieu la même année) [K17] [NR]. L'outil applique la règle à la surface, qui laisse une parcelle se remplir avant d'alerter.
+- Le chouchou, vivace sur treille, n'est soumis au délai qu'à son arrachage.
+- Aucun document n'a été ouvert en entier : à relire en priorité le BSV DRIAAF de 2026 [K1] (seul appui de la ligne Astéracées : l'édition 2025 ne donne pas de délai pour la laitue), les fiches de Polynésie [K4] [K18], les BSV de Martinique [K16] et la fiche tomate de Guyane [K19].
+
+Sources (détail et extraits dans les rapports 7 et 8) :
+- [K1] DRIAAF Île-de-France, *BSV Maraîchage n° 03* (mars 2026). https://driaaf.ile-de-france.agriculture.gouv.fr/IMG/pdf/bsv_maraichage2026-03.pdf
+- [K2] DRIAAF Île-de-France, *BSV Maraîchage 2023-03*. https://driaaf.ile-de-france.agriculture.gouv.fr/IMG/pdf/bsv_maraichage_2023_03.pdf
+- [K3] Chambre régionale d'agriculture d'Occitanie / DRAAF Occitanie, *BSV Ail, fiche prophylaxie* (novembre 2020). https://draaf.occitanie.agriculture.gouv.fr/IMG/pdf/BSV_AIL_HS_NOVEMBRE_2020_Fiche_Prophylaxie-1_cle8db3c6.pdf
+- [K4] Direction de l'agriculture de Polynésie française, projet INTEGRE, fiches « culture biologique » aubergine, courgette, concombre, carotte (2018). https://www.service-public.pf/dag/wp-content/uploads/sites/28/2018/03/FTC-Aubergine-PF.pdf (et FTC-Courgette-PF, FTC-Concombre-PF, FTC-Carotte-PF)
+- [K5] INRAE, Ephytia, *Tomate – méthodes de protection* (verticilliose). https://ephytia.inrae.fr/en/C/5222/Tomato-Protection-methods
+- [K6] INRAE, Ephytia, *Courgette – méthodes de protection*. https://ephytia.inrae.fr/en/C/18660/Zucchini-squash-Protection-methods
+- [K7] Clemson Cooperative Extension, *Tomato Diseases & Disorders*. https://hgic.clemson.edu/factsheet/tomato-diseases-disorders/
+- [K8] Équiterre / Agri-Réseau, *Guide de production maraîchère biologique, chapitre 8 : Rotation*. https://agrireseau.net/agriculturebiologique/documents/marai_chapitre_8rotation.pdf
+- [K9] RAP Québec (MAPAQ), avertissements crucifères. https://www.agrireseau.net/Rap/documents/a07cru13.pdf
+- [K10] Chambre d'agriculture Hauts-de-France, *BSV légumes n° 02* (6 mars 2018) et *n° 01* (4 mars 2021). https://www.hautsdefrance.chambres-agriculture.fr/fileadmin/user_upload/Hauts-de-France/171_Inst-Hauts-de-France/8-Ressources/Bulletin-Sante-Vegetal/Cultures-legumieres/2018/bsv_02_legumes_06_mars_2018.pdf
+- [K11] Ecoconso (Belgique), fiche « rotation des cultures ». https://www.ecoconso.be/fr/node/4247/printable/pdf
+- [K12] Lamballe Terre & Mer, *Point info n° 9 : la rotation des cultures* (mai 2025). https://www.lamballe-terre-mer.bzh/app/uploads/2025/05/200529-envir-pi-9-rotation-cultures.pdf
+- [K13] Espace pour la vie (Jardin botanique de Montréal), rotation des cultures. https://espacepourlavie.ca/node/3482
+- [K14] Ville de Mutzig, *La rotation des cultures au potager* (juin 2026). https://www.villedemutzig.fr/wp-content/uploads/2026/06/La-rotation-des-cultures-au-potager.pdf
+- [K15] AGRIS (FAO), notice d'une étude réunionnaise de 1989 sur la résistance de la tomate au flétrissement bactérien [R]. https://agris.fao.org/search/en/records/64745b8c13d110e4e7ac6549
+- [K16] Chambre d'agriculture de Martinique, *BSV Cultures maraîchères* (avril 2019) ; FREDON Martinique, *BSV Cultures maraîchères* (décembre 2023). https://martinique.chambre-agriculture.fr/fileadmin/user_upload/Outre-Mer/144_Inst-Martinique/Documents/BSV/Archives/2019/2019_04_avril_bsv_cultures_maraicheres.pdf
+- [K17] Gemüse Schweiz (Union maraîchère suisse), *Règlement de rotation des cultures, avec tableau* (2025). https://www.gemuese.ch/media/3nsfhmt1/2025_fruchtfolgeregelung-mit-tabelle_f.pdf
+- [K18] Direction de l'agriculture de Polynésie française, projet INTEGRE, fiches carotte, poivron, concombre (2018). https://www.service-public.pf/dag/wp-content/uploads/sites/28/2018/03/FTC-Carotte-PF.pdf (et FTC-Poivron-PF, FTC-Concombre-PF)
+- [K19] Chambre d'agriculture de Guyane, *Protection intégrée de la tomate*. https://guyane.chambre-agriculture.fr/fileadmin/user_upload/National/FAL_commun/publications/Guyane/pi-tomate-rogn.pdf
+- [K20] Agrobio Bretagne, *Fiche tomates* (2012) et *Fiche courgettes* (2010). https://www.agrobio-bretagne.org/wp-content/uploads/2012/04/fiche_tomates.pdf ; https://www.agrobio-bretagne.org/wp-content/uploads/2010/09/Courgettes.pdf
+- [K21] *Indian Journal of Horticulture* 76(3):472-478 (2019), gestion des nématodes à galles par l'ail dans les rotations légumières. https://journal.iahs.org.in/index.php/ijh/article/view/341
+- [K22] Sharma et al., *Indian Journal of Agricultural Sciences* 92(8) (2022) ; Luchen, Université de Zambie ; Sher-e-Bangla Agricultural University (Bangladesh) : chou et ail contre la teigne. https://epubs.icar.org.in/index.php/IJAgS/article/view/123186
+- [K23] UNESP Jaboticabal, *Viabilidade da consorciação de pimentão com repolho, rúcula, alface e rabanete* (essai 2003-2004). https://acervodigital.unesp.br/handle/11449/1299
+- [K24] Rezende, Canato et Cecílio Filho, *Ciência e Agrotecnologia* 29(1):77-83 (2005), tomate et laitue associées. https://repositorio.unesp.br/handle/11449/30137
+- [K25] Salgado et al. (Embrapa Agrobiologia), *Pesquisa Agropecuária Brasileira* 41:1141-1147 (2006), laitue et carotte associées en bio. https://doaj.org/article/93dc6a3f0acd4e60adb644900538df27
+- [K26] Thu Zar Aung et al., essai de Taunggyi (Myanmar, 2015-2016), chou associé à la tomate et au piment contre la teigne. https://meral.edu.mm/record/27/files/journal_(Thu_Zar_Aung)_(Open%20Access).pdf
+- [K27] DRIAAF Île-de-France, *Fiche Ralstonia solanacearum* (décembre 2016) ; Álvarez et al., *Phytopathology* 98(1):59-68 (2008). https://driaaf.ile-de-france.agriculture.gouv.fr/IMG/pdf/fiche_ralstonia_dec2016_cle8332e2.pdf
+- [K28] Bafokuzara, *Journal of Nematology*, influence de six légumes sur *Meloidogyne javanica*. https://journals.flvc.org/jon/article/view/65514
+- [K29] Yahiaoui et al., *Frontiers in Plant Science* (2017), diversité de *Ralstonia solanacearum* dans les îles du sud-ouest de l'océan Indien [R]. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5742265/
+- [K30] INRAE et CIRAD, Ephytia, *Tropileg : teigne Plutella xylostella* (La Réunion parmi les zones touchées) [R]. https://ephytia.inrae.fr/en/C/23616/Tropileg-Teigne-Plutella-xylostella

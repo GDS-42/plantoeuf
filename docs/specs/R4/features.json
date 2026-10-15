@@ -25,7 +25,7 @@
       "modele": "opus",
       "effort": "high",
       "relecture": true,
-      "passe": false
+      "passe": true
     },
     {
       "id": "T59",
