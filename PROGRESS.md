@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R3 (plusieurs années) · Sessions consommées : 2 / 7 · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R3 (plusieurs années) · Sessions consommées : 3 / 7 · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5159,6 +5159,57 @@ $ ./verify.sh R3
 # pass 154
 # fail 0
 167 passed (2.1m)
+== R3 : vérification verte ==
+exit 0
+```
+
+## 15/10/2026 · T55 — Choix de l'année dans l'interface (EX-55 à EX-58, EX-60)
+
+- Session 3 / 7 du seuil d'alerte de R3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (balayage de 360 à 1920 px par pas de 10 px : aucun chevauchement ni défilement ; ferme vide : barre du haut identique à avant ; clavier : Espace et Entrée changent l'année).
+- Fait : commande « ‹ 2026 › » (`#choix-annee`) dans la barre du haut, cachée sans donnée, flèches désactivées aux bords, noms pour lecteur d'écran et flèches dans `src/i18n.js` ; module `src/ui-annee.js` (rendu seulement, années et année proposée tirées de `Calc`) ; `Store` : `annee()` et `retenirAnnee()` dans l'état du navigateur, ni exportée ni comptée comme une modification ; `rafraichir()` passe l'année à la synthèse (barre du haut, tuiles, tableau, graphique), aux ventes (bilans et tableau des points de vente, matrice et son bilan), aux véhicules et aux besoins ; le pied du tableau ne montre pas une ligne « coûts de culture » à zéro pour une année qui n'en porte pas (remarque de la relecture de T53). Après relecture : le sous-titre de la marque reste sur une ligne (remarque du relecteur, vers 910 px).
+- Aucun test existant modifié ; la vue d'une année garde les résultats des tests de N3 (S13 : janvier à décembre 2026, mêmes charges et même revenu).
+- Remarques du relecteur consignées : une année sans donnée entre deux années de la ferme (ex. 2026 et 2028) montre l'état vide, sans ses charges fixes (✎ Décisions) ; les libellés « saison » désignent désormais l'année choisie.
+
+Preuve rouge (avant le code) :
+
+```text
+$ node --test test/annees.test.js
+not ok 12 - [T55] EX-58 : l'année choisie se retrouve à la réouverture, sans compter comme une modification ni s'exporter
+# tests 12
+# pass 11
+# fail 1
+$ npx playwright test --grep "\[T55\]"
+1) test/annees.e2e.js:75:1 › [T55] EX-55, EX-56 : « ‹ 2027 › » passe d'une année à l'autre ; la barre du haut, les tuiles et le tableau suivent l'année
+2) test/annees.e2e.js:107:1 › [T55] EX-58 : l'année choisie survit au rechargement, sans compter comme une modification de la ferme
+3) test/annees.e2e.js:124:1 › [T55] EX-57 : les points de vente, la matrice, le véhicule et les besoins suivent l'année
+4) test/annees.e2e.js:147:1 › [T55] EX-55 : sans donnée, pas de choix d'année ; de 360 à 1920 px, le choix tient dans la barre du haut sans chevauchement
+5) test/annees.e2e.js:166:1 › [T55] EX-60 : la ferme d'exemple chargée en 2027 n'a qu'une année : 2027, sans flèche active
+5 failed
+```
+
+Preuve verte :
+
+```text
+$ ./verify.sh T55
+ok 1 - [T55] EX-58 : l'année choisie se retrouve à la réouverture, sans compter comme une modification ni s'exporter
+# tests 14
+# pass 14
+# fail 0
+✓  1 test/annees.e2e.js:75:1 › [T55] EX-55, EX-56 : « ‹ 2027 › » passe d'une année à l'autre ; la barre du haut, les tuiles et le tableau suivent l'année (810ms)
+✓  2 test/annees.e2e.js:107:1 › [T55] EX-58 : l'année choisie survit au rechargement, sans compter comme une modification de la ferme (679ms)
+✓  3 test/annees.e2e.js:124:1 › [T55] EX-57 : les points de vente, la matrice, le véhicule et les besoins suivent l'année (572ms)
+✓  4 test/annees.e2e.js:147:1 › [T55] EX-55 : sans donnée, pas de choix d'année ; de 360 à 1920 px, le choix tient dans la barre du haut sans chevauchement (936ms)
+✓  5 test/annees.e2e.js:166:1 › [T55] EX-60 : la ferme d'exemple chargée en 2027 n'a qu'une année : 2027, sans flèche active (604ms)
+✓  6 test/annees.e2e.js:175:1 › [T55] EX-56 : une année sans coût de culture n'en montre pas la ligne au pied du tableau (381ms)
+6 passed (5.1s)
+== T55 : vérification verte ==
+exit 0
+$ ./verify.sh R3
+# tests 155
+# pass 155
+# fail 0
+173 passed (2.0m)
 == R3 : vérification verte ==
 exit 0
 ```

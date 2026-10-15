@@ -611,12 +611,14 @@
       montrerCoutKm();
     }
 
-    function afficher(donnees) {
+    // R3 (EX-57) : le bilan des points de vente, leur tableau et la matrice offre-demande portent sur
+    // l'année choisie ({ annee }) ; les listes montrent tout ce qui est enregistré.
+    function afficher(donnees, parAnnee = {}) {
       const pointsVente = donnees.pointsVente.slice().sort(parNom);
       const cultures = donnees.cultures.slice().sort(parNom);
       const tousPoints = parId("pointsVente");
       const toutesCultures = parId("cultures");
-      const vuePoints = Calc.pointsDeVente(donnees);
+      const vuePoints = Calc.pointsDeVente(donnees, parAnnee);
       const bilans = new Map(vuePoints.points.map((p) => [p.pointVenteId, p]));
 
       const nombreDeDebouches = Calc.nombreDeDebouches(donnees);
@@ -645,7 +647,7 @@
 
       ventes = Calc.ventes(donnees);
       nomsPoints = tousPoints;
-      afficherOffreDemande(Calc.offreDemande(donnees));
+      afficherOffreDemande(Calc.offreDemande(donnees, parAnnee));
       afficherPointsDeVente(vuePoints);
     }
 

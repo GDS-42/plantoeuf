@@ -67,6 +67,7 @@ Le format exporté ne change pas (version 5) ; l'année choisie vit dans l'état
 
 ## ✎ Décisions
 
+- T55 · Les lignes des points de vente et des véhicules montrent les bilans de l'année choisie (ce sont des calculs, pas des enregistrements) ; les listes d'enregistrements et la page Charges fixes restent entières. Une année sans donnée entre deux années de la ferme montre l'état vide de la synthèse, sans ses charges fixes (règle d'avant R3 : un tableau sans ligne est vide) ; la spec ne tranche pas ce cas, laissé tel quel.
 - T54 · Même cas pour T54 : son test de bout en bout (exemple chargé en 2027) va dans `test/annees.e2e.js`. Les bornes de l'année ne s'appliquent qu'aux séances et aux lots de l'exemple, pas à ses plantations.
 - T53 · Le test de bout en bout de T53 (calcul par année dans le fichier livré) va dans `test/annees.e2e.js`, fichier listé pour T55 et T56 : `./verify.sh T53` exige au moins un test de bout en bout de la tâche.
 

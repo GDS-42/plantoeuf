@@ -30,8 +30,9 @@
     }));
   }
 
-  function afficher(donnees) {
-    const { mois, cout: saison } = Calc.besoinsParMois(donnees);
+  // R3 (EX-57) : les plantations mises en place dans l'année choisie ({ annee }).
+  function afficher(donnees, parAnnee = {}) {
+    const { mois, cout: saison } = Calc.besoinsParMois(donnees, parAnnee);
     const section = document.getElementById("section-besoins");
     section.hidden = mois.length === 0;
     if (!mois.length) return;

@@ -283,6 +283,14 @@
       legende: "Résultat = chiffre d'affaires − coût des séances (frais et trajet). Chaque fourchette va du cas le moins favorable au plus favorable pour ce point : les fourchettes de deux points ne s'additionnent pas.",
       aucun: "Ici, ce que rapporte et ce que coûte chaque point de vente, mois par mois. Ajoutez un point de vente, ses séances et ses débouchés.",
     },
+    // R3 (EX-55) : le choix de l'année, dans la barre du haut.
+    annee: {
+      choix: "Année montrée",
+      precedente: "Année précédente",
+      suivante: "Année suivante",
+      flechePrecedente: "‹",
+      flecheSuivante: "›",
+    },
     synthese: {
       ca: "Chiffre d'affaires estimé",
       marge: "Marge estimée",

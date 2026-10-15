@@ -283,3 +283,24 @@ test("[T54] en 2026, la ferme d'exemple ne change pas : séances et lots du 1er 
   assert.ok(d.lots.some((l) => l.arrivee === "2026-01-01" && l.debutPonte === "2026-01-01"));
   assert.ok(d.lots.some((l) => l.reforme === "2026-12-31"));
 });
+
+// ---- T55 : l'année choisie, propre au navigateur (EX-58)
+
+test("[T55] EX-58 : l'année choisie se retrouve à la réouverture, sans compter comme une modification ni s'exporter", () => {
+  const valeurs = new Map();
+  const stockage = { getItem: (cle) => (valeurs.has(cle) ? valeurs.get(cle) : null), setItem: (cle, valeur) => valeurs.set(cle, String(valeur)) };
+  const ferme = Store.ouvrir(stockage);
+  assert.equal(ferme.annee(), null);
+  ferme.retenirAnnee(2027);
+  const relue = Store.ouvrir(stockage);
+  assert.equal(relue.annee(), 2027);
+  // Choisir une année n'est pas modifier la ferme : pas de rappel d'export, aucune modification datée.
+  assert.equal(JSON.parse(stockage.getItem(Store.CLE)).etat.nonExporteDepuis, null);
+  assert.equal(relue.rappelExport(), false);
+  // L'année ne part pas dans l'export.
+  const fichier = relue.exporter();
+  assert.equal("annee" in fichier, false);
+  assert.equal("etat" in fichier, false);
+  relue.retenirAnnee(null);
+  assert.equal(Store.ouvrir(stockage).annee(), null);
+});

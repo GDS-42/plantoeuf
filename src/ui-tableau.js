@@ -187,7 +187,9 @@
   // poules (EX-27), marge de la ferme. Visible en euros ; masqué en volume (des unités différentes ne s'additionnent pas).
   function pied(tableau, colonnes) {
     const avecCouts = tableau.total.total.couts.haute > 0;
-    const mesures = ["ca", ...(avecCouts ? ["couts"] : []), ...(tableau.total.total.cultures ? ["cultures"] : []),
+    // R3 : une année sans coût de culture n'en montre pas la ligne, même si la ferme en a d'autres années.
+    const avecCultures = Boolean(tableau.total.total.cultures) && tableau.total.total.cultures.haute > 0;
+    const mesures = ["ca", ...(avecCouts ? ["couts"] : []), ...(avecCultures ? ["cultures"] : []),
       ...(tableau.poules ? ["aliment"] : []), "marge", ...(tableau.total.total.revenu ? ["charges", "revenu"] : [])];
     return [
       element("tr", { class: "pied-titre" }, element("th", { colspan: String(colonnes), scope: "colgroup" }, element("span", {}, V.pied.titre))),

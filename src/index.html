@@ -111,7 +111,7 @@
   .marque { display: flex; align-items: center; gap: 0.6rem; color: var(--encre); text-decoration: none; }
   .marque-logo { width: 2.1rem; height: 2.1rem; flex: none; }
   .marque-nom { font: 700 1.2rem/1 var(--police-titre); letter-spacing: -0.01em; }
-  .marque-sous-titre { display: block; margin-top: 0.15rem; color: var(--encre-pale); font-size: 0.8rem; line-height: 1; }
+  .marque-sous-titre { display: block; margin-top: 0.15rem; color: var(--encre-pale); font-size: 0.8rem; line-height: 1; white-space: nowrap; }
 
   /* Synthèse de la saison, toujours en tête (EX-14). */
   .saison { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
@@ -126,6 +126,18 @@
   .indicateur-valeur .mediane { font: 700 1.25rem/1.25 var(--police-titre); letter-spacing: -0.01em; }
   .indicateur-bornes { color: var(--encre-pale); font-size: 0.8rem; }
   .indicateur.negatif .mediane { color: var(--rouge-texte); }
+
+  /* R3 (EX-55) : le choix de l'année, juste avant la synthèse de la saison. */
+  .choix-annee { margin-left: auto; display: flex; align-items: center; gap: 0.15rem; flex: none; }
+  .choix-annee:not([hidden]) + .saison { margin-left: 0; }
+  .annee-choisie { min-width: 3.2em; text-align: center; font: 700 1.05rem/1 var(--police-titre); font-variant-numeric: tabular-nums; }
+  .annee-fleche {
+    width: 2.25rem; height: 2.25rem; display: grid; place-items: center;
+    border: 1px solid var(--trait); border-radius: var(--rayon-petit); background: var(--surface);
+    color: var(--encre); font: 600 1.25rem/1 var(--police-titre); cursor: pointer;
+  }
+  .annee-fleche:hover:not(:disabled) { background: var(--surface-douce); }
+  .annee-fleche:disabled { color: var(--encre-pale); opacity: 0.45; cursor: default; }
 
   .navigation {
     grid-area: nav;
@@ -1015,6 +1027,11 @@
     <svg class="marque-logo" aria-hidden="true" focusable="false"><use href="#i-logo"></use></svg>
     <span><span class="marque-nom" data-texte="marque"></span><span class="marque-sous-titre" data-texte="sousTitre"></span></span>
   </a>
+  <div id="choix-annee" class="choix-annee" role="group" data-texte-aria="annee.choix" hidden>
+    <button id="annee-precedente" type="button" class="annee-fleche" data-texte-aria="annee.precedente"><span aria-hidden="true" data-texte="annee.flechePrecedente"></span></button>
+    <output id="annee-choisie" class="annee-choisie" aria-live="polite"></output>
+    <button id="annee-suivante" type="button" class="annee-fleche" data-texte-aria="annee.suivante"><span aria-hidden="true" data-texte="annee.flecheSuivante"></span></button>
+  </div>
   <div class="saison" aria-live="polite">
     <div id="synthese" class="indicateur">
       <span class="indicateur-titre" data-texte="synthese.ca"></span>
@@ -1862,6 +1879,7 @@
 <script src="calc.js"></script>
 <script src="exemple.js"></script>
 <script src="ui-commun.js"></script>
+<script src="ui-annee.js"></script>
 <script src="ui-navigation.js"></script>
 <script src="ui-saisie.js"></script>
 <script src="ui-tableau.js"></script>
@@ -1882,6 +1900,7 @@
   const fermeOuverte = () => ferme;
   const navigation = UiNavigation.creer();
   const saisie = UiSaisie.creer({ ferme: fermeOuverte, rafraichir });
+  const choixAnnee = UiAnnee.creer({ ferme: fermeOuverte, quandChange: () => rafraichir() });
   const ventes = UiVentes.creer({ ferme: fermeOuverte, saisie });
   const poules = UiPoules.creer({ saisie });
   const vehicules = UiVehicules.creer({ saisie });
@@ -1914,16 +1933,19 @@
   }
 
   // Tout l'affichage se recalcule depuis les données enregistrées (EX-05).
+  // R3 (EX-56, EX-57) : la synthèse, les ventes, les véhicules et les besoins montrent l'année choisie.
   function rafraichir() {
     const donnees = donneesActives();
+    const annee = choixAnnee.afficher(donnees);
+    const parAnnee = annee === null ? {} : { annee };
     saisie.afficher(donnees);
-    ventes.afficher(donnees);
+    ventes.afficher(donnees, parAnnee);
     poules.afficher(donnees);
-    vehicules.afficher(donnees);
+    vehicules.afficher(donnees, parAnnee);
     charges.afficher(donnees);
-    UiBesoins.afficher(donnees);
+    UiBesoins.afficher(donnees, parAnnee);
     sauvegarde.afficher(donnees);
-    const tableau = Calc.tableau(donnees);
+    const tableau = Calc.tableau(donnees, parAnnee);
     UiTableau.afficher(tableau);
     UiSynthese.afficher(tableau, donnees);
     UiCalendrier.afficher(donnees);

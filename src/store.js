@@ -287,6 +287,16 @@
       return donnees.etat.exemple ? copie(donnees.etat.exemple) : null;
     }
 
+    // R3 (EX-58) : l'année choisie, propre à ce navigateur : ni exportée, ni comptée comme une modification.
+    function annee() {
+      return donnees.etat.annee ?? null;
+    }
+
+    function retenirAnnee(valeur) {
+      donnees.etat.annee = valeur;
+      enregistrer();
+    }
+
     // EX-08 : vrai si des données ont changé sans être exportées et que le dernier export
     // (ou, faute d'export, la première modification) date d'au moins DELAI_RAPPEL_JOURS jours.
     function rappelExport() {
@@ -307,6 +317,8 @@
       rappelExport,
       noterExemple,
       exemple,
+      annee,
+      retenirAnnee,
       espaces: () => lister("espaces"),
       ajouterEspace: (champs) => ajouter("espaces", champs),
     };

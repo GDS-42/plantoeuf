@@ -35,9 +35,10 @@
 
   // saisie : le module de saisie (élément en cours de modification).
   function creer({ saisie }) {
-    function afficher(donnees) {
+    // R3 (EX-57) : le bilan de chaque véhicule porte sur l'année choisie ({ annee }).
+    function afficher(donnees, parAnnee = {}) {
       const vehicules = donnees.vehicules.slice().sort(parNom);
-      const bilans = Calc.vehicules(donnees);
+      const bilans = Calc.vehicules(donnees, parAnnee);
       afficherListe("vehicules", vehicules, (v) => resumeVehicule(v, bilans.get(v.id)), saisie.enEdition("vehicules"));
     }
 
