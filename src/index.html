@@ -818,6 +818,37 @@
   .rotation-groupes { margin: 0; padding: 0; border: 0; min-width: 0; }
   .rotation-groupes legend { padding: 0; margin-bottom: 0.6rem; font-size: 0.9rem; font-weight: 600; color: var(--encre); }
   .rotation-groupes ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem 1rem; }
+  /* R4 (EX-62, EX-64) : les alertes de rotation, d'une autre classe que la sur-occupation, sous la ligne. */
+  .liste-ferme .ligne-texte > .alerte-rotation, .liste-ferme .ligne-texte > .que-planter { grid-column: 1 / -1; }
+  .liste-ferme .alerte-rotation {
+    display: flex; align-items: flex-start; gap: 0.5rem; justify-self: start;
+    margin: 0.15rem 0 0; padding: 0.45rem 0.75rem; border-radius: var(--rayon-petit);
+    background: var(--ambre-doux); color: var(--ambre-texte); box-shadow: inset 3px 0 0 var(--ambre);
+    font-size: 0.875rem; font-weight: 600; line-height: 1.4;
+  }
+  .liste-ferme .alerte-rotation .icone { flex: none; width: 1.1rem; height: 1.1rem; margin-top: 0.05rem; }
+  .liste-ferme .que-planter { justify-self: start; margin-left: -0.6rem; }
+  /* R4 (EX-65) : « Que planter ici ? ». */
+  .que-planter-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; counter-reset: proposition; }
+  .qp-proposition {
+    counter-increment: proposition; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.4rem 0.75rem; align-items: start;
+    padding: 0.75rem 0.9rem; border: 1px solid var(--trait); border-radius: var(--rayon);
+  }
+  .qp-tete { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.5rem; min-width: 0; }
+  .qp-tete::before { content: counter(proposition) "."; color: var(--encre-pale); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .qp-nom { font-weight: 650; }
+  .qp-variete { color: var(--encre-pale); font-size: 0.85rem; }
+  .qp-proposition .raisons { grid-column: 1; list-style: none; margin: 0; padding: 0; display: grid; gap: 0.2rem; font-size: 0.875rem; color: var(--encre-douce); }
+  .qp-proposition .bouton { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+  .raison::before { content: "· "; }
+  .raison.favorable { color: var(--accent-texte); }
+  .raison.defavorable { color: var(--ambre-texte); font-weight: 600; }
+  .apercu-alerte { display: inline-flex; align-items: flex-start; gap: 0.35rem; color: var(--ambre-texte); }
+  .apercu-alerte .icone { flex: none; width: 1rem; height: 1rem; margin-top: 0.1rem; }
+  @media (max-width: 640px) {
+    .qp-proposition { grid-template-columns: minmax(0, 1fr); }
+    .qp-proposition .bouton { grid-column: 1; grid-row: auto; justify-self: start; }
+  }
   #liste-plantations { --colonnes-faits: 5rem 7rem minmax(0, 15rem) minmax(0, 1fr); }
   #liste-lots { --colonne-titre: 13rem; --colonnes-faits: minmax(0, 9.5rem) minmax(0, 1fr) minmax(10.5rem, 1.1fr) minmax(0, 1fr); }
   .puce.bleue { background: var(--bleu-doux); color: var(--bleu-texte); }
@@ -850,6 +881,7 @@
   .cal-pastille-arrivee { background: var(--cal-arrivee); box-shadow: inset 0 0 0 1px var(--cal-arrivee-bord); }
   .cal-pastille-ponte { background: var(--cal-ponte); }
   .cal-pastille-sur-occupation { background: var(--ambre-doux); box-shadow: inset 0 -3px 0 var(--ambre); }
+  .cal-pastille-retour { background: transparent; outline: 2px dashed var(--ambre); outline-offset: -2px; }
   .cal-pastille-aujourdhui { width: 2px; height: 1rem; border-radius: 1px; background: var(--bleu); }
 
   .cal-racine { padding: 0 1.25rem 1.25rem; }
@@ -899,6 +931,15 @@
   }
   .cal-barre:hover { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--encre-pale); }
   .cal-barre[aria-current="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+  /* R4 (EX-62) : la barre d'une plantation qui revient trop tôt, cerclée de tirets. */
+  .cal-barre.cal-retour { outline: 2px dashed var(--ambre); outline-offset: 1px; }
+  .cal-info-alerte { display: flex; align-items: flex-start; gap: 0.4rem; color: var(--ambre-texte); font-weight: 600; }
+  .cal-info-alerte .icone { flex: none; width: 1rem; height: 1rem; margin-top: 0.1rem; }
+  /* R4 (EX-65) : « Que planter ici ? » sous le nom de l'espace. */
+  .cal-que-planter {
+    margin-top: 0.2rem; padding: 0; border: 0; background: none; color: var(--accent-texte);
+    font: inherit; font-size: 0.75rem; font-weight: 600; text-align: left; text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+  }
   .cal-segment { display: flex; align-items: center; min-width: 0; height: 100%; }
   .cal-segment:first-child:not(:only-child) { flex-grow: 0; flex-shrink: 0; margin-right: 2px; }
   .cal-segment:last-child:not(:only-child) { flex: 1 1 0; }
@@ -1791,6 +1832,31 @@
   </form>
 </dialog>
 
+<!-- R4 (EX-65) : « Que planter ici ? » — des propositions classées ; rien n'est enregistré. -->
+<dialog id="tiroir-que-planter" class="tiroir" aria-labelledby="tiroir-que-planter-titre">
+  <form id="form-que-planter">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-que-planter-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
+      <label><span data-texte="rotation.quePlanter.date"></span>
+        <input id="que-planter-date" data-format="date" type="text" inputmode="numeric" autocomplete="off">
+      </label>
+      <label><span data-texte="rotation.quePlanter.surface"></span>
+        <input id="que-planter-surface" type="number" min="0" step="any">
+      </label>
+      <p id="que-planter-libre" class="aide" aria-live="polite"></p>
+      <p class="aide" data-texte="rotation.quePlanter.aide"></p>
+      <ol id="que-planter-liste" class="large que-planter-liste" aria-live="polite"></ol>
+      <p id="que-planter-vide" class="aide" hidden></p>
+    </div>
+    <footer class="tiroir-pied">
+      <button type="button" class="bouton annuler" data-action="fermer" data-texte="commun.fermer"></button>
+    </footer>
+  </form>
+</dialog>
+
 <dialog id="tiroir-plantations" class="tiroir" aria-labelledby="tiroir-plantations-titre">
   <form id="form-plantation" data-objet="plantations">
     <header class="tiroir-entete">
@@ -2044,6 +2110,7 @@
 <script src="ui-annee.js"></script>
 <script src="ui-navigation.js"></script>
 <script src="ui-saisie.js"></script>
+<script src="ui-rotation.js"></script>
 <script src="ui-tableau.js"></script>
 <script src="ui-sauvegarde.js"></script>
 <script src="ui-ventes.js"></script>
@@ -2062,6 +2129,14 @@
   const fermeOuverte = () => ferme;
   const navigation = UiNavigation.creer();
   const saisie = UiSaisie.creer({ ferme: fermeOuverte, rafraichir });
+  // R4 (EX-65) : « Planter… » mène à la page Plantations et ouvre son tiroir prérempli, sans rien enregistrer.
+  const rotation = UiRotation.creer({
+    ferme: fermeOuverte,
+    planter: (champs) => {
+      navigation.aller("plantations");
+      saisie.ouvrir("plantations", champs);
+    },
+  });
   const choixAnnee = UiAnnee.creer({ ferme: fermeOuverte, quandChange: () => rafraichir() });
   const ventes = UiVentes.creer({ ferme: fermeOuverte, saisie });
   const poules = UiPoules.creer({ saisie });
@@ -2111,6 +2186,7 @@
     UiTableau.afficher(tableau);
     UiSynthese.afficher(tableau, donnees);
     UiCalendrier.afficher(donnees, { annees, annee });
+    rotation.afficher();
     afficherAccueil(donnees);
     document.getElementById("pastille-sauvegarde").hidden = document.getElementById("rappel-export").hidden;
   }

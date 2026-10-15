@@ -53,7 +53,9 @@
 
   // occupants : noms des cultures des plantations actives de l'espace, dans l'ordre des dates.
   // Chaque culture une fois, avec son nombre de plantations s'il y en a plusieurs.
-  function resumeEspace(espace, surOccupation, occupants) {
+  // R4 (EX-62, EX-65) : rotation = null sans règle de rotation ; sinon { retours: [{ culture, date }] },
+  // les plantations de l'espace qui reviennent trop tôt, et le bouton « Que planter ici ? ».
+  function resumeEspace(espace, surOccupation, occupants, rotation = null) {
     const parCulture = new Map();
     for (const nom of occupants) parCulture.set(nom, (parCulture.get(nom) || 0) + 1);
     const plantations = occupants.length
@@ -66,6 +68,15 @@
       })).join(", ");
       alertes.push(element("p", { class: "sur-occupation", role: "status" }, icone("alerte"),
         element("span", {}, remplir(T.espaces.surOccupation, { mois, surface: formats.nombre.format(espace.surface) }))));
+    }
+    if (rotation && rotation.retours.length) {
+      alertes.push(UiRotation.alerte(remplir(T.rotation.espaceRetour, {
+        plantations: rotation.retours.map(({ culture, date }) => remplir(T.rotation.plantationDu, { culture, date: afficherDate(date) })).join(", "),
+      })));
+    }
+    if (rotation) {
+      alertes.push(element("button", { type: "button", class: "bouton discret que-planter", "data-que-planter": espace.id,
+        "aria-label": remplir(T.rotation.quePlanter.boutonEspace, { espace: espace.nom }) }, icone("cultures"), T.rotation.quePlanter.bouton));
     }
     return contenuLigne({
       titre: espace.nom,
@@ -164,7 +175,9 @@
     return variete ? `${nomDe(cultures.get(variete.cultureId))} ${nomDe(variete)}` : nomDe(variete);
   }
 
-  function resumePlantation(plantation, varietes, cultures, espaces) {
+  // R4 (EX-62, EX-64) : aides = { retour (verdict de Calc.retoursTropTot ou absent), precedents, voisins (noms
+  // des cultures défavorables) }, ou null sans règle de rotation.
+  function resumePlantation(plantation, varietes, cultures, espaces, aides = null) {
     const variete = varietes.get(plantation.varieteId);
     const culture = variete && cultures.get(variete.cultureId);
     const titre = variete
@@ -180,7 +193,11 @@
       faits.push([F.faits.recolte, periode(dates.debut, dates.fin), "recolte"]);
       faits.push([F.faits.production, elementFourchette(Calc.productionTotale(plantation, p), formats.volumes, F.unitesPluriel[culture.unite]), "production"]);
     }
-    return contenuLigne({ titre, puces: [{ texte: nomDe(espaces.get(plantation.espaceId)) }], faits });
+    const alertes = [];
+    if (aides && aides.retour) alertes.push(UiRotation.alerte(UiRotation.texteRetour(aides.retour, espaces.get(plantation.espaceId))));
+    if (aides && aides.precedents.length) alertes.push(UiRotation.alerte(remplir(T.rotation.precedentDefavorable, { cultures: aides.precedents.join(", ") })));
+    if (aides && aides.voisins.length) alertes.push(UiRotation.alerte(remplir(T.rotation.voisinDefavorable, { cultures: aides.voisins.join(", ") })));
+    return contenuLigne({ titre, puces: [{ texte: nomDe(espaces.get(plantation.espaceId)) }], faits, alertes });
   }
 
   // P2 : contenu d'une ligne de liste — un titre et ses puces, un sous-titre facultatif, puis des faits
@@ -384,8 +401,36 @@
         const production = Calc.productionTotale({ date: champs.date, surface: champs.surface }, p);
         faits.push([F.faits.production, elementFourchette(production, formats.volumes, F.unitesPluriel[culture.unite])]);
       }
-      zone.replaceChildren(icone("plantations"), element("dl", {}, ...faits.map(([libelle, valeur]) =>
-        element("div", {}, element("dt", {}, libelle), element("dd", {}, valeur)))));
+      faits.push(...aidesApercu(formulaire, champs, culture));
+      zone.replaceChildren(icone("plantations"), element("dl", {}, ...faits.map(([libelle, valeur, cle]) =>
+        element("div", cle ? { "data-apercu": cle } : {}, element("dt", {}, libelle), element("dd", {}, valeur)))));
+    }
+
+    // R4 (EX-63) : ce qui précède la plantation en cours de saisie sur son espace, ce qui pousse à côté, et
+    // son verdict de retour ; rien sans règle de rotation (sans_regle_comme_r3) ni sans espace choisi.
+    function aidesApercu(formulaire, champs, culture) {
+      const donnees = {};
+      for (const objet of Store.OBJETS) donnees[objet] = ferme().lister(objet);
+      const espace = champs.espaceId && donnees.espaces.find((e) => e.id === champs.espaceId);
+      if (!espace || !UiRotation.avecRegles(donnees)) return [];
+      const plantation = { varieteId: champs.varieteId, espaceId: champs.espaceId, date: champs.date, surface: champs.surface || 0 };
+      if (formulaire.dataset.id) plantation.id = formulaire.dataset.id;
+      const A = T.rotation.apercu;
+      const vide = (texte) => element("span", { class: "ligne-vide" }, texte);
+      const { precedents, tropTot } = Calc.precedents(donnees, plantation);
+      const voisins = Calc.voisins(donnees, plantation);
+      const nomme = (modeles, x) => remplir(modeles[x.effet || "aucun"], { culture: x.culture });
+      const faits = [
+        [A.avant, precedents.length ? precedents.map((x) => nomme(T.rotation.precedent, x)).join(" ; ") : vide(A.rienAvant), "avant"],
+        [A.aCote, voisins.length ? voisins.map((x) => nomme(T.rotation.voisin, x)).join(" ; ") : vide(A.rienACote), "a-cote"],
+      ];
+      const famille = Calc.familleDe(culture, donnees.familles);
+      if (tropTot) {
+        faits.push([A.retour, element("span", { class: "apercu-alerte" }, icone("alerte"), UiRotation.texteRetour(tropTot, espace, A.trop)), "retour"]);
+      } else if (famille && famille.delaiRetour) {
+        faits.push([A.retour, remplir(A.respecte, { famille: famille.nom, delai: UiRotation.annees(famille.delaiRetour.mediane) }), "retour"]);
+      }
+      return faits;
     }
 
     // R4 (EX-61) : les deux cultures d'une association se nomment selon son type (avant / après pour un précédent).
@@ -540,10 +585,12 @@
       Object.values(formulaires).forEach(fermer);
     }
 
-    // Ouvre le tiroir d'ajout d'un objet, formulaire vide.
-    function ouvrir(objet) {
+    // Ouvre le tiroir d'ajout d'un objet, formulaire vide ou prérempli de valeurs (R4, EX-65 : « Planter… »),
+    // sans rien enregistrer.
+    function ouvrir(objet, valeurs = null) {
       const formulaire = formulaires[objet];
       quitterEdition(formulaire);
+      if (valeurs) ecrireFormulaire(formulaire, valeurs);
       ouvrirTiroir(formulaire, "ajouter");
     }
 
@@ -575,10 +622,28 @@
       }
 
       const surOccupations = Calc.surOccupations(donnees);
-      afficherListe("espaces", espaces, (e) => resumeEspace(e, surOccupations[e.id], occupants.get(e.id)), enEdition("espaces"));
+      // R4 (EX-62, EX-64) : retours trop tôt et associations défavorables, seulement avec des règles.
+      const regles = UiRotation.avecRegles(donnees);
+      const retours = regles ? Calc.retoursTropTot(donnees) : {};
+      const defavorables = regles ? Calc.associationsDefavorables(donnees) : {};
+      const cultureDe = (id) => {
+        const p = plantations.find((x) => x.id === id);
+        const variete = p && toutesVarietes.get(p.varieteId);
+        return variete ? nomDe(toutesCultures.get(variete.cultureId)) : nomDe(variete);
+      };
+      const noms = (ids) => [...new Set(ids.map(cultureDe))];
+      const aides = (p) => regles ? {
+        retour: retours[p.id] || null,
+        precedents: noms(defavorables[p.id] ? defavorables[p.id].precedents : []),
+        voisins: noms(defavorables[p.id] ? defavorables[p.id].voisins : []),
+      } : null;
+      const rotationEspace = (e) => regles ? {
+        retours: plantations.filter((p) => p.espaceId === e.id && retours[p.id]).map((p) => ({ culture: cultureDe(p.id), date: p.date })),
+      } : null;
+      afficherListe("espaces", espaces, (e) => resumeEspace(e, surOccupations[e.id], occupants.get(e.id), rotationEspace(e)), enEdition("espaces"));
       afficherListe("cultures", cultures, resumeCulture, enEdition("cultures"));
       afficherListe("varietes", varietes, (v) => resumeVariete(v, toutesCultures), enEdition("varietes"));
-      afficherListe("plantations", plantations, (p) => resumePlantation(p, toutesVarietes, toutesCultures, tousEspaces), enEdition("plantations"));
+      afficherListe("plantations", plantations, (p) => resumePlantation(p, toutesVarietes, toutesCultures, tousEspaces, aides(p)), enEdition("plantations"));
       afficherRegles(donnees, cultures, toutesCultures);
 
       remplirChoix(document.getElementById("variete-cultureId"), cultures.map((c) => ({ valeur: c.id, libelle: c.nom })));

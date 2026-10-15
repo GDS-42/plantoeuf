@@ -124,7 +124,8 @@
           if (avant > 0) segments.push(element("span", { class: `cal-segment ${barre.classes[0]}`, style: `flex-basis: calc(${pct((avant / total) * 100)} - 2px)` }, ...etiquette(0)));
           if (avant < total) segments.push(element("span", { class: `cal-segment ${barre.classes[1]}` }, ...etiquette(1)));
           return element("button", {
-            type: "button", class: "cal-barre", [`data-${barre.cle}`]: barre.id,
+            // R4 (EX-62) : une marque (cal-retour) sur la barre d'une plantation qui revient trop tôt.
+            type: "button", class: barre.marque ? `cal-barre ${barre.marque}` : "cal-barre", [`data-${barre.cle}`]: barre.id,
             "data-modifier": barre.objet, "data-id": barre.id, "data-sous-ligne": String(barre.sousLigne),
             "aria-label": barre.etiquette,
             // 1 px de marge de chaque côté : deux barres qui se suivent sur une sous-ligne restent distinctes.
@@ -135,7 +136,8 @@
         element("div", { class: "cal-espace" },
           element("span", { class: "cal-espace-nom" }, ligne.nom),
           element("span", { class: "cal-espace-detail" }, ligne.detail),
-          ...(ligne.alerte ? [element("span", { class: "puce alerte cal-alerte" }, icone("alerte"), ligne.alerte)] : [])),
+          ...(ligne.alerte ? [element("span", { class: "puce alerte cal-alerte" }, icone("alerte"), ligne.alerte)] : []),
+          ...(ligne.action ? [ligne.action] : [])),
         piste);
     });
 
@@ -287,6 +289,9 @@
     const varietes = actifs(donnees.varietes);
     const espaces = donnees.espaces.slice().sort(parNom);
     const parEspace = new Map(espaces.map((e) => [e.id, []]));
+    // R4 (EX-62, EX-65) : avec des règles de rotation, les retours trop tôt et « Que planter ici ? ».
+    const regles = UiRotation.avecRegles(donnees);
+    const retours = regles ? Calc.retoursTropTot(donnees) : {};
 
     // Une barre par plantation calculable (variété et culture actives), comme dans le tableau.
     for (const plantation of donnees.plantations) {
@@ -299,21 +304,25 @@
       const nomEspace = espace ? espace.nom : F.calendrier.espaceSupprime;
       const surface = remplir(T.resume.surface, { valeur: formats.nombre.format(plantation.surface) });
       const production = Calc.productionTotale(plantation, p);
+      const retour = retours[plantation.id];
+      const etiquette = remplir(F.calendrier.barre, {
+        titre: `${culture.nom} ${variete.nom}`, espace: nomEspace, surface: formats.nombre.format(plantation.surface),
+        date: afficherDate(plantation.date), debut: afficherDate(recolte.debut), fin: afficherDate(recolte.fin),
+      });
       if (!parEspace.has(plantation.espaceId)) parEspace.set(plantation.espaceId, []);
       parEspace.get(plantation.espaceId).push({
         cle: "plantation", id: plantation.id, objet: "plantations",
         debut: plantation.date, milieu: recolte.debut, fin: recolte.fin, classes: ["cal-croissance", "cal-recolte"],
         nom: culture.nom, second: variete.nom,
-        etiquette: remplir(F.calendrier.barre, {
-          titre: `${culture.nom} ${variete.nom}`, espace: nomEspace, surface: formats.nombre.format(plantation.surface),
-          date: afficherDate(plantation.date), debut: afficherDate(recolte.debut), fin: afficherDate(recolte.fin),
-        }),
+        marque: retour ? "cal-retour" : "",
+        etiquette: retour ? remplir(T.rotation.calendrier.barre, { etiquette, famille: retour.famille }) : etiquette,
         infobulle: () => [
           element("p", { class: "cal-info-titre" }, culture.nom, " ", element("span", { class: "cal-info-second" }, variete.nom)),
           element("p", { class: "cal-info-sous-titre" }, `${nomEspace} · ${surface}`),
           ligneInfo(F.faits.miseEnPlace, afficherDate(plantation.date)),
           ligneInfo(F.faits.recolte, remplir(F.periode, { debut: afficherDate(recolte.debut), fin: afficherDate(recolte.fin) })),
           ligneInfo(F.faits.production, elementFourchette(production, formats.volumes, F.unitesPluriel[culture.unite])),
+          ...(retour ? [element("p", { class: "cal-info-alerte" }, icone("alerte"), UiRotation.texteRetour(retour, espace))] : []),
           element("p", { class: "cal-info-action" }, F.calendrier.modifier),
         ],
       });
@@ -335,6 +344,10 @@
         nom: espace ? espace.nom : F.calendrier.espaceSupprime,
         detail: espace ? `${remplir(T.resume.surface, { valeur: formats.nombre.format(espace.surface) })} · ${T.typesEspace[espace.type]}` : "",
         alerte: sur ? F.calendrier.surOccupe : null,
+        action: regles && espace ? element("button", {
+          type: "button", class: "cal-que-planter", "data-que-planter": id,
+          "aria-label": remplir(T.rotation.quePlanter.boutonEspace, { espace: espace.nom }),
+        }, T.rotation.quePlanter.bouton) : null,
         barres: barresEspace,
         bandes: sur ? sur.periodes.map((periode) => ({
           debut: periode.debut, fin: periode.fin,
@@ -359,6 +372,7 @@
       ["cal-pastille-croissance", F.calendrier.croissance],
       ["cal-pastille-recolte", F.calendrier.recolte],
       ["cal-pastille-sur-occupation", F.calendrier.surOccupation],
+      ...(barres.some((b) => b.marque) ? [["cal-pastille-retour", T.rotation.calendrier.legende]] : []),
       ...(aujourdhuiVisible ? [["cal-pastille-aujourdhui", `${F.calendrier.aujourdhui}, ${jourMois.format(enDate(repere))}`]] : []),
     ]);
   }

@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R4 (rotation et associations) · Sessions consommées : 4 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R4 (rotation et associations) · Sessions consommées : 5 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5449,6 +5449,50 @@ $ ./verify.sh R4
 # pass 169
 # fail 0
 184 passed (2.1m)
+== R4 : vérification verte ==
+exit 0
+```
+
+## 15/10/2026 · T62 — Les aides de rotation à l'écran (EX-62 à EX-65)
+
+- Session 5 / 10 du seuil d'alerte de R4. T61 en ligne : déploiement Vercel READY (sha 8ca7750).
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME**, aucun écart (remarques mineures : sans délai connu, le tiroir ne dit pas « aucun délai » ; « Que planter ici ? » part de la date du jour même quand l'année choisie est une autre ; alertes de ligne en `role="status"` comme la sur-occupation).
+- Fait :
+  - `src/ui-rotation.js` (nouveau) : porte d'affichage `avecRegles` (`sans_regle_comme_r3`), textes des alertes, tiroir « Que planter ici ? » (date, surface libre par défaut, propositions de `Calc.suggestions` dans leur ordre avec leurs raisons ; « Planter… » ouvre le tiroir de plantation prérempli, rien n'est enregistré).
+  - `src/ui-saisie.js` : alertes `alerte-rotation` sur la ligne d'une plantation (retour trop tôt, précédent ou voisin défavorable) et sur celle de l'espace ; bouton « Que planter ici ? » ; dans le tiroir de plantation, « Avant », « À côté » et « Délai de retour » (aussi pour une plantation pas encore enregistrée ou en modification) ; `ouvrir(objet, valeurs)` prérempli.
+  - `src/ui-calendrier.js` : marque `cal-retour` sur la barre (étiquette pour lecteur d'écran et infobulle), légende quand une barre la porte, « Que planter ici ? » sous le nom de l'espace. `src/index.html` : tiroir, styles, câblage. `src/i18n.js` : textes.
+  - Défaut trouvé et corrigé avant relecture : quitter le champ date pour cliquer « Planter… » émettait `change`, qui reconstruisait la liste et perdait le clic ; la liste n'est plus recalculée quand la saisie n'a pas changé.
+- Tests nouveaux : 5 tests [T62] dans `test/rotation.e2e.js` (S18 sur une planche et sur une parcelle, S19, S20, `sans_regle_comme_r3` à l'écran) ; aucun test existant modifié. Captures à 390 et 1366 px sans défilement de page.
+
+Preuve rouge (avant le code ; le test de l'invariant passe déjà, c'est un garde-fou) :
+
+```text
+✘  1 test/rotation.e2e.js:222:1 › [T62] S18, EX-62 : un retour trop tôt est signalé sur la ligne de la plantation, celle de l'espace et la barre du calendrier, et la plantation est enregistrée (5.8s)
+✘  2 test/rotation.e2e.js:249:1 › [T62] S18, EX-62 : sur une parcelle qui a la place, seul le retour de trop est signalé (5.5s)
+✘  3 test/rotation.e2e.js:268:1 › [T62] S19, EX-63, EX-64 : le tiroir d'une plantation dit ce qui la précède et ce qui la voisine ; un voisin défavorable est signalé sur les deux lignes (5.6s)
+✘  4 test/rotation.e2e.js:313:1 › [T62] S20, EX-65 : « Que planter ici ? » classe les cultures avec leurs raisons et préremplit le tiroir de plantation, sans rien enregistrer (5.4s)
+✓  5 test/rotation.e2e.js:365:1 › [T62] sans_regle_comme_r3 : sans famille, association, rotation ni groupe, aucune aide de rotation ne s'affiche (491ms)
+4 failed
+1 passed (26.7s)
+```
+
+Preuve verte :
+
+```text
+$ ./verify.sh T62
+✓  1 test/rotation.e2e.js:222:1 › [T62] S18, EX-62 : un retour trop tôt est signalé sur la ligne de la plantation, celle de l'espace et la barre du calendrier, et la plantation est enregistrée (983ms)
+✓  2 test/rotation.e2e.js:249:1 › [T62] S18, EX-62 : sur une parcelle qui a la place, seul le retour de trop est signalé (476ms)
+✓  3 test/rotation.e2e.js:268:1 › [T62] S19, EX-63, EX-64 : le tiroir d'une plantation dit ce qui la précède et ce qui la voisine ; un voisin défavorable est signalé sur les deux lignes (546ms)
+✓  4 test/rotation.e2e.js:313:1 › [T62] S20, EX-65 : « Que planter ici ? » classe les cultures avec leurs raisons et préremplit le tiroir de plantation, sans rien enregistrer (747ms)
+✓  5 test/rotation.e2e.js:365:1 › [T62] sans_regle_comme_r3 : sans famille, association, rotation ni groupe, aucune aide de rotation ne s'affiche (421ms)
+5 passed (4.2s)
+== T62 : vérification verte ==
+exit 0
+$ ./verify.sh R4
+# tests 169
+# pass 169
+# fail 0
+189 passed (2.1m)
 == R4 : vérification verte ==
 exit 0
 ```
