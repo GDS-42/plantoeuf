@@ -8,7 +8,7 @@ Dossier des valeurs de `src/exemple.js` : pour chacune, sa fourchette basse / m�
 - **Marques.** **[R]** source réunionnaise ; **[NR]** référence non réunionnaise (Hexagone, Antilles-Guyane, Polynésie, Mayotte), marquée comme telle ; **[E]** estimation de l'agent, raisonnement donné ; **[N]** texte national applicable à La Réunion.
 - **Règle des bornes.** Quand une source ne donne qu'une valeur moyenne, elle sert de médiane, et les bornes valent les deux tiers et les quatre tiers de la médiane **[E]**, sauf quand une source donne une borne (plafond agronomique, prix de pénurie relevé).
 - **Saisonnalité.** L'outil porte une seule fourchette par valeur pour l'année : pour les prix, la basse est le prix d'abondance (saison fraîche), la médiane le prix habituel, la haute le prix de pénurie (saison chaude, après un cyclone), d'après les relevés datés de la DAAF.
-- **Année.** Toutes les dates de la ferme tombent dans l'année de chargement (règle de la spec) ; une récolte qui déborde sur l'année suivante n'est pas vendue dans la projection, faute de séance.
+- **Année.** Toutes les dates de la ferme tombent dans l'année de chargement (règle de la spec) ; une récolte qui déborde sur l'année suivante n'est pas vendue dans la projection, faute de séance. **R3 (T54)** : le 1er janvier et le 31 décembre des séances et des lots sont les **bornes de l'année** — le 1er janvier s'il tombe du lundi au jeudi, sinon le lundi suivant ; le 31 décembre s'il tombe du jeudi au dimanche, sinon le dimanche précédent (`Calc.bornesDeLAnnee`). Ainsi toutes les semaines de la ferme comptent dans son année (une semaine compte dans le mois de son jeudi) ; en 2026, les bornes sont le 1er janvier et le 31 décembre, rien ne change. Choix de l'agent [E], sans effet sur les valeurs sourcées.
 
 ## 1. La ferme
 
@@ -159,7 +159,7 @@ Le coût du km saisi sur chaque point de vente (0,23 / 0,36 / 0,56 €) est celu
 | Paniers de l'AMAPéi | jeudi | 12 km [E] | 0 € | Sur le modèle de l'AMAPéi Mahavel, liée à une ferme de Petite-Île : distribution le jeudi à Bassin Plat (Saint-Pierre) ; contrat payé d'avance ; c'est le mangeur qui adhère [V9] [R] |
 | Épicerie de Saint-Pierre | mardi | 12 km [E] | 0 € | L'épicerie paie le prix de revendeur (§ 8) ; une livraison par semaine [E] |
 
-Toutes les séances ont lieu chaque semaine, du 1er janvier au 31 décembre : les marchés forains du Sud n'ont pas de fermeture saisonnière connue [V6] [V8]. Les distances, sans calculateur d'itinéraire, sont des estimations à ± 3 km.
+Toutes les séances ont lieu chaque semaine, du 1er janvier au 31 décembre (aux bornes de l'année, § 0) : les marchés forains du Sud n'ont pas de fermeture saisonnière connue [V6] [V8]. Les distances, sans calculateur d'itinéraire, sont des estimations à ± 3 km.
 
 ## 8. Débouchés (`DEBOUCHES`)
 
@@ -236,7 +236,7 @@ Le calibrage vise une ferme réaliste. La demande d'un débouché ne dépasse pa
 | Champ | Valeur | Source |
 | --- | --- | --- |
 | Organisation | Deux lots de 100 poules, décalés de six mois | Pour des œufs en continu, installer un nouveau lot 3 à 4 mois avant la réforme du précédent (Idele et Chambre d'agriculture de La Réunion, 2020) [H1] [R]. Deux lots de 100 : jamais plus de 200 poules présentes, sous le seuil de 250 de la vente directe sans centre d'emballage [R1] [N] |
-| Dates | Lot d'octobre (arrivé l'année précédente) : en ponte du 01/01 au 15/11 ; lot d'avril : arrivée le 06/04, ponte dès le 27/04, jusqu'au 31/12 | Poulettes de 16 à 18 semaines, ponte 2 à 5 semaines après l'arrivée, 12 à 14 mois de ponte [H2] [H3] [NR] ; arrivées hors de la saison chaude [E]. Les dates sont ramenées à l'année de chargement (le lot d'avril part à la réforme en mai de l'année suivante) |
+| Dates | Lot d'octobre (arrivé l'année précédente) : en ponte du 01/01 au 15/11 ; lot d'avril : arrivée le 06/04, ponte dès le 27/04, jusqu'au 31/12 (01/01 et 31/12 : bornes de l'année, § 0) | Poulettes de 16 à 18 semaines, ponte 2 à 5 semaines après l'arrivée, 12 à 14 mois de ponte [H2] [H3] [NR] ; arrivées hors de la saison chaude [E]. Les dates sont ramenées à l'année de chargement (le lot d'avril part à la réforme en mai de l'année suivante) |
 | Ponte | 0,66 / 0,72 / 0,80 œuf par poule et par jour | Taux de ponte de 73 % (cas courant) et 80 % (objectif), poules au sol, Guadeloupe 2020 [H2] [NR]. Basse et médiane : corrigées d'une mortalité de 12 à 18 % [H2], l'outil n'ayant pas de champ « mortalité » ; haute : l'objectif de 80 %, non corrigé (plafond génétique ≈ 0,82) |
 | Pertes | 6 % | 3 / 6 / 10 % [E] : autoconsommation 1 à 2,5 %, œufs cassés ou sales ; aucune source chiffrée |
 | Aliment | 105 / 115 / 130 g par poule et par jour | 112 g par jour en ponte (Guadeloupe, Guyane) [H2] [H3] [NR] ; − 4 à − 10 g par forte chaleur [H4] [NR] ; un peu plus en plein air [E] |

@@ -6,9 +6,9 @@
 // C'est le seul fichier où figurent des valeurs agronomiques et des prix ; ce sont des repères pour
 // montrer l'outil, pas des références pour une ferme réelle.
 (function (racine, fabrique) {
-  if (typeof module === "object" && module.exports) module.exports = fabrique();
-  else racine.Exemple = fabrique();
-})(globalThis, function () {
+  if (typeof module === "object" && module.exports) module.exports = fabrique(require("./calc.js"));
+  else racine.Exemple = fabrique(racine.Calc);
+})(globalThis, function (Calc) {
   "use strict";
 
   function f(basse, mediane, haute) {
@@ -237,8 +237,12 @@
   ];
 
   // Enregistre la ferme d'exemple dans `ferme` (store ouvert) pour l'année `annee`, et retient
-  // les identifiants créés pour pouvoir l'effacer d'un geste.
+  // les identifiants créés pour pouvoir l'effacer d'un geste. R3 (EX-60) : le 1er janvier et le
+  // 31 décembre des séances et des lots sont les bornes de l'année (Calc.bornesDeLAnnee), pour que
+  // toutes les semaines de la ferme tombent dans son année.
   function charger(ferme, annee) {
+    const bornes = Calc.bornesDeLAnnee(annee);
+    const dateDeLAnnee = (jourMois) => (jourMois === "01-01" ? bornes.debut : jourMois === "12-31" ? bornes.fin : `${annee}-${jourMois}`);
     const ids = { espaces: [], cultures: [], varietes: [], plantations: [], pointsVente: [], seances: [], debouches: [], lots: [], vehicules: [], charges: [] };
     const cree = (objet, champs) => {
       const enregistrement = ferme.ajouter(objet, champs);
@@ -266,13 +270,13 @@
     const points = {};
     for (const [cle, { vehicule, ...point }] of Object.entries(POINTS_VENTE)) points[cle] = cree("pointsVente", { ...point, vehiculeId: vehicules[vehicule] });
     for (const { point, debut, fin, ...seance } of SEANCES) {
-      cree("seances", { ...seance, pointVenteId: points[point], debut: `${annee}-${debut}`, fin: `${annee}-${fin}` });
+      cree("seances", { ...seance, pointVenteId: points[point], debut: dateDeLAnnee(debut), fin: dateDeLAnnee(fin) });
     }
     for (const { point, produit, ...debouche } of DEBOUCHES) {
       cree("debouches", { ...debouche, pointVenteId: points[point], produitId: produit === OEUFS ? OEUFS : cultures[produit] });
     }
     for (const { arrivee, debutPonte, reforme, ...lot } of LOTS) {
-      cree("lots", { ...lot, arrivee: `${annee}-${arrivee}`, debutPonte: `${annee}-${debutPonte}`, reforme: `${annee}-${reforme}` });
+      cree("lots", { ...lot, arrivee: dateDeLAnnee(arrivee), debutPonte: dateDeLAnnee(debutPonte), reforme: dateDeLAnnee(reforme) });
     }
     for (const charge of CHARGES) cree("charges", charge);
     ferme.noterExemple(ids);

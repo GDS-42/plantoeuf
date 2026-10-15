@@ -234,3 +234,52 @@ test("[T53] EX-57 : points de vente, matrice offre-demande et son bilan, véhicu
   procheFourchette(f(besoins2026.cout.basse + besoins2027.cout.basse, besoins2026.cout.mediane + besoins2027.cout.mediane,
     besoins2026.cout.haute + besoins2027.cout.haute), Calc.besoinsParMois(TRAVERSEE).cout);
 });
+
+// ---- T54 : la ferme d'exemple dans son année (EX-60)
+
+const Store = require("../src/store.js");
+const Exemple = require("../src/exemple.js");
+
+function exemple(annee) {
+  const valeurs = new Map();
+  const ferme = Store.ouvrir({ getItem: (cle) => (valeurs.has(cle) ? valeurs.get(cle) : null), setItem: (cle, valeur) => valeurs.set(cle, String(valeur)) });
+  Exemple.charger(ferme, annee);
+  const d = {};
+  for (const objet of Store.OBJETS) d[objet] = ferme.lister(objet);
+  return d;
+}
+
+test("[T54] les bornes de l'année : le 1er janvier s'il tombe du lundi au jeudi, sinon le lundi suivant ; le 31 décembre s'il tombe du jeudi au dimanche, sinon le dimanche précédent", () => {
+  assert.deepEqual(Calc.bornesDeLAnnee(2025), { debut: "2025-01-01", fin: "2025-12-28" });
+  assert.deepEqual(Calc.bornesDeLAnnee(2026), { debut: "2026-01-01", fin: "2026-12-31" });
+  assert.deepEqual(Calc.bornesDeLAnnee(2027), { debut: "2027-01-04", fin: "2027-12-31" });
+  assert.deepEqual(Calc.bornesDeLAnnee(2028), { debut: "2028-01-03", fin: "2028-12-31" });
+  assert.deepEqual(Calc.bornesDeLAnnee(2029), { debut: "2029-01-01", fin: "2029-12-30" });
+  // Les bornes tombent toujours dans des semaines dont le jeudi est dans l'année.
+  for (let annee = 2020; annee <= 2040; annee++) {
+    const { debut, fin } = Calc.bornesDeLAnnee(annee);
+    assert.ok(Calc.moisDuJeudi(Calc.lundiDe(debut)).startsWith(`${annee}-`), `${annee} ${debut}`);
+    assert.ok(Calc.moisDuJeudi(Calc.lundiDe(fin)).startsWith(`${annee}-`), `${annee} ${fin}`);
+  }
+});
+
+test("[T54] EX-60, exemple_dans_son_annee : la ferme d'exemple chargée une année n'a que cette année, de janvier à décembre", () => {
+  for (let annee = 2024; annee <= 2035; annee++) {
+    const d = exemple(annee);
+    assert.deepEqual(Calc.annees(d), [annee], String(annee));
+    const t = Calc.tableau(d);
+    assert.deepEqual(t.mois, mois(annee), String(annee));
+    assert.deepEqual(Calc.tableau(d, { annee }), t, String(annee));
+    // Ses séances et ses lots qui couraient du 1er janvier au 31 décembre prennent les bornes de l'année.
+    const { debut, fin } = Calc.bornesDeLAnnee(annee);
+    for (const seance of d.seances) assert.deepEqual([seance.debut, seance.fin], [debut, fin], String(annee));
+    assert.deepEqual(d.lots.map((l) => [l.arrivee, l.reforme]).sort(), [[`${annee}-04-06`, fin], [debut, `${annee}-11-15`]].sort(), String(annee));
+  }
+});
+
+test("[T54] en 2026, la ferme d'exemple ne change pas : séances et lots du 1er janvier au 31 décembre", () => {
+  const d = exemple(2026);
+  for (const seance of d.seances) assert.deepEqual([seance.debut, seance.fin], ["2026-01-01", "2026-12-31"]);
+  assert.ok(d.lots.some((l) => l.arrivee === "2026-01-01" && l.debutPonte === "2026-01-01"));
+  assert.ok(d.lots.some((l) => l.reforme === "2026-12-31"));
+});

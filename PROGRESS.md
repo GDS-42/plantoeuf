@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R3 (plusieurs années) · Sessions consommées : 1 / 7 · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R3 (plusieurs années) · Sessions consommées : 2 / 7 · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5117,6 +5117,48 @@ $ ./verify.sh R3
 # pass 151
 # fail 0
 166 passed (2.0m)
+== R3 : vérification verte ==
+exit 0
+```
+
+## 15/10/2026 · T54 — Ferme d'exemple dans son année (EX-60)
+
+- Session 2 / 7 du seuil d'alerte de R3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (règle des bornes confrontée à une dérivation indépendante sur 2000–2100 ; exemple de 2026 strictement identique à avant ; EX-60 vérifié de 2020 à 2040, alors qu'avant 17 années sur 21 débordaient sur 13 ou 14 mois).
+- Fait : `Calc.bornesDeLAnnee` ; `src/exemple.js` place aux bornes de l'année le 1er janvier et le 31 décembre de ses séances et de ses lots (dépendance interne à `calc.js`, chargé avant lui) ; note au § 0, 7 et 9 de `docs/specs/R2/DONNEES.md` (choix de l'agent [E], aucune valeur sourcée changée). Remarque du relecteur reprise après relecture : les plantations gardent leur date telle quelle (les bornes ne visent que séances et lots, selon la spec).
+- Comme en T53, le test de bout en bout [T54] est dans `test/annees.e2e.js` (✎ Décisions).
+
+Preuve rouge (avant le code) :
+
+```text
+$ node --test test/annees.test.js
+not ok 9 - [T54] les bornes de l'année : le 1er janvier s'il tombe du lundi au jeudi, sinon le lundi suivant ; le 31 décembre s'il tombe du jeudi au dimanche, sinon le dimanche précédent
+not ok 10 - [T54] EX-60, exemple_dans_son_annee : la ferme d'exemple chargée une année n'a que cette année, de janvier à décembre
+# tests 11
+# pass 9
+# fail 2
+$ npx playwright test --grep "\[T54\]" → 1 failed
+```
+
+Preuve verte :
+
+```text
+$ ./verify.sh T54
+ok 1 - [T54] les bornes de l'année : le 1er janvier s'il tombe du lundi au jeudi, sinon le lundi suivant ; le 31 décembre s'il tombe du jeudi au dimanche, sinon le dimanche précédent
+ok 2 - [T54] EX-60, exemple_dans_son_annee : la ferme d'exemple chargée une année n'a que cette année, de janvier à décembre
+ok 3 - [T54] en 2026, la ferme d'exemple ne change pas : séances et lots du 1er janvier au 31 décembre
+# tests 16
+# pass 16
+# fail 0
+✓  1 test/annees.e2e.js:28:1 › [T54] EX-60 : la ferme d'exemple chargée en 2027 montre janvier à décembre 2027, sans colonne de décembre 2026 (768ms)
+1 passed (1.6s)
+== T54 : vérification verte ==
+exit 0
+$ ./verify.sh R3
+# tests 154
+# pass 154
+# fail 0
+167 passed (2.1m)
 == R3 : vérification verte ==
 exit 0
 ```

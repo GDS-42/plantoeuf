@@ -198,6 +198,18 @@
     return liste.reduce((meilleure, a) => (Math.abs(a - courante) <= Math.abs(meilleure - courante) ? a : meilleure));
   }
 
+  // R3 (EX-60) : les bornes d'une année dont les semaines tombent toutes dans l'année (règle du jeudi) :
+  // le 1er janvier s'il tombe du lundi au jeudi, sinon le lundi suivant ; le 31 décembre s'il tombe du
+  // jeudi au dimanche, sinon le dimanche précédent.
+  function bornesDeLAnnee(annee) {
+    const [premier, dernier] = [`${annee}-01-01`, `${annee}-12-31`];
+    const [jourPremier, jourDernier] = [jourDeLaSemaine(premier), jourDeLaSemaine(dernier)];
+    return {
+      debut: jourPremier <= 4 ? premier : ajouterJours(premier, 8 - jourPremier),
+      fin: jourDernier >= 4 ? dernier : ajouterJours(dernier, -jourDernier),
+    };
+  }
+
   function plantationsCalculables({ cultures = [], varietes = [], plantations = [] }) {
     const actifs = (liste) => liste.filter((e) => !e.supprimeLe);
     const culturesParId = new Map(actifs(cultures).map((c) => [c.id, c]));
@@ -929,5 +941,6 @@
     surOccupations,
     annees,
     anneeParDefaut,
+    bornesDeLAnnee,
   };
 });

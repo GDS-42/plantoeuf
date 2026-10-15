@@ -24,3 +24,16 @@ test("[T53] EX-56 : le fichier livré calcule une année à la fois, la semaine 
   expect(resultat.mois2027[0]).toBe("2027-01");
   expect(resultat.decembre).toBeCloseTo(24.6, 6);
 });
+
+test("[T54] EX-60 : la ferme d'exemple chargée en 2027 montre janvier à décembre 2027, sans colonne de décembre 2026", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2027-05-20T10:00:00+04:00"));
+  await page.goto("index.html");
+  await page.locator("#charger-exemple").click();
+  await expect(page.locator("#bandeau-exemple")).toBeVisible();
+  await page.evaluate(() => { location.hash = "synthese"; });
+  const mois = page.locator("#tableau thead th[data-mois]:not(.col-total)");
+  await expect(mois).toHaveCount(12);
+  await expect(mois.first()).toHaveAttribute("data-mois", "2027-01");
+  await expect(mois.last()).toHaveAttribute("data-mois", "2027-12");
+  await expect(page.locator('#tableau thead th[data-mois="2026-12"]')).toHaveCount(0);
+});
