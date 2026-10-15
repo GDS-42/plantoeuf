@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R4 (rotation et associations) · Sessions consommées : 3 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R4 (rotation et associations) · Sessions consommées : 4 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5407,6 +5407,48 @@ $ ./verify.sh R4
 # pass 169
 # fail 0
 179 passed (2.3m)
+== R4 : vérification verte ==
+exit 0
+```
+
+## 15/10/2026 · T61 — Saisie des règles de rotation sur la page Cultures (EX-61)
+
+- Session 4 / 10 du seuil d'alerte de R4.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME**, aucun écart (remarques mineures : `data-fait` porté par la valeur dans la ligne d'une famille, imposé par le test écrit avant ; le bloc des familles sans fiche paraît dès qu'une culture nomme une famille, invitation et non alerte ; la suppression des trois objets passe par le mécanisme générique déjà testé).
+- Fait :
+  - `src/index.html` : sections Familles et délais de retour, Associations, Rotations sur la page Cultures ; trois tiroirs ; dans le tiroir d'une culture, le choix du groupe de rotation et la liste des familles connues (`datalist`, la famille reste un texte libre) ; styles des nouvelles listes, à 390 et 1366 px sans défilement de page.
+  - `src/ui-saisie.js` : lignes d'une famille (délai en fourchette, « délai non saisi », cultures rattachées par `Calc.familleDe`), d'une association (« tomate, puis courgette » ou « tomate et laitue », type et effet), d'une rotation (groupes dans l'ordre, coupés avant une flèche) ; fait « Groupe » d'une culture s'il est donné ; champs `data-format="liste"` (les six rangs d'une rotation forment une liste ordonnée) ; familles nommées par une culture et sans fiche, ajoutables d'un clic ; libellés des cultures d'une association selon son type.
+  - `src/ui-navigation.js` : familles, associations et rotations mènent à la page Cultures. `src/i18n.js` : textes, groupes, types, effets, messages des erreurs `groupe_inconnu`, `association_invalide`, `rotation_invalide` (aussi à l'import : « Rien n'a été enregistré »).
+- Tests nouveaux : 5 tests [T61] dans `test/rotation.e2e.js` (aucun test existant modifié).
+
+Preuve rouge (les tests [T61] sur le code d'avant la tâche) :
+
+```text
+✘  1 test/rotation.e2e.js:82:1 › [T61] EX-61 : la page Cultures saisit une famille et son délai de retour, et dit quelles cultures en sont (5.3s)
+✘  2 test/rotation.e2e.js:114:1 › [T61] EX-61 : le tiroir d'une culture propose les familles connues et son groupe de rotation (618ms)
+✘  3 test/rotation.e2e.js:134:1 › [T61] EX-61 : une association se saisit entre deux cultures, avec son type et son effet ; deux fois la même culture est refusée (5.3s)
+✘  4 test/rotation.e2e.js:162:1 › [T61] EX-61 : une rotation ordonne ses groupes ; un seul groupe ou un doublon sont refusés (30.1s)
+✘  5 test/rotation.e2e.js:186:1 › [T61] un fichier dont une rotation est mal formée est refusé avec un message clair, sans rien changer (5.4s)
+5 failed
+```
+
+Preuve verte :
+
+```text
+$ ./verify.sh T61
+✓  1 test/rotation.e2e.js:82:1 › [T61] EX-61 : la page Cultures saisit une famille et son délai de retour, et dit quelles cultures en sont (1.3s)
+✓  2 test/rotation.e2e.js:114:1 › [T61] EX-61 : le tiroir d'une culture propose les familles connues et son groupe de rotation (842ms)
+✓  3 test/rotation.e2e.js:134:1 › [T61] EX-61 : une association se saisit entre deux cultures, avec son type et son effet ; deux fois la même culture est refusée (1.1s)
+✓  4 test/rotation.e2e.js:162:1 › [T61] EX-61 : une rotation ordonne ses groupes ; un seul groupe ou un doublon sont refusés (1.1s)
+✓  5 test/rotation.e2e.js:186:1 › [T61] un fichier dont une rotation est mal formée est refusé avec un message clair, sans rien changer (341ms)
+5 passed (5.6s)
+== T61 : vérification verte ==
+exit 0
+$ ./verify.sh R4
+# tests 169
+# pass 169
+# fail 0
+184 passed (2.1m)
 == R4 : vérification verte ==
 exit 0
 ```

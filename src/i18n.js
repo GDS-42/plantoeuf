@@ -44,7 +44,7 @@
       cultures: {
         nav: "Cultures",
         titre: "Cultures et variétés",
-        description: "Ce que vous cultivez : rendement, prix, durée de récolte. Une variété reprend les valeurs de sa culture, sauf celles que vous changez.",
+        description: "Ce que vous cultivez : rendement, prix, durée de récolte. Une variété reprend les valeurs de sa culture, sauf celles que vous changez. Plus bas, vos règles pour faire tourner les cultures : familles, associations et rotations.",
       },
       plantations: {
         nav: "Plantations",
@@ -84,6 +84,10 @@
       lots: { ajouter: "Ajouter un lot de poules", modifier: "Modifier le lot de poules" },
       vehicules: { ajouter: "Ajouter un véhicule", modifier: "Modifier le véhicule" },
       charges: { ajouter: "Ajouter une charge fixe", modifier: "Modifier la charge fixe" },
+      // R4 (EX-61) : règles de rotation, page Cultures.
+      familles: { ajouter: "Ajouter une famille", modifier: "Modifier la famille" },
+      associations: { ajouter: "Ajouter une association", modifier: "Modifier l'association" },
+      rotations: { ajouter: "Ajouter une rotation", modifier: "Modifier la rotation" },
     },
     annonces: {
       ajoute: "Ajouté.",
@@ -118,6 +122,9 @@
       titre: "Cultures",
       nom: "Nom de la culture",
       famille: "Famille botanique",
+      // R4 (EX-61) : le groupe sert à l'ordre des rotations ; la famille, écrite comme une famille enregistrée, à son délai de retour.
+      groupe: "Groupe de rotation",
+      sansGroupe: "— non précisé —",
       unite: "Unité de vente",
       rendement: "Rendement par m² (estimation)",
       prix: "Prix de vente par unité, en € (estimation)",
@@ -133,6 +140,49 @@
       intrants: "Intrants par m², en € (estimation) : terreau, engrais, paillage…",
       ajouter: "Ajouter la culture",
       aucun: "Vos cultures apparaîtront ici, avec leur rendement, leur prix de vente et leur période de récolte.",
+    },
+    // R4 (EX-61) : familles botaniques et leur délai de retour sur un même espace.
+    familles: {
+      titre: "Familles et délais de retour",
+      nom: "Nom de la famille",
+      delaiRetour: "Délai de retour, en années (estimation, facultatif)",
+      note: "Note (facultatif) : la raison du délai, la source…",
+      aide: "Le délai de retour : combien d'années attendre avant de remettre une culture de cette famille au même endroit, compté depuis la fin de sa récolte. Un nombre, ou trois : basse / médiane / haute (ex. 3 / 4 / 5). Une culture se rattache à la famille qui porte le même nom que sa famille botanique.",
+      ajouter: "Ajouter la famille",
+      aucun: "Donnez à chaque famille botanique de vos cultures un délai de retour : l'outil signalera une culture remise trop tôt au même endroit.",
+      manquantes: "Ces familles de vos cultures n'ont pas encore de délai de retour :",
+      ajouterManquante: "Ajouter la famille {nom}",
+      sansDelai: "délai non saisi",
+      aucuneCulture: "aucune culture de cette famille",
+      an: "an",
+      ans: "ans",
+    },
+    // R4 (EX-61) : cultures qui s'entraident ou se gênent, côte à côte ou l'une après l'autre.
+    associations: {
+      titre: "Associations",
+      type: "Type",
+      effet: "Effet",
+      note: "Note (facultatif) : la raison, la source…",
+      libelles: {
+        voisinage: { a: "Une culture", b: "L'autre culture" },
+        precedent: { a: "Culture d'avant", b: "Culture d'après" },
+      },
+      titres: { voisinage: "{a} et {b}", precedent: "{a}, puis {b}" },
+      puces: { voisinage: "voisinage", precedent: "précédent" },
+      aide: "Voisinage : les deux cultures poussent en même temps sur un même espace. Précédent : la culture d'après suit celle d'avant sur un même espace. L'outil s'en sert dans le tiroir des plantations et pour proposer quoi planter.",
+      ajouter: "Ajouter l'association",
+      aucun: "Notez ici les cultures qui s'entraident ou se gênent, côte à côte sur un même espace ou l'une après l'autre.",
+    },
+    // R4 (EX-61) : l'ordre des groupes de cultures sur un espace.
+    rotations: {
+      titre: "Rotations",
+      nom: "Nom de la rotation",
+      groupes: "Groupes, dans l'ordre où ils se suivent",
+      rangs: ["1er groupe", "2e groupe", "3e groupe", "4e groupe", "5e groupe", "6e groupe"],
+      aucunGroupe: "— aucun —",
+      aide: "De 2 à 6 groupes, chacun une seule fois. Après le dernier, la rotation reprend au premier. Donnez aussi son groupe à chaque culture : l'outil proposera, sur un espace libéré, une culture du groupe qui suit.",
+      ajouter: "Ajouter la rotation",
+      aucun: "Une rotation ordonne vos groupes de cultures sur un espace : l'outil proposera ensuite la culture qui suit.",
     },
     varietes: {
       titre: "Variétés",
@@ -553,6 +603,11 @@
         oeufs: "Œufs par semaine de ponte",
         aliment: "Aliment par semaine",
         coutM2: "Mise en place",
+        // R4 (EX-61)
+        groupe: "Groupe",
+        delai: "Délai de retour",
+        culturesFamille: "Cultures",
+        ordre: "Ordre",
       },
       eurosParM2: "€/m²",
       vendue: { kg: "vendue au kg", botte: "vendue à la botte", piece: "vendue à la pièce" },
@@ -668,6 +723,23 @@
       botte: "botte",
       piece: "pièce",
     },
+    // R4 (EX-61) : groupes de rotation, types et effets des associations.
+    groupes: {
+      feuille: "légume-feuille",
+      fruit: "légume-fruit",
+      racine: "légume-racine",
+      bulbe: "bulbe",
+      legumineuse: "légumineuse",
+      engrais_vert: "engrais vert",
+    },
+    typesAssociation: {
+      voisinage: "Voisinage : côte à côte",
+      precedent: "Précédent : l'une après l'autre",
+    },
+    effets: {
+      favorable: "favorable",
+      defavorable: "défavorable",
+    },
     // R1 (EX-39, EX-40) : dates saisies jour, mois, année.
     dates: {
       modele: "jj/mm/aaaa",
@@ -681,6 +753,10 @@
       import_version: "Ce fichier vient d'une version plus récente de plantoeuf. Rien n'a été changé.",
       date_invalide: "Écrivez la date jour/mois/année, par exemple 15/03/2026.",
       dates_desordonnees: "Les dates doivent se suivre : arrivée, puis premier jour de ponte, puis réforme (le même jour est permis).",
+      // R4 (EX-61) : aussi à l'import d'un fichier, d'où « Rien n'a été enregistré ».
+      groupe_inconnu: "Ce groupe de rotation n'existe pas : choisissez-le dans la liste. Rien n'a été enregistré.",
+      association_invalide: "Une association lie deux cultures différentes, avec un type et un effet. Rien n'a été enregistré.",
+      rotation_invalide: "Une rotation ordonne de 2 à 6 groupes, chacun une seule fois. Rien n'a été enregistré.",
       inconnue: "L'enregistrement n'a pas pu se faire.",
     },
   };

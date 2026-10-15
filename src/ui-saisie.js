@@ -93,8 +93,50 @@
         [F.faits.pertes, pertes(culture.pertes), "pertes"],
         // N3 (EX-47) : le coût de mise en place d'un m², s'il y en a un.
         ...coutM2(culture),
+        // R4 (EX-61) : le groupe de rotation, s'il est donné.
+        ...(culture.groupe ? [[F.faits.groupe, T.groupes[culture.groupe] || culture.groupe, "groupe"]] : []),
       ],
     });
+  }
+
+  // ---- R4 (EX-61) : règles de rotation.
+
+  // Une famille, son délai de retour (fourchette en années) et les cultures qui s'y rattachent par le nom.
+  // Ici, c'est la valeur de chaque fait qui porte data-fait : la liste des cultures se lit seule.
+  function resumeFamille(famille, nomsCultures) {
+    const delai = famille.delaiRetour;
+    return contenuLigne({
+      titre: famille.nom,
+      puces: delai ? [] : [{ texte: T.familles.sansDelai, ton: "alerte" }],
+      faits: [
+        [F.faits.delai, element("span", { "data-fait": "delai" }, delai
+          ? elementFourchette(delai, formats.nombre, delai.mediane < 2 ? T.familles.an : T.familles.ans)
+          : element("span", { class: "ligne-vide" }, T.synthese.vide))],
+        [F.faits.culturesFamille, nomsCultures.length
+          ? element("span", { "data-fait": "cultures" }, nomsCultures.join(", "))
+          : element("span", { "data-fait": "cultures", class: "ligne-vide" }, T.familles.aucuneCulture)],
+      ],
+      note: famille.note || null,
+    });
+  }
+
+  // « tomate, puis courgette » (précédent) ou « ail et haricot vert » (voisinage), avec le type et l'effet.
+  function resumeAssociation(association, cultures) {
+    const A = T.associations;
+    const titre = remplir(A.titres[association.type] || A.titres.voisinage, {
+      a: nomDe(cultures.get(association.cultureA)), b: nomDe(cultures.get(association.cultureB)),
+    });
+    return contenuLigne({
+      titre,
+      puces: [{ texte: A.puces[association.type] }, { texte: T.effets[association.effet], ton: association.effet === "favorable" ? "verte" : "alerte" }],
+      note: association.note || null,
+    });
+  }
+
+  // Les groupes dans leur ordre : « légume-fruit → légume-feuille → … », coupé seulement avant une flèche.
+  function resumeRotation(rotation) {
+    const groupes = rotation.groupes.map((g, i) => `${i ? "→\u00a0" : ""}${T.groupes[g] || g}`);
+    return contenuLigne({ titre: rotation.nom, faits: [[F.faits.ordre, morceaux(groupes, " "), "groupes"]] });
   }
 
   // Une variété ne montre que ce qui diffère de sa culture, chaque fait dans la colonne de la culture.
@@ -219,7 +261,9 @@
     const champs = {};
     for (const entree of formulaire.querySelectorAll("[data-champ]")) {
       const champ = entree.dataset.champ;
-      if (entree.dataset.format === "nombre") champs[champ] = entree.value === "" ? null : Number(entree.value);
+      // R4 (EX-61) : plusieurs champs « liste » du même nom forment une liste ordonnée, sans les choix vides.
+      if (entree.dataset.format === "liste") champs[champ] = [...(champs[champ] || []), ...(entree.value === "" ? [] : [entree.value])];
+      else if (entree.dataset.format === "nombre") champs[champ] = entree.value === "" ? null : Number(entree.value);
       else if (entree.dataset.format === "fourchette") champs[champ] = Store.lireFourchette(entree.value);
       else if (entree.dataset.format === "date") champs[champ] = Store.lireDate(entree.value);
       else champs[champ] = entree.value.trim();
@@ -228,9 +272,14 @@
   }
 
   function ecrireFormulaire(formulaire, enregistrement) {
+    const rangs = {};
     for (const entree of formulaire.querySelectorAll("[data-champ]")) {
       const valeur = enregistrement[entree.dataset.champ];
-      if (valeur === null || valeur === undefined) entree.value = "";
+      if (entree.dataset.format === "liste") {
+        // Le n-ième champ « liste » reçoit le n-ième élément de la liste.
+        const rang = rangs[entree.dataset.champ] = (rangs[entree.dataset.champ] ?? -1) + 1;
+        entree.value = Array.isArray(valeur) && valeur[rang] !== undefined ? valeur[rang] : "";
+      } else if (valeur === null || valeur === undefined) entree.value = "";
       else if (entree.dataset.format === "fourchette") entree.value = saisieFourchette(valeur);
       else if (entree.dataset.format === "date") entree.value = Store.ecrireDate(valeur);
       else entree.value = String(valeur);
@@ -339,11 +388,22 @@
         element("div", {}, element("dt", {}, libelle), element("dd", {}, valeur)))));
     }
 
+    // R4 (EX-61) : les deux cultures d'une association se nomment selon son type (avant / après pour un précédent).
+    function libellesAssociation() {
+      const libelles = T.associations.libelles[document.getElementById("association-type").value] || T.associations.libelles.voisinage;
+      document.getElementById("association-libelleA").textContent = libelles.a;
+      document.getElementById("association-libelleB").textContent = libelles.b;
+    }
+
     function brancherFormulaire(formulaire) {
       const objet = formulaire.dataset.objet;
       formulaires[objet] = formulaire;
       if (objet === "plantations") {
         for (const type of ["input", "change", "ouverture"]) formulaire.addEventListener(type, () => apercuPlantation(formulaire));
+      }
+      if (objet === "associations") {
+        for (const type of ["change", "ouverture"]) formulaire.addEventListener(type, libellesAssociation);
+        libellesAssociation();
       }
 
       formulaire.addEventListener("submit", (evenement) => {
@@ -458,6 +518,14 @@
     function brancher(racine) {
       racine.querySelectorAll('input[data-format="date"]').forEach(brancherDate);
       racine.querySelectorAll("form[data-objet]").forEach(brancherFormulaire);
+      // R4 (EX-61) : une famille nommée par une culture, sans fiche, s'ajoute d'un clic, son nom déjà écrit.
+      document.getElementById("familles-manquantes").addEventListener("click", (evenement) => {
+        const bouton = evenement.target.closest("[data-famille-manquante]");
+        if (!bouton) return;
+        ouvrir("familles");
+        document.getElementById("famille-nom").value = bouton.dataset.familleManquante;
+        document.getElementById("famille-delaiRetour").focus();
+      });
       // Hors des listes, un élément [data-modifier="<objet>"][data-id] ouvre la modification de cet
       // enregistrement : les barres des calendriers de culture et des lots (EX-35).
       racine.addEventListener("click", (evenement) => {
@@ -511,12 +579,48 @@
       afficherListe("cultures", cultures, resumeCulture, enEdition("cultures"));
       afficherListe("varietes", varietes, (v) => resumeVariete(v, toutesCultures), enEdition("varietes"));
       afficherListe("plantations", plantations, (p) => resumePlantation(p, toutesVarietes, toutesCultures, tousEspaces), enEdition("plantations"));
+      afficherRegles(donnees, cultures, toutesCultures);
 
       remplirChoix(document.getElementById("variete-cultureId"), cultures.map((c) => ({ valeur: c.id, libelle: c.nom })));
       remplirChoix(document.getElementById("plantation-varieteId"), varietes.map((v) => ({ valeur: v.id, libelle: libelleVariete(v) })));
       remplirChoix(document.getElementById("plantation-espaceId"), espaces.map((e) => ({ valeur: e.id, libelle: e.nom })));
       afficherPrealable(espaces.length > 0, cultures.length > 0, varietes.length > 0);
       document.getElementById("espaces-voir-calendrier").hidden = plantations.length === 0;
+    }
+
+    // R4 (EX-61) : familles, associations et rotations ; les familles connues proposées dans le tiroir d'une
+    // culture ; les cultures au choix d'une association.
+    function afficherRegles(donnees, cultures, toutesCultures) {
+      const familles = (donnees.familles || []).slice().sort(parNom);
+      // Chaque culture se rattache par le nom à une famille (Calc.familleDe) ; une famille nommée par une
+      // culture et sans fiche est « manquante », une seule fois quelle que soit son écriture.
+      const nomsParFamille = new Map(familles.map((f) => [f.id, []]));
+      const manquantes = [];
+      for (const culture of cultures) {
+        const famille = Calc.familleDe(culture, familles);
+        if (famille) nomsParFamille.get(famille.id).push(culture.nom);
+        else if (String(culture.famille || "").trim() && !Calc.familleDe(culture, manquantes)) manquantes.push({ nom: culture.famille.trim() });
+      }
+      manquantes.sort(parNom);
+      const nomAssociation = (a) => [a.cultureA, a.cultureB].map((id) => nomDe(toutesCultures.get(id))).join(" ");
+      const associations = (donnees.associations || []).slice()
+        .sort((a, b) => a.type.localeCompare(b.type) || nomAssociation(a).localeCompare(nomAssociation(b), "fr"));
+      afficherListe("familles", familles, (f) => resumeFamille(f, nomsParFamille.get(f.id)), enEdition("familles"));
+      afficherListe("associations", associations, (a) => resumeAssociation(a, toutesCultures), enEdition("associations"));
+      afficherListe("rotations", (donnees.rotations || []).slice().sort(parNom), resumeRotation, enEdition("rotations"));
+
+      const zone = document.getElementById("familles-manquantes");
+      zone.hidden = manquantes.length === 0;
+      zone.replaceChildren(icone("info"), element("div", {},
+        element("p", {}, T.familles.manquantes),
+        element("ul", {}, ...manquantes.map(({ nom }) => element("li", {},
+          element("button", { type: "button", class: "bouton", "data-famille-manquante": nom, "aria-label": remplir(T.familles.ajouterManquante, { nom }) },
+            icone("plus"), nom))))));
+
+      document.getElementById("familles-connues").replaceChildren(...familles.map((f) => element("option", { value: f.nom })));
+      const choixCultures = cultures.map((c) => ({ valeur: c.id, libelle: c.nom }));
+      remplirChoix(document.getElementById("association-cultureA"), choixCultures);
+      remplirChoix(document.getElementById("association-cultureB"), choixCultures);
     }
 
     // EX-36 : tant qu'il manque un espace ou une variété, le tiroir des plantations dit quoi faire d'abord,

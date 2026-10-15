@@ -8,6 +8,8 @@
   const PAGE_DE = {
     espaces: "espaces", cultures: "cultures", varietes: "cultures", plantations: "plantations",
     pointsVente: "ventes", seances: "ventes", debouches: "ventes", lots: "poules", vehicules: "ventes", charges: "charges",
+    // R4 (EX-61) : les règles de rotation se saisissent avec les cultures.
+    familles: "cultures", associations: "cultures", rotations: "cultures",
   };
 
   function creer() {

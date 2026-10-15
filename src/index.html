@@ -804,6 +804,20 @@
   #liste-varietes [data-fait="prix"] { grid-column: 2; }
   #liste-varietes [data-fait="recolte"] { grid-column: 3; }
   #liste-varietes [data-fait="pertes"] { grid-column: 4; }
+  /* R4 (EX-61) : familles et rotations de la page Cultures. */
+  #liste-familles { --colonne-titre: 14rem; --colonnes-faits: minmax(0, 12rem) minmax(0, 1fr); }
+  #liste-associations, #liste-rotations { --colonne-titre: 14rem; --colonnes-faits: minmax(0, 1fr); }
+  #liste-rotations .ligne-faits > div { grid-column: 1 / -1; }
+  .familles-manquantes { display: flex; gap: 0.75rem; padding: 0.9rem 1.25rem; border-top: 1px solid var(--trait); background: var(--bleu-doux); color: var(--bleu-texte); }
+  .familles-manquantes > .icone { flex: none; margin-top: 0.1rem; }
+  .familles-manquantes > div { display: grid; gap: 0.5rem; min-width: 0; }
+  .familles-manquantes p { font-weight: 600; }
+  .familles-manquantes ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .familles-manquantes .bouton { border-color: currentColor; background: transparent; color: inherit; }
+  .familles-manquantes + .liste, .familles-manquantes + .etat-vide { border-top: 1px solid var(--trait); }
+  .rotation-groupes { margin: 0; padding: 0; border: 0; min-width: 0; }
+  .rotation-groupes legend { padding: 0; margin-bottom: 0.6rem; font-size: 0.9rem; font-weight: 600; color: var(--encre); }
+  .rotation-groupes ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem 1rem; }
   #liste-plantations { --colonnes-faits: 5rem 7rem minmax(0, 15rem) minmax(0, 1fr); }
   #liste-lots { --colonne-titre: 13rem; --colonnes-faits: minmax(0, 9.5rem) minmax(0, 1fr) minmax(10.5rem, 1.1fr) minmax(0, 1fr); }
   .puce.bleue { background: var(--bleu-doux); color: var(--bleu-texte); }
@@ -1302,6 +1316,44 @@
       </div>
       <ul id="liste-varietes" class="liste liste-ferme"></ul>
     </section>
+    <!-- R4 (EX-61) : les règles de rotation du maraîcher. -->
+    <section id="section-familles" class="carte panneau" data-objet="familles">
+      <div class="carte-entete">
+        <h2 data-texte="familles.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton" data-ouvrir="familles"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.familles.ajouter"></span></button>
+      </div>
+      <div id="familles-manquantes" class="familles-manquantes" hidden></div>
+      <div id="familles-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-cultures"></use></svg>
+        <p data-texte="familles.aucun"></p>
+      </div>
+      <ul id="liste-familles" class="liste liste-ferme"></ul>
+    </section>
+    <section id="section-associations" class="carte panneau" data-objet="associations">
+      <div class="carte-entete">
+        <h2 data-texte="associations.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton" data-ouvrir="associations"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.associations.ajouter"></span></button>
+      </div>
+      <div id="associations-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-cultures"></use></svg>
+        <p data-texte="associations.aucun"></p>
+      </div>
+      <ul id="liste-associations" class="liste liste-ferme"></ul>
+    </section>
+    <section id="section-rotations" class="carte panneau" data-objet="rotations">
+      <div class="carte-entete">
+        <h2 data-texte="rotations.titre"></h2>
+        <span class="compte">0</span>
+        <button type="button" class="bouton" data-ouvrir="rotations"><svg class="icone" aria-hidden="true"><use href="#i-plus"></use></svg><span data-texte="tiroirs.rotations.ajouter"></span></button>
+      </div>
+      <div id="rotations-vide" class="etat-vide">
+        <svg class="icone" aria-hidden="true"><use href="#i-cultures"></use></svg>
+        <p data-texte="rotations.aucun"></p>
+      </div>
+      <ul id="liste-rotations" class="liste liste-ferme"></ul>
+    </section>
   </section>
 
   <!-- ==== Page Plantations ==== -->
@@ -1551,7 +1603,11 @@
         <input id="culture-nom" data-champ="nom" required>
       </label>
       <label><span data-texte="cultures.famille"></span>
-        <input id="culture-famille" data-champ="famille">
+        <input id="culture-famille" data-champ="famille" list="familles-connues" autocomplete="off">
+        <datalist id="familles-connues"></datalist>
+      </label>
+      <label><span data-texte="cultures.groupe"></span>
+        <select id="culture-groupe" data-champ="groupe" data-options="groupes"><option value="" data-texte="cultures.sansGroupe"></option></select>
       </label>
       <label><span data-texte="cultures.unite"></span>
         <select id="culture-unite" data-champ="unite" data-options="unitesVente"></select>
@@ -1629,6 +1685,108 @@
     <footer class="tiroir-pied">
       <button id="variete-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
       <button id="variete-ajouter" type="submit" class="bouton principal" data-texte="varietes.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- R4 (EX-61) : familles, associations et rotations, page Cultures. -->
+<dialog id="tiroir-familles" class="tiroir" aria-labelledby="tiroir-familles-titre">
+  <form id="form-famille" data-objet="familles">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-familles-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
+      <label class="large"><span data-texte="familles.nom"></span>
+        <input id="famille-nom" data-champ="nom" required>
+      </label>
+      <label class="large"><span data-texte="familles.delaiRetour"></span>
+        <input id="famille-delaiRetour" data-champ="delaiRetour" data-format="fourchette">
+      </label>
+      <label class="large"><span data-texte="familles.note"></span>
+        <input id="famille-note" data-champ="note">
+      </label>
+      <p class="aide" data-texte="familles.aide"></p>
+      <p id="famille-erreur" class="erreur" role="alert" hidden></p>
+    </div>
+    <footer class="tiroir-pied">
+      <button id="famille-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="famille-ajouter" type="submit" class="bouton principal" data-texte="familles.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="tiroir-associations" class="tiroir" aria-labelledby="tiroir-associations-titre">
+  <form id="form-association" data-objet="associations">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-associations-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
+      <label class="large"><span data-texte="associations.type"></span>
+        <select id="association-type" data-champ="type" data-options="typesAssociation"></select>
+      </label>
+      <label><span id="association-libelleA"></span>
+        <select id="association-cultureA" data-champ="cultureA" required></select>
+      </label>
+      <label><span id="association-libelleB"></span>
+        <select id="association-cultureB" data-champ="cultureB" required></select>
+      </label>
+      <label><span data-texte="associations.effet"></span>
+        <select id="association-effet" data-champ="effet" data-options="effets"></select>
+      </label>
+      <label class="large"><span data-texte="associations.note"></span>
+        <input id="association-note" data-champ="note">
+      </label>
+      <p class="aide" data-texte="associations.aide"></p>
+      <p id="association-erreur" class="erreur" role="alert" hidden></p>
+    </div>
+    <footer class="tiroir-pied">
+      <button id="association-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="association-ajouter" type="submit" class="bouton principal" data-texte="associations.ajouter"></button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="tiroir-rotations" class="tiroir" aria-labelledby="tiroir-rotations-titre">
+  <form id="form-rotation" data-objet="rotations">
+    <header class="tiroir-entete">
+      <h2 id="tiroir-rotations-titre" class="tiroir-titre"></h2>
+      <button type="button" class="bouton-icone" data-action="fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"></use></svg><span class="pour-lecteur-d-ecran" data-texte="commun.fermer"></span></button>
+    </header>
+    <div class="tiroir-corps">
+      <label class="large"><span data-texte="rotations.nom"></span>
+        <input id="rotation-nom" data-champ="nom" required>
+      </label>
+      <fieldset class="large rotation-groupes">
+        <legend data-texte="rotations.groupes"></legend>
+        <ol>
+          <li><label><span data-texte="rotations.rangs.0"></span>
+            <select id="rotation-groupe1" data-champ="groupes" data-format="liste" data-options="groupes"><option value="" data-texte="rotations.aucunGroupe"></option></select>
+          </label></li>
+          <li><label><span data-texte="rotations.rangs.1"></span>
+            <select id="rotation-groupe2" data-champ="groupes" data-format="liste" data-options="groupes"><option value="" data-texte="rotations.aucunGroupe"></option></select>
+          </label></li>
+          <li><label><span data-texte="rotations.rangs.2"></span>
+            <select id="rotation-groupe3" data-champ="groupes" data-format="liste" data-options="groupes"><option value="" data-texte="rotations.aucunGroupe"></option></select>
+          </label></li>
+          <li><label><span data-texte="rotations.rangs.3"></span>
+            <select id="rotation-groupe4" data-champ="groupes" data-format="liste" data-options="groupes"><option value="" data-texte="rotations.aucunGroupe"></option></select>
+          </label></li>
+          <li><label><span data-texte="rotations.rangs.4"></span>
+            <select id="rotation-groupe5" data-champ="groupes" data-format="liste" data-options="groupes"><option value="" data-texte="rotations.aucunGroupe"></option></select>
+          </label></li>
+          <li><label><span data-texte="rotations.rangs.5"></span>
+            <select id="rotation-groupe6" data-champ="groupes" data-format="liste" data-options="groupes"><option value="" data-texte="rotations.aucunGroupe"></option></select>
+          </label></li>
+        </ol>
+      </fieldset>
+      <p class="aide" data-texte="rotations.aide"></p>
+      <p id="rotation-erreur" class="erreur" role="alert" hidden></p>
+    </div>
+    <footer class="tiroir-pied">
+      <button id="rotation-annuler" type="button" class="bouton annuler" data-texte="commun.annuler"></button>
+      <button id="rotation-ajouter" type="submit" class="bouton principal" data-texte="rotations.ajouter"></button>
     </footer>
   </form>
 </dialog>
