@@ -1,0 +1,143 @@
+{
+  "tranche": "R3",
+  "seuil_alerte_sessions": 7,
+  "parallelisme_max": 1,
+  "evaluateur": {
+    "modele": "fable",
+    "effort": "high"
+  },
+  "taches": [
+    {
+      "id": "T53",
+      "exigences": [
+        "EX-55",
+        "EX-56",
+        "EX-57"
+      ],
+      "description": "Calcul par année : années de la ferme, année proposée, option { annee } de tableau, pointsDeVente, offreDemande, vehicules et besoinsParMois ; l'appel sans année garde les résultats d'avant",
+      "verification": [
+        "./verify.sh T53"
+      ],
+      "depend_de": [],
+      "fichiers": [
+        "src/calc.js",
+        "test/annees.test.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T54",
+      "exigences": [
+        "EX-60"
+      ],
+      "description": "Ferme d'exemple dans son année : bornes de l'année (bornesDeLAnnee) pour ses séances et ses lots ; note dans le dossier de données de R2",
+      "verification": [
+        "./verify.sh T54"
+      ],
+      "depend_de": [
+        "T53"
+      ],
+      "fichiers": [
+        "src/calc.js",
+        "src/exemple.js",
+        "docs/specs/R2/DONNEES.md",
+        "test/annees.test.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T55",
+      "exigences": [
+        "EX-55",
+        "EX-56",
+        "EX-57",
+        "EX-58",
+        "EX-60"
+      ],
+      "description": "Choix de l'année « ‹ 2026 › » dans la barre du haut, année retenue dans l'état du navigateur ; barre du haut, synthèse, ventes, véhicules et besoins suivent l'année choisie",
+      "verification": [
+        "./verify.sh T55"
+      ],
+      "depend_de": [
+        "T53"
+      ],
+      "fichiers": [
+        "src/store.js",
+        "src/ui-annee.js",
+        "src/index.html",
+        "src/ui-tableau.js",
+        "src/ui-synthese.js",
+        "src/ui-ventes.js",
+        "src/ui-vehicules.js",
+        "src/ui-besoins.js",
+        "src/i18n.js",
+        "test/annees.test.js",
+        "test/annees.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T56",
+      "exigences": [
+        "EX-59"
+      ],
+      "description": "Calendriers de culture et des poules continus sur toutes les années de la ferme, une année à la largeur de la boîte, ouverts sur l'année choisie",
+      "verification": [
+        "./verify.sh T56"
+      ],
+      "depend_de": [
+        "T55"
+      ],
+      "fichiers": [
+        "src/ui-calendrier.js",
+        "src/index.html",
+        "src/i18n.js",
+        "test/annees.e2e.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T57",
+      "exigences": [
+        "EX-55",
+        "EX-56",
+        "EX-57",
+        "EX-58",
+        "EX-59",
+        "EX-60"
+      ],
+      "description": "Vérification de bout en bout de la tranche, captures à 390 et 1366 px, puis revue par l'évaluateur séparé, restreinte à la conformité à la spec",
+      "verification": [
+        "./verify.sh R3"
+      ],
+      "depend_de": [
+        "T53",
+        "T54",
+        "T55",
+        "T56"
+      ],
+      "fichiers": [],
+      "modele": "fable",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    }
+  ],
+  "mode": "simple",
+  "modele_minimum": {
+    "modele": "opus",
+    "effort": "high"
+  }
+}

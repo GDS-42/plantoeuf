@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R3 (plusieurs années), à ouvrir · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R3 (plusieurs années) · Sessions consommées : 0 / 7 · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5060,3 +5060,9 @@ exit 0
 - Preuve : `./verify.sh R2` → exit 0 (143 tests unitaires, 165 de bout en bout), relancé en T52 après le commit 14dab97 ; déploiement 14dab97 READY.
 - `features.json` : `passe` de T52 → `true`. RUNBOOK : ✎ Décisions et ✎ Bilan de fin de tranche.
 - **R2 terminée en 3 sessions sur 6, CONFORME** (avec la décision de l'humain).
+
+## 15/10/2026 · R3 — Spec, runbook et tâches : plusieurs années
+
+- Demande de l'humain (15/10/2026), en réponse à la question sur la colonne « déc. 2026 » : « Oui, prochaine tranche + il faut penser et planifier la possibilité d'avancer l'année en scrollant afin de voir les cultures qui vont suivre », puis, à la question des années : « Calendrier continu + année ». Plan approuvé par l'humain le 15/10 (R3 « Plusieurs années », puis R4 « Rotation et associations »).
+- `docs/specs/R3/` : `SPEC.md` (EX-55 à EX-60, scénarios S15 à S17, invariants `sans_annee_comme_r2`, `somme_des_annees`, `exemple_dans_son_annee`), `RUNBOOK.md` (seuil d'alerte : 7 sessions), `features.json` (T53 à T57).
+- Règle du jeudi gardée ; aucun test existant à modifier.
