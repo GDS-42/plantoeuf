@@ -1,0 +1,93 @@
+{
+  "tranche": "R2",
+  "seuil_alerte_sessions": 6,
+  "parallelisme_max": 1,
+  "evaluateur": {
+    "modele": "fable",
+    "effort": "high"
+  },
+  "taches": [
+    {
+      "id": "T50",
+      "exigences": [
+        "EX-51"
+      ],
+      "description": "Dossier de données sourcées de la ferme d'exemple du Sud (cultures, prix par canal, poules, débouchés, trajets, charges fixes), chaque valeur en fourchette avec ses sources ; recherche par quatre agents en parallèle, synthèse par l'agent principal",
+      "verification": [
+        "relecture Fable du dossier sans écart"
+      ],
+      "depend_de": [],
+      "fichiers": [
+        "docs/specs/R2/DONNEES.md"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T51",
+      "exigences": [
+        "EX-51",
+        "EX-52",
+        "EX-53",
+        "EX-54"
+      ],
+      "description": "Nouvelle ferme d'exemple tirée du dossier (Sud mi-pente, cas type, toute l'année, charges fixes, débouchés d'œufs) ; texte de proposition ; alignement des tests qui figeaient l'ancienne ferme",
+      "verification": [
+        "./verify.sh T51",
+        "./verify.sh R2"
+      ],
+      "depend_de": [
+        "T50"
+      ],
+      "fichiers": [
+        "src/exemple.js",
+        "src/i18n.js",
+        "test/exemple-r2.test.js",
+        "test/exemple-r2.e2e.js",
+        "test/exemple.test.js",
+        "test/exemple.e2e.js",
+        "test/exemple-n3.e2e.js",
+        "test/exemple-poules.e2e.js",
+        "test/exemple-ventes.e2e.js",
+        "test/tranche.e2e.js",
+        "test/presentation.e2e.js",
+        "test/p2-socle.e2e.js",
+        "test/p2-lisibilite.e2e.js",
+        "test/p2-ventes.e2e.js",
+        "test/p2-ferme.e2e.js",
+        "test/p2-synthese.test.js",
+        "test/p2-synthese.e2e.js",
+        "test/ventes.test.js",
+        "test/poules.test.js"
+      ],
+      "modele": "opus",
+      "effort": "high",
+      "relecture": true,
+      "passe": false
+    },
+    {
+      "id": "T52",
+      "exigences": [
+        "EX-51",
+        "EX-52",
+        "EX-53",
+        "EX-54"
+      ],
+      "description": "Vérification de bout en bout de la tranche, captures à 390 et 1366 px, puis revue par l'évaluateur séparé (conformité à la spec, fidélité au dossier, alignements de tests limités à l'accord de l'humain)",
+      "verification": [
+        "./verify.sh R2"
+      ],
+      "depend_de": [
+        "T50",
+        "T51"
+      ],
+      "fichiers": [],
+      "modele": "fable",
+      "effort": "high",
+      "relecture": false,
+      "passe": false
+    }
+  ]
+}
