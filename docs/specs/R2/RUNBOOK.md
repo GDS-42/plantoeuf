@@ -75,5 +75,6 @@ Le format exporté ne change pas (version 5). Une ferme d'exemple déjà chargé
 - T50 · Le relecteur a signalé, à la relecture de la reprise, une attribution de source introduite par la reprise ; elle est corrigée selon son texte, sans troisième relecture (aucune valeur touchée).
 - T51 · Toutes les récoltes finissent dans l'année de chargement (au plus tard le 30/12) : 55 → 51 plantations. `DONNEES.md` (fichier de T50, hors de la liste `fichiers` de T51) suit la ferme (§ 5 et § 11 : dates et surfaces [E], chiffres calculés) pour tenir l'invariant `exemple_tout_sourcé` ; aucune valeur sourcée ne change. En janvier, la ferme ne vend que ses œufs.
 - T51 · Tests alignés : quand la nouvelle ferme n'offre plus le cas qu'un test examinait (variété qui change rendement et prix ; saison qui ne contient pas aujourd'hui), le test ajoute ses propres données plutôt que de perdre le cas.
+- T52 · L'évaluateur juge que les deux tests de défilement ([T34] à 1000 × 700, [T14] à 1280 × 720) ont changé de propriété en T51 (dernière ligne de culture → ligne « revenu » du pied). Condition d'arrêt : T52 suspendue, mise en page inchangée, site en ligne inchangé ; décision demandée à l'humain (garder et consigner, ou corriger la mise en page et rétablir les assertions d'origine).
 
 ## ✎ Bilan de fin de tranche
