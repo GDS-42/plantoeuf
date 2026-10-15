@@ -64,6 +64,12 @@ Le format exporté ne change pas (version 5). Une ferme d'exemple déjà chargé
 
 ## ✎ Surprises et découvertes
 
+- T50 · Le proxy de l'environnement refuse l'ouverture directe des sites officiels (DAAF, Agreste, ARMEFLHOR, INSEE) : les agents n'ont lu que les extraits du moteur de recherche. Le quota de recherches d'un tour (200) se partage entre les agents lancés ensemble ; les compléments ont été lancés au tour suivant.
+- T50 · Une culture plantée à l'automne (gingembre) se récolte l'année suivante, hors de l'année modélisée et sans séance : elle est écartée de la ferme.
+
 ## ✎ Décisions
+
+- T50 · Ferme dans les hauts de Petite-Île ; 0,42 ha de légumes à un instant donné (0,36 ha par actif selon la DAAF), le reste des 1,5 ha en parcours des poules, engrais verts et chemins. Tomate sous abri seulement (flétrissement en plein champ). Ail vendu sans débouché détaillé (Fête de l'ail, collecteurs), ce qui garde une ligne « sans débouché » dans la matrice. Pas d'œufs à l'épicerie (vente à un revendeur hors de la dérogation des moins de 250 poules). Deux lots de 100 poules décalés, dates ramenées à l'année. L'achat des poulettes compte parmi les charges fixes. Quand une source ne donne qu'une moyenne, bornes aux deux tiers et aux quatre tiers.
+- T50 · Le relecteur a signalé, à la relecture de la reprise, une attribution de source introduite par la reprise ; elle est corrigée selon son texte, sans troisième relecture (aucune valeur touchée).
 
 ## ✎ Bilan de fin de tranche

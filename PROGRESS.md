@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R2 (ferme d'exemple du Sud de La Réunion, chiffres sourcés) · Sessions consommées : 0 / 6 · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R2 (ferme d'exemple du Sud de La Réunion, chiffres sourcés) · Sessions consommées : 1 / 6 · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4915,4 +4915,23 @@ Preuve (`./verify.sh N3` sur le commit 0b255ab) :
 # fail 0
   162 passed (1.7m)
 == N3 : vérification verte ==
+```
+
+## 15/10/2026 · T50 — Dossier de données sourcées de la ferme d'exemple du Sud (EX-51)
+
+- Session 1 / 6 du seuil d'alerte de R2.
+- Modèle : Opus 5.5, effort élevé · Agents de recherche : quatre en parallèle (cultures ; prix de vente ; poules ; débouchés, trajets et charges), puis deux de compléments (charges ; cultures), et une recherche directe (semences) · Reprises : 1 · Relecteur : Fable, contexte frais → **ÉCART** à la première relecture (5 écarts : valeur du panier, durée de vente de l'ail, attribution de trois sources de l'ail, volumes des débouchés et surfaces des plantations absents du dossier, source de l'irrigation de Petite-Île), corrigés ; à la relecture de la reprise, **un écart résiduel introduit par la reprise** (attribution de la borne haute du rendement du chouchou à [D10] au lieu de [C1]), corrigé mot pour mot selon le texte proposé par le relecteur, sans troisième relecture : aucune valeur ni fourchette touchée. Consigné pour l'humain.
+- **Surprise d'environnement** : le proxy de l'environnement refuse l'ouverture directe des pages et des PDF (`daaf.reunion.agriculture.gouv.fr`, `agreste.agriculture.gouv.fr`, `armeflhor.fr`…) ; toutes les valeurs viennent des extraits du moteur de recherche, contrôlés par calcul quand c'était possible. Le quota de recherches d'un tour (200, partagé) a été atteint par les quatre premiers agents.
+- Résultat : `docs/specs/R2/DONNEES.md` : 11 cultures (rendements du barème des calamités de la DAAF, prix des mercuriales de la DAAF), coûts de mise en place, variétés, 55 plantations, fourgonnette (prix préfectoral du gazole), quatre points de vente (droits de place de Saint-Pierre), 38 débouchés (œufs compris, sauf à l'épicerie : règle des 250 poules), deux lots de 100 poules, dix charges fixes (CGSS, SAPHIR, EDF Réunion, fermage, amortissements, poulettes) ; marques [R], [NR], [E], [N] ; limites et documents à relire. Rapports de recherche dans `docs/specs/R2/recherche/`.
+- Chiffres de la ferme calculés par l'outil (2026, médiane) : chiffre d'affaires 45 500 €, marge 32 800 €, charges fixes 13 850 €, revenu 18 900 € (− 23 510 à 84 000).
+
+Preuve (calcul de la ferme du dossier par `Calc`, script d'analyse) :
+
+```text
+Objets : espaces 9, cultures 11, varietes 11, plantations 55, pointsVente 4, seances 4, debouches 38, lots 2, vehicules 1, charges 10
+Sur-occupations : {}
+Mois : 2026-01 → 2026-12 (12)
+CA 45536 (21147 à 99659) | cultures 31460 (13906 à 77590) | œufs 14076 (7241 à 22069)
+Coûts 12754 (9000 à 18277) | séances 3173 (2059 à 4731) | aliment 5419 (3711 à 7657) | cultures 4162 (3230 à 5889)
+Marge 32783 (2870 à 90659) | charges 13850 (6670 à 26380) | revenu 18933 (-23510 à 83989)
 ```
