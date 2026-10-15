@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R3 (plusieurs années) · Sessions consommées : 4 / 7 · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R4 (rotation et associations), à ouvrir · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5255,3 +5255,32 @@ $ ./verify.sh R3
 == R3 : vérification verte ==
 exit 0
 ```
+
+## 15/10/2026 · T57 — Vérification de la tranche R3, évaluateur séparé
+
+- Session 5 / 7 du seuil d'alerte de R3.
+- Modèle : Opus 5.5, effort élevé (vérification, captures) · Évaluateur : Fable, effort élevé, contexte frais, sur `git diff 0e72ce4 8f03aae` → **CONFORME** (suite complète relancée : 155 unitaires et 177 de bout en bout ; 500 fermes aléatoires de 2024 à 2029, 2 846 années : 0 écart à `sans_annee_comme_r2` et `somme_des_annees` ; huit essais aux limites dans Chromium : ferme sans charge, année vide entre deux années, import d'un fichier version 1, changement d'année puis modification, effacement de l'exemple avec une année retenue, clavier, lecteur d'écran, 360 px sur trois années, deux onglets — 0 erreur, 0 requête réseau).
+- Vérification : `./init.sh` puis `./verify.sh R3` → exit 0.
+- Mise en ligne : déploiements Vercel READY en production pour bfa9502 (spec), 4285d54 (T53), 0a3e436 (T54), e7831d1 (T55) et 8f03aae (T56), contrôlés par le connecteur.
+- Captures à 390 et 1366 px (synthèse, plantations, ventes, poules ; ferme d'exemple chargée en 2027 ; ferme sur 2026 et 2027) : aucune erreur, aucune requête réseau, aucun défilement de page, aucun nom de mois qui déborde.
+
+```text
+$ ./verify.sh R3
+# tests 155
+# pass 155
+# fail 0
+177 passed (2.1m)
+== R3 : vérification verte ==
+exit 0
+$ node capture-r3.js (dist/index.html)
+390 exemple2027 2027 : choix « 2027 », tableau 2027-01 → 2027-12 (12), CA 44558 €, revenu 18260 €, calendrier 2027-01 → 2027-12 (12), janvier 2027 à 0 px du coin
+390 deuxAnnees 2026 : choix « 2026 », tableau 2026-01 → 2026-12 (12), CA 44602 €, revenu 18243 €, calendrier 2026-01 → 2027-12 (24), janvier 2026 à 0 px du coin
+390 deuxAnnees 2027 : choix « 2027 », tableau 2027-01 → 2027-12 (12), CA 0 €, revenu -14556 €, calendrier 2026-01 → 2027-12 (24), janvier 2027 à 0 px du coin
+1366 exemple2027 2027 : choix « 2027 », tableau 2027-01 → 2027-12 (12), CA 44558 €, revenu 18260 €, calendrier 2027-01 → 2027-12 (12), janvier 2027 à 0 px du coin
+1366 deuxAnnees 2026 : choix « 2026 », tableau 2026-01 → 2026-12 (12), CA 44602 €, revenu 18243 €, calendrier 2026-01 → 2027-12 (24), janvier 2026 à 0 px du coin
+1366 deuxAnnees 2027 : choix « 2027 », tableau 2027-01 → 2027-12 (12), CA 0 €, revenu -14556 €, calendrier 2026-01 → 2027-12 (24), janvier 2027 à 0 px du coin
+ERREURS : aucune
+```
+
+- Points de l'évaluateur, pour l'humain : (1) une année sans donnée entre deux années de la ferme montre l'état vide de la synthèse, sans ses charges fixes (décision de T55, la spec ne tranchant pas) ; (2) pour prolonger un plan sur l'année suivante, il faut redater chaque séance et chaque lot (une ferme sur deux années dont les séances s'arrêtent au 31/12 n'a aucune vente l'année suivante) ; (3) au téléphone, une année est plus large que la boîte (mois lisibles) ; (4) les libellés « saison » désignent désormais l'année choisie.
+- `features.json` : `passe` de T57 → `true`. **R3 terminée en 5 sessions sur 7, CONFORME.**

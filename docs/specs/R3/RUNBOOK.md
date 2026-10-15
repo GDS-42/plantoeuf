@@ -73,3 +73,12 @@ Le format exporté ne change pas (version 5) ; l'année choisie vit dans l'état
 - T53 · Le test de bout en bout de T53 (calcul par année dans le fichier livré) va dans `test/annees.e2e.js`, fichier listé pour T55 et T56 : `./verify.sh T53` exige au moins un test de bout en bout de la tâche.
 
 ## ✎ Bilan de fin de tranche
+
+Tranche terminée le 15/10/2026 en 5 sessions sur 7 : T53 (0 reprise), T54 (0), T55 (0), T56 (1 reprise), T57. `./verify.sh R3` → exit 0 (155 tests unitaires, 177 de bout en bout). Évaluateur Fable : CONFORME, aucun écart. Déploiements READY sur plantoeuf.vercel.app.
+
+Résultat : une commande « ‹ 2026 › » dans la barre du haut ; la synthèse, les ventes, les véhicules et les besoins montrent une année à la fois, de janvier à décembre, chaque valeur dans une seule année (règle du jeudi gardée) ; le calendrier de culture et celui des poules vont de janvier de la première année à décembre de la dernière, s'ouvrent sur l'année choisie et défilent d'une année à l'autre ; la ferme d'exemple chargée en 2027 n'a plus de colonne « déc. 2026 ».
+
+À suivre :
+- Une année sans donnée entre deux années de la ferme montre l'état vide de la synthèse, sans ses charges fixes : montrer ses charges et son revenu, ou un message propre à l'année ?
+- Prolonger un plan sur l'année suivante demande de redater chaque séance et chaque lot : une reconduction d'une année sur l'autre aiderait (hors périmètre).
+- Les libellés « saison » désignent désormais l'année choisie.
