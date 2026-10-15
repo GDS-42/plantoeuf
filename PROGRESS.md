@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R4 (rotation et associations) · Sessions consommées : 1 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R4 (rotation et associations) · Sessions consommées : 2 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5312,3 +5312,51 @@ $ node --test test/*.test.js → 155 pass, 0 fail (dossier seul modifié)
 ```
 
 - Points pour l'humain : le délai des Fabacées (5 ans, valeur de plein champ en métropole) est sans doute sévère pour un petit maraîcher tropical ; la ligne Astéracées repose sur la seule édition 2026 d'un BSV.
+
+## 15/10/2026 · T59 — Modèle version 6 : familles, associations, rotations (EX-61)
+
+- Session 2 / 10 du seuil d'alerte de R4.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (tests [T59] rejoués contre le store d'avant : 6 / 6 rouges ; 161 unitaires verts).
+- Fait (`src/store.js`) : listes `familles`, `associations`, `rotations` ; vocabulaire `Store.GROUPES` (6 groupes), `TYPES_ASSOCIATION`, `EFFETS` (des mots seulement) ; contrôles à l'ajout, à la modification et à l'import (groupe connu ; association à type, effet et deux cultures différentes ; rotation de 2 à 6 groupes distincts) ; format exporté en version 6, migration 5 → 6 (listes vides).
+- Remarques du relecteur, pour T61 : messages des nouveaux codes d'erreur dans `src/i18n.js` (aujourd'hui, le message générique) ; pour T63 : l'effacement de l'exemple devra couvrir les trois nouveaux objets.
+
+Preuve rouge (avant le code) :
+
+```text
+not ok 1 - [T59] EX-61 : le modèle compte les familles, les associations et les rotations ; format exporté en version 6
+not ok 2 - [T59] EX-61 : une famille s'enregistre avec UUID, dates et suppression logique, et se retrouve après réouverture ; un délai désordonné est refusé
+not ok 3 - [T59] EX-61 : une culture garde son groupe ; un groupe inconnu est refusé, une culture sans groupe reste permise
+not ok 4 - [T59] EX-61 : une association a un type, deux cultures différentes et un effet ; une association mal formée est refusée
+not ok 5 - [T59] EX-61 : une rotation ordonne de 2 à 6 groupes distincts ; toute autre liste est refusée
+not ok 6 - [T59] EX-61 : export puis import à l'identique en version 6 ; un fichier de version 5 ou 1 s'importe avec des listes vides
+# tests 6
+# pass 0
+# fail 6
+  1 failed
+```
+
+Preuve verte :
+
+```text
+$ ./verify.sh T59
+ok 11 - [T59] EX-61 : le modèle compte les familles, les associations et les rotations ; format exporté en version 6
+ok 12 - [T59] EX-61 : une famille s'enregistre avec UUID, dates et suppression logique, et se retrouve après réouverture ; un délai désordonné est refusé
+ok 13 - [T59] EX-61 : une culture garde son groupe ; un groupe inconnu est refusé, une culture sans groupe reste permise
+ok 14 - [T59] EX-61 : une association a un type, deux cultures différentes et un effet ; une association mal formée est refusée
+ok 15 - [T59] EX-61 : une rotation ordonne de 2 à 6 groupes distincts ; toute autre liste est refusée
+ok 16 - [T59] EX-61 : export puis import à l'identique en version 6 ; un fichier de version 5 ou 1 s'importe avec des listes vides
+# tests 20
+# pass 20
+# fail 0
+✓  1 test/rotation.e2e.js:6:1 › [T59] EX-61 : le fichier livré exporte les familles, associations et rotations en version 6 et importe un fichier de version 5 (724ms)
+1 passed (1.7s)
+== T59 : vérification verte ==
+exit 0
+$ ./verify.sh R4
+# tests 161
+# pass 161
+# fail 0
+178 passed (2.3m)
+== R4 : vérification verte ==
+exit 0
+```

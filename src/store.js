@@ -10,7 +10,7 @@
   const CLE = "plantoeuf";
   const APPLICATION = "plantoeuf";
   // Version du format enregistré et exporté. L'import accepte les versions précédentes (MIGRATIONS).
-  const VERSION = 5;
+  const VERSION = 6;
   // EX-08 : délai sans export, en jours, au-delà duquel un rappel s'affiche si des données ont changé.
   const DELAI_RAPPEL_JOURS = 7;
   const JOUR_MS = 24 * 3600 * 1000;
@@ -31,11 +31,26 @@
     3: (fichier) => ({ ...fichier, version: 4, vehicules: fichier.vehicules || [] }),
     // Version 5 (N3) : charges fixes. Les champs de coût des véhicules et des cultures sont facultatifs.
     4: (fichier) => ({ ...fichier, version: 5, charges: fichier.charges || [] }),
+    // Version 6 (R4) : familles, associations et rotations. Le groupe d'une culture est facultatif.
+    5: (fichier) => ({
+      ...fichier,
+      version: 6,
+      familles: fichier.familles || [],
+      associations: fichier.associations || [],
+      rotations: fichier.rotations || [],
+    }),
   };
   // Les objets du modèle : ceux de N1 (SPEC N1, « Modèle de données du noyau »), ceux de N2
   // (points de vente, séances, débouchés), ceux de S3 (lots de poules), ceux de R1 (véhicules), puis
-  // ceux de N3 (charges fixes). Un fichier qui n'a pas une liste la reçoit vide.
-  const OBJETS = ["espaces", "cultures", "varietes", "plantations", "pointsVente", "seances", "debouches", "lots", "vehicules", "charges"];
+  // ceux de N3 (charges fixes), puis ceux de R4 (familles, associations, rotations). Un fichier qui n'a
+  // pas une liste la reçoit vide.
+  const OBJETS = ["espaces", "cultures", "varietes", "plantations", "pointsVente", "seances", "debouches", "lots", "vehicules", "charges",
+    "familles", "associations", "rotations"];
+  // R4 (EX-61) : le vocabulaire de la rotation — groupes de rotation, types et effets des associations.
+  // Des mots seulement, aucune valeur agronomique ; leurs libellés sont dans i18n.js.
+  const GROUPES = ["feuille", "fruit", "racine", "bulbe", "legumineuse", "engrais_vert"];
+  const TYPES_ASSOCIATION = ["voisinage", "precedent"];
+  const EFFETS = ["favorable", "defavorable"];
   // Dates d'un enregistrement qui se suivent, dans l'ordre (un même jour est permis).
   const DATES_ORDONNEES = { lots: ["arrivee", "debutPonte", "reforme"] };
   // Champs tenus par le store, jamais par la saisie.
@@ -68,6 +83,32 @@
     if (dates.some((date, i) => i > 0 && date < dates[i - 1])) {
       throw erreur("dates_desordonnees", "Les dates ne se suivent pas dans l'ordre.");
     }
+  }
+
+  // R4 (EX-61) : le vocabulaire d'un enregistrement — groupe d'une culture, forme d'une association,
+  // liste ordonnée d'une rotation (2 à 6 groupes distincts).
+  function verifierVocabulaire(objet, enregistrement) {
+    if (objet === "cultures" && enregistrement.groupe && !GROUPES.includes(enregistrement.groupe)) {
+      throw erreur("groupe_inconnu", "Ce groupe de rotation n'existe pas.");
+    }
+    if (objet === "associations") {
+      const { type, cultureA, cultureB, effet } = enregistrement;
+      const cultures = typeof cultureA === "string" && typeof cultureB === "string" && cultureA !== "" && cultureB !== "" && cultureA !== cultureB;
+      if (!TYPES_ASSOCIATION.includes(type) || !EFFETS.includes(effet) || !cultures) {
+        throw erreur("association_invalide", "Une association lie deux cultures différentes, avec un type et un effet.");
+      }
+    }
+    if (objet === "rotations") {
+      const { groupes } = enregistrement;
+      const valide = Array.isArray(groupes) && groupes.length >= 2 && groupes.length <= GROUPES.length &&
+        groupes.every((g) => GROUPES.includes(g)) && new Set(groupes).size === groupes.length;
+      if (!valide) throw erreur("rotation_invalide", "Une rotation ordonne de 2 à 6 groupes, chacun une seule fois.");
+    }
+  }
+
+  function verifierEnregistrement(objet, enregistrement) {
+    verifierDates(objet, enregistrement);
+    verifierVocabulaire(objet, enregistrement);
   }
 
   // ---- Fourchettes : { basse, mediane, haute }
@@ -168,7 +209,7 @@
         for (const valeur of Object.values(enregistrement)) {
           if (estFourchette(valeur)) fourchette(valeur.basse, valeur.mediane, valeur.haute);
         }
-        verifierDates(objet, enregistrement);
+        verifierEnregistrement(objet, enregistrement);
       }
       migre[objet] = liste;
     }
@@ -229,7 +270,7 @@
       const liste = collection(objet);
       const instant = maintenant();
       const enregistrement = { id: nouvelId(), ...saisie(champs), creeLe: instant, modifieLe: instant, supprimeLe: null };
-      verifierDates(objet, enregistrement);
+      verifierEnregistrement(objet, enregistrement);
       liste.push(enregistrement);
       enregistrerModification();
       return copie(enregistrement);
@@ -238,7 +279,7 @@
     function modifier(objet, id, champs) {
       const enregistrement = trouver(objet, id);
       const propres = saisie(champs);
-      verifierDates(objet, { ...enregistrement, ...propres });
+      verifierEnregistrement(objet, { ...enregistrement, ...propres });
       Object.assign(enregistrement, propres, { modifieLe: maintenant() });
       enregistrerModification();
       return copie(enregistrement);
@@ -324,5 +365,6 @@
     };
   }
 
-  return { ouvrir, fourchette, fourchetteOrdonnee, lireFourchette, lireNombre, lireDate, ecrireDate, OBJETS, CLE, VERSION, DELAI_RAPPEL_JOURS };
+  return { ouvrir, fourchette, fourchetteOrdonnee, lireFourchette, lireNombre, lireDate, ecrireDate, OBJETS, CLE, VERSION, DELAI_RAPPEL_JOURS,
+    GROUPES, TYPES_ASSOCIATION, EFFETS };
 });
