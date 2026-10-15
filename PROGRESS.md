@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R2 (ferme d'exemple du Sud de La Réunion, chiffres sourcés) · Sessions consommées : 1 / 6 · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R2 (ferme d'exemple du Sud de La Réunion, chiffres sourcés) · Sessions consommées : 2 / 6 · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 en attente de l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -4935,3 +4935,106 @@ CA 45536 (21147 à 99659) | cultures 31460 (13906 à 77590) | œufs 14076 (7241 
 Coûts 12754 (9000 à 18277) | séances 3173 (2059 à 4731) | aliment 5419 (3711 à 7657) | cultures 4162 (3230 à 5889)
 Marge 32783 (2870 à 90659) | charges 13850 (6670 à 26380) | revenu 18933 (-23510 à 83989)
 ```
+
+## 15/10/2026 · T51 — Nouvelle ferme d'exemple du Sud ; alignement des tests (EX-51 à EX-54)
+
+- Session 2 / 6 du seuil d'alerte de R2.
+- Modèle : Opus 5.5, effort élevé · Reprises : 1 · Relecteur : Fable, contexte frais → **ÉCART** à la première relecture : un seul, le sous-cas « variété à deux surcharges en fourchette » (Zoizo) supprimé du test des variétés sans remplacement ; rétabli avec les propres données du test (variété « Cabri » ajoutée au piment, rendement 0,3 / 0,6 / 1 et prix 12 / 15 / 18, mêmes trois assertions qu'avant). Remarque non bloquante reprise : le support de la sur-occupation du calendrier redevient un chevauchement partiel (Courgette du 01/09 au tunnel 1 portée à 100 m², marque du 01/09 au 03/11) au lieu d'une plantation plus grande que son espace. À la relecture de la reprise : **CONFORME**.
+- Résultat : `src/exemple.js` réécrit d'après `docs/specs/R2/DONNEES.md` : ferme des hauts de Petite-Île, 9 espaces (2 tunnels de 200 m², 5 parcelles de 600 m², treille de chouchou, parcelle haute), 11 cultures, 11 variétés, 51 plantations de janvier à décembre, fourgonnette, 4 points de vente, 38 débouchés (œufs compris, sauf à l'épicerie), 2 lots de 100 poules, 10 charges fixes ; `charges` dans les identifiants retenus et dans l'ordre d'effacement. `src/i18n.js` : textes de proposition (« dans les hauts de Petite-Île : {plantations} plantations sur toute l'année, 200 poules ») et du bandeau (chiffres tirés de sources publiques, repères et pas références).
+- **Dossier ajusté (fichier de T50)** : à la mise en place, les récoltes postérieures au 31 décembre (gingembre écarté en T50, puis les dernières salades, brèdes et le tunnel de fin d'année) ne se vendaient à aucune séance et portaient le calendrier à quatorze mois, au-delà de la boîte du test d'ajustement à 1366 px. Les plantations tardives sont retirées et les dates décalées pour que toutes les récoltes finissent au plus tard le 30/12 : 55 → 51 plantations. `DONNEES.md` § 5 (table régénérée, note sur janvier) et § 11 (chiffres) suivent ; aucune valeur sourcée (rendement, prix, coût, charge) n'est touchée.
+- Chiffres de la ferme (2026, médiane) : chiffre d'affaires 44 600 € (20 800 à 99 300), marge 32 100 €, charges fixes 13 850 €, revenu 18 200 € (− 23 500 à 83 800). En janvier, la ferme ne vend que ses œufs (les récoltes de janvier d'une vraie ferme viennent de plantations de l'année précédente, hors de l'année modélisée) : marge médiane négative ce mois-là.
+
+- **Remarques du relecteur, consignées pour l'humain** : (1) `DONNEES.md` n'est pas dans la liste `fichiers` de T51 ; il change pour suivre la ferme, comme l'exige l'invariant `exemple_tout_sourcé` (dates et surfaces [E] et chiffres calculés seulement). (2) Janvier : légumes vendus onze mois sur douze, les œufs seuls en janvier (voir plus haut). (3) Le texte de proposition écrit « 200 poules » en clair, alors que le nombre de plantations passe par `{plantations}` : un `{poules}` demanderait de toucher `src/index.html`, hors de la liste de T51 ; à reprendre si la ferme change. (4) Aux petites hauteurs (700 px), le pied du tableau (charges fixes, revenu) occupe presque toute la boîte défilée : mise en page héritée de N3, à regarder en T52.
+
+**Tests d'abord.** `test/exemple-r2.test.js` (6 tests [T51]) et `test/exemple-r2.e2e.js` (3 tests [T51]) : cas type (surface, abri et plein champ, 200 poules, jamais plus de 250 présentes), douze mois de ventes, légumes dix mois sur douze, aucune sur-occupation, coûts de chaque culture, charges fixes et revenu, débouchés d'œufs au marché et en paniers et pas à l'épicerie, effacement des charges, `exemple_tout_sourcé` (noms et nombre de plantations présents dans le dossier). Rouges sur l'ancienne ferme :
+
+```text
+./verify.sh T51 (ancienne ferme)
+not ok 5 - [T51] EX-51 : le cas type du brief — un maraîcher seul, environ 1,5 ha, 200 poules, jamais plus de 250 à la fois
+not ok 6 - [T51] EX-51 : la ferme produit et vend sur les douze mois de l'année de chargement, sans sur-occupation
+not ok 7 - [T51] EX-52 : la ferme d'exemple porte ses charges fixes, et les chiffres clés en donnent le revenu
+not ok 8 - [T51] EX-53 : les œufs se vendent par des débouchés, au marché et en paniers, pas à l'épicerie
+not ok 10 - [T51] exemple_tout_sourcé : chaque culture, variété, charge et point de vente de l'exemple figure dans le dossier de données
+# tests 18
+# pass 13
+# fail 5
+npx playwright test --grep "\[T51\]" (ancienne ferme)
+  1) test/exemple-r2.e2e.js:14:1 › [T51] EX-51, EX-52 : la ferme d'exemple montre une saison de janvier à décembre et le revenu après les charges fixes
+  2) test/exemple-r2.e2e.js:28:1 › [T51] EX-53 : les œufs ont leurs débouchés, au marché et en paniers, et la matrice compare ponte et demande
+  3) test/exemple-r2.e2e.js:40:1 › [T51] EX-54 : effacer la ferme d'exemple retire aussi ses charges fixes
+  3 failed
+Suite entière avec les tests alignés, ancienne ferme : unitaires 10 échecs sur 143 ; bout en bout 67 échecs sur 165.
+```
+
+**Retouches des tests alignés** (accord de l'humain du 14/10, `SPEC.md` R2, « Points tranchés » : seuls changent les valeurs, noms, nombres, dates attendus et la ligne de l'exemple qui sert de support) :
+
+| Fichier | Test | Avant → après |
+| --- | --- | --- |
+| `test/exemple.test.js` | [T09] compte des plantations ; [T09] effacer | 10 → 51 plantations |
+| `test/poules.test.js` | [T31] la ferme d'exemple a un lot de poules… | 1 lot → 2 lots (dates de chaque lot dans l'année) ; débouché d'œufs `false` → `true` ; `aDebouche` `false` → `true` ; semaines de la matrice toutes `sans_debouche` → aucune `sans_debouche` (bascule EX-53) |
+| `test/poules.test.js` | [T31] effacer l'exemple efface aussi son lot | lots avec supprimés 2 → 3 (deux de l'exemple, un de l'utilisateur) |
+| `test/ventes.test.js` | [T24] la ferme d'exemple a des points de vente… | chaque débouché vend une culture → une culture **ou les œufs** (bascule EX-53) |
+| `test/p2-synthese.test.js` | [T34] les chiffres clés reprennent le total… | `oeufs` : `vendus: false, effectif: 100, lots: 1` → `vendus: true, effectif: 200, lots: 2` |
+| `test/exemple.e2e.js` | [T09] (trois assertions) | 10 → 51 plantations |
+| `test/exemple-n3.e2e.js` | [T48] véhicule et points de vente ; [T48] effacer ; [T48] besoins | « Camionnette » → « Fourgonnette » ; 3 → 4 points de vente ; 10 → 51 lignes de besoins |
+| `test/exemple-poules.e2e.js` | [T31] lots, atelier, matrice | 1 → 2 lots ; libellé « œufs estimés » → « œufs vendus estimés » (bascule EX-53) |
+| `test/exemple-poules.e2e.js` | [T31] dans la matrice, les œufs se comptent en nombres entiers | cases `.mediane` (production sans débouché, `—` ou entier) → cases `.ecart` (écart à la demande, entier signé) : la propriété « nombres entiers » est vérifiée sur ce que la case montre avec débouchés |
+| `test/tranche.e2e.js` | [T10] parcours de la tranche | 10 → 51 ; support Courgette (seule plantation de sa culture) → Ail péi (seule plantation de sa culture) |
+| `test/presentation.e2e.js` | [T11] ; [T12] (1280, 1366, 1920 px) | 10 → 51 ; support Courgette → Ail péi (la Courgette a désormais deux plantations ; l'Ail péi est la première ligne du tableau, visible à 1280 × 720) |
+| `test/presentation.e2e.js` | [T13] comptes des listes | 5 / 7 / 7 / 10 → 9 / 11 / 11 / 51 |
+| `test/presentation.e2e.js` | [T14] mois et cultures visibles pendant le défilement | dernière ligne visible au-dessus du pied : « Tomate » → « Œufs » (le pied gagne les lignes charges fixes et revenu ; même propriété : le nom reste visible en bas de la boîte défilée) |
+| `test/presentation.e2e.js` | [T15] mêmes règles avec une sur-occupation | support : Courgette 45 m² → Chouchou 350 m² sur la treille de 300 m² |
+| `test/p2-socle.e2e.js` | [T33] navigation (comptes) ; [T33] tiroir de modification | 5 / 7 / 10 / 3 / 1 → 9 / 11 / 51 / 4 / 2 ; support Courgette → Ail péi |
+| `test/p2-lisibilite.e2e.js` | chargement ; [T37] thème clair et sombre, chaque page lisible | 10 → 51 ; support Courgette → Ail péi |
+| `test/p2-synthese.e2e.js` | chargement | horloge fixée au 20/05/2026 (comme `p2-ferme.e2e.js`) : les mois attendus ne dépendent plus du jour où le test tourne ; 10 → 51 |
+| `test/p2-synthese.e2e.js` | [T34] chiffres clés | 4 → 5 tuiles ; boucle des tuiles `ca, couts, marge, oeufs` → `ca, couts, marge, revenu, oeufs` |
+| `test/p2-synthese.e2e.js` | [T34] infobulle du graphique | dernier mois « octobre 2026 » → « décembre 2026 » ; mois précédent « septembre » → « novembre » |
+| `test/p2-synthese.e2e.js` | [T34] une ligne par culture | 8 → 12 lignes (11 cultures et les œufs) |
+| `test/p2-synthese.e2e.js` | [T34] mois, cultures et total visibles par défilement | dernière ligne : dernier `tbody tr[data-mesure="ca"]` → `tfoot tr[data-mesure="revenu"]` (le pied porte désormais charges et revenu ; même propriété : nom et total de la dernière ligne dans la boîte, au-dessus de la barre de défilement) |
+| `test/p2-ventes.e2e.js` | [T35] sans débouché, une case montre la fourchette de la production | ligne support : œufs (sans débouché) → Ail péi (vendu sans débouché détaillé, décision T50) ; unité dans la ligne des fourchettes « œufs » → « kg » |
+| `test/p2-ferme.e2e.js` | [T36] chargement ; Sauvegarde | 10 → 51 ; 5 → 9 espaces ; 1 → 2 lots |
+| `test/p2-ferme.e2e.js` | [T36] Lignes : espace | Tunnel 60 m² « Tomate × 2 » → Tunnel 1 200 m² « Concombre × 2, Tomate × 2, Courgette » ; Planche 3 → Parcelle 3 « Chou pommé × 3, Courgette » ; Planche 1 « Courgette » → Parcelle 1 « Salade batavia × 15 » |
+| `test/p2-ferme.e2e.js` | [T36] Lignes : culture | valeurs de la Tomate (12 kg/m² 8 à 16 ; 3,5 €/kg 2 à 7,5 ; 70 jours, 11 semaines) ; Laitue batavia → Salade batavia (9 pièces/m² 6,5 à 11 ; 1,15 €/pièce 1 à 1,5) |
+| `test/p2-ferme.e2e.js` | [T36] Lignes : variété | cas « un fait qui diffère » : Heatmaster (jours) → Goldorac (semaines de récolte) ; cas « aucun fait, note » : Blonde de Paris → Heatmaster ; cas « deux faits en fourchette » : Zoizo de l'ancienne ferme → variété « Cabri » ajoutée par le test à la culture Piment (la nouvelle ferme n'a aucune variété qui change rendement et prix, faute de source), mêmes valeurs et mêmes trois assertions (2 faits, « 0,6 kg/m² 0,3 à 1 », « 15 €/kg 12 à 18 ») |
+| `test/p2-ferme.e2e.js` | [T36] Lignes : plantation | Courgette Black Beauty → Ail péi Vacoa (Parcelle haute, 300 m², 25/04/2026, du 22/09 au 16/11, 144 kg 72 à 192) |
+| `test/p2-ferme.e2e.js` | [T36] Lignes : lot | Lot de printemps → Lot d'avril (dates, ponte 0,66 à 0,8, 474 œufs 434 à 526, aliment 64,4 € 44,1 à 91) |
+| `test/p2-ferme.e2e.js` | [T36] calendrier : lignes, axe, barres, sous-lignes | 5 → 9 lignes, 10 → 51 barres ; mois mars–oct. → janv.–déc. ; Heatmaster du 15/04 → du 01/03 ; barre Courgette → Ail péi (dates) ; sous-lignes Planche 1/3, Tunnel → Parcelle haute 1, Parcelle 5 2, Parcelle 1 3 |
+| `test/p2-ferme.e2e.js` | [T36] agrandir une plantation marque la sur-occupation, aux dates du chevauchement | Laitue du 22/05 sur la planche 2 portée à 20 m² (marque du 22/05 au 05/07) → Courgette du 01/09 au tunnel 1 portée à 100 m², avec la tomate du 10/06 (marque du 01/09 au 03/11) : un chevauchement partiel, comme avant |
+| `test/p2-ferme.e2e.js` | [T36] EX-37 pages de la ferme lisibles (clair, sombre) | sur-occupation pour voir l'alerte : Laitue du 22/05 portée à 20 m² → Chouchou porté à 350 m² sur la treille de 300 m² |
+| `test/p2-ferme.e2e.js` | [T36] clic sur une barre ; tiroir des plantations | support Black Beauty → Vacoa (30 → 300 m², 12 → 120 m² ; aperçus de récolte et production recalculés) |
+| `test/p2-ferme.e2e.js` | [T36] infobulle d'une barre | support Black Beauty → Salade Goldorac du 05/01 (barre de la première ligne : survoler une barre basse fait défiler la page et masque l'infobulle) |
+| `test/p2-ferme.e2e.js` | [T36] repère « aujourd'hui » (second cas : aucun repère hors saison) | ferme d'exemple chargée le 15/01/2027 (saison mars–oct. à venir) → une plantation de 2027 saisie directement (la ferme d'exemple couvre toute l'année de chargement : aujourd'hui y tombe toujours) ; même propriété : pas de repère quand aujourd'hui est hors de la saison |
+| `test/p2-ferme.e2e.js` | [T36] poules dans le calendrier | 1 → 2 lots ; Lot de printemps → Lot d'avril (arrivée 06/04, ponte 27/04, réforme 31/12 : fin de l'axe) ; suppression des deux lots |
+
+Preuve verte :
+
+```text
+$ ./verify.sh T51
+ok 5 - [T51] EX-51 : le cas type du brief — un maraîcher seul, environ 1,5 ha, 200 poules, jamais plus de 250 à la fois
+ok 6 - [T51] EX-51 : la ferme produit et vend sur les douze mois de l'année de chargement, sans sur-occupation
+ok 7 - [T51] EX-52 : la ferme d'exemple porte ses charges fixes, et les chiffres clés en donnent le revenu
+ok 8 - [T51] EX-53 : les œufs se vendent par des débouchés, au marché et en paniers, pas à l'épicerie
+ok 9 - [T51] EX-54 : effacer l'exemple retire aussi ses charges fixes et ses débouchés d'œufs, et seulement eux
+ok 10 - [T51] exemple_tout_sourcé : chaque culture, variété, charge et point de vente de l'exemple figure dans le dossier de données
+# tests 18
+# pass 18
+# fail 0
+✓  1 test/exemple-r2.e2e.js:14:1 › [T51] EX-51, EX-52 : la ferme d'exemple montre une saison de janvier à décembre et le revenu après les charges fixes (916ms)
+✓  2 test/exemple-r2.e2e.js:28:1 › [T51] EX-53 : les œufs ont leurs débouchés, au marché et en paniers, et la matrice compare ponte et demande (1.0s)
+✓  3 test/exemple-r2.e2e.js:40:1 › [T51] EX-54 : effacer la ferme d'exemple retire aussi ses charges fixes (682ms)
+3 passed (3.4s)
+== T51 : vérification verte ==
+exit 0
+```
+
+```text
+$ ./verify.sh R2
+# tests 143
+# pass 143
+# fail 0
+165 passed (1.9m)
+== R2 : vérification verte ==
+exit 0
+```
+
+- Commit : ce commit, poussé sur `ccr-997aaccf-xva49c` ; le contrôle du déploiement Vercel (READY, filtré par sha) est consigné dans l'entrée T52.

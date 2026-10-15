@@ -20,13 +20,13 @@ function donnees(ferme) {
   return resultat;
 }
 
-test("[T09] la ferme d'exemple compte 10 plantations, toutes calculables, sans sur-occupation", () => {
+test("[T09] la ferme d'exemple compte 51 plantations, toutes calculables, sans sur-occupation", () => {
   const ferme = Store.ouvrir(stockageEnMemoire());
   Exemple.charger(ferme, 2027);
   const d = donnees(ferme);
 
-  assert.equal(d.plantations.length, 10);
-  assert.equal(Exemple.NOMBRE_DE_PLANTATIONS, 10);
+  assert.equal(d.plantations.length, 51);
+  assert.equal(Exemple.NOMBRE_DE_PLANTATIONS, 51);
   for (const plantation of d.plantations) {
     const variete = d.varietes.find((v) => v.id === plantation.varieteId);
     assert.ok(variete, "variété");
@@ -61,7 +61,7 @@ test("[T09] effacer l'exemple supprime logiquement ce qu'il a créé, et seuleme
   assert.deepEqual(reouverte.lister("espaces").map((e) => e.id), [mienne.id]);
   for (const objet of ["cultures", "varietes", "plantations"]) assert.deepEqual(reouverte.lister(objet), [], objet);
   const plantations = reouverte.lister("plantations", { avecSupprimes: true });
-  assert.equal(plantations.length, 10);
+  assert.equal(plantations.length, 51);
   assert.ok(plantations.every((p) => p.supprimeLe));
   assert.equal(Exemple.estAffichee(reouverte), false);
 });

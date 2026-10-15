@@ -35,7 +35,7 @@ test("[T34] EX-33 : les chiffres clés reprennent le total de la saison du table
   for (const niveau of ["basse", "mediane", "haute"]) {
     assert.ok(Math.abs(cles.couts.total[niveau] - (couts[niveau] + aliment[niveau] + (cultures ? cultures[niveau] : 0))) < 1e-9, niveau);
   }
-  assert.deepEqual(cles.oeufs, { volume: tableau.poules.total.volume, vendus: false, effectif: 100, lots: 1 });
+  assert.deepEqual(cles.oeufs, { volume: tableau.poules.total.volume, vendus: true, effectif: 200, lots: 2 });
   // Le chiffre d'affaires se partage entre les cultures et les œufs.
   assert.deepEqual(cles.parts.oeufs, tableau.poules.total.ca);
   for (const niveau of ["basse", "mediane", "haute"]) {

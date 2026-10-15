@@ -426,7 +426,8 @@ test("[T24] la ferme d'exemple a des points de vente, leurs séances et leurs d�
     assert.match(seance.debut, /^2027-/);
     assert.ok(Calc.seancesDatees(seance).length > 0);
   }
-  for (const debouche of d.debouches) assert.ok(points.has(debouche.pointVenteId) && cultures.has(debouche.produitId));
+  // R2 (EX-53) : un débouché vend une culture ou les œufs.
+  for (const debouche of d.debouches) assert.ok(points.has(debouche.pointVenteId) && (cultures.has(debouche.produitId) || debouche.produitId === Calc.OEUFS));
 
   const vue = Calc.pointsDeVente(d);
   assert.equal(vue.points.length, d.pointsVente.length);

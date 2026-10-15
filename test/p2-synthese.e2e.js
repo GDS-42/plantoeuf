@@ -4,10 +4,13 @@ const { aller, saisirS2 } = require("./outils.js");
 
 const NIVEAUX = ["basse", "mediane", "haute"];
 
+// R2 : la ferme d'exemple se charge dans l'année du jour ; l'horloge fixée donne la saison 2026 (comme
+// test/p2-ferme.e2e.js), pour que les mois attendus ne dépendent pas du jour où le test tourne.
 async function chargerExemple(page) {
+  await page.clock.setFixedTime(new Date("2026-05-20T10:00:00+04:00"));
   await page.goto("index.html");
   await page.locator("#charger-exemple").click();
-  await expect(page.locator("#liste-plantations li")).toHaveCount(10);
+  await expect(page.locator("#liste-plantations li")).toHaveCount(51);
   await aller(page, "synthese");
 }
 
@@ -36,7 +39,7 @@ test("[T34] EX-33 : les chiffres clés donnent le chiffre d'affaires, les coûts
   const erreurs = releverErreurs(page);
   await chargerExemple(page);
   const tuile = (nom) => page.locator(`#tuiles .tuile[data-chiffre="${nom}"]`);
-  await expect(page.locator("#tuiles .tuile")).toHaveCount(4);
+  await expect(page.locator("#tuiles .tuile")).toHaveCount(5);
 
   expect(await fourchette(tuile("ca"))).toEqual(await fourchette(pied(page, "ca")));
   expect(await fourchette(tuile("marge"))).toEqual(await fourchette(pied(page, "marge")));
@@ -49,7 +52,7 @@ test("[T34] EX-33 : les chiffres clés donnent le chiffre d'affaires, les coûts
   expect(await fourchette(tuile("oeufs"))).toEqual(await fourchette(oeufs));
 
   // Chaque tuile : son nom, la médiane en grand, « entre … et … », un repère de la fourchette.
-  for (const nom of ["ca", "couts", "marge", "oeufs"]) {
+  for (const nom of ["ca", "couts", "marge", "revenu", "oeufs"]) {
     const t = tuile(nom);
     await expect(t.locator(".tuile-titre")).toBeVisible();
     await expect(t.locator(".tuile-valeur .mediane")).toBeVisible();
@@ -147,9 +150,9 @@ test("[T34] EX-33 : au survol ou au clavier, une infobulle donne les fourchettes
   await page.locator("#graphique svg.graphique-svg").focus();
   await page.keyboard.press("End");
   await expect(infobulle).toBeVisible();
-  await expect(infobulle).toContainText("octobre 2026");
+  await expect(infobulle).toContainText("décembre 2026");
   await page.keyboard.press("ArrowLeft");
-  await expect(infobulle).toContainText("septembre 2026");
+  await expect(infobulle).toContainText("novembre 2026");
   await page.keyboard.press("Escape");
   await expect(infobulle).toBeHidden();
 });
@@ -196,10 +199,10 @@ test("[T34] EX-34, P2-S3 : chiffres clés et graphique présents ; une ligne par
   await expect(ca).toHaveAttribute("aria-pressed", "true");
   await expect(volume).toHaveAttribute("aria-pressed", "false");
 
-  // Une ligne visible par culture (7) et une pour les œufs, toutes de la mesure choisie.
+  // Une ligne visible par culture (11) et une pour les œufs, toutes de la mesure choisie.
   const avant = await lignesVisibles(page);
-  expect(avant).toHaveLength(8);
-  expect(new Set(avant.map((l) => l.split(":")[0])).size).toBe(8);
+  expect(avant).toHaveLength(12);
+  expect(new Set(avant.map((l) => l.split(":")[0])).size).toBe(12);
   expect(avant.every((l) => l.endsWith(":ca"))).toBe(true);
   await expect(page.locator('#tableau tfoot tr[data-mesure="ca"]')).toBeVisible();
   const valeurs = await valeursExactes(page);
@@ -208,7 +211,7 @@ test("[T34] EX-34, P2-S3 : chiffres clés et graphique présents ; une ligne par
   await expect(volume).toHaveAttribute("aria-pressed", "true");
   await expect(ca).toHaveAttribute("aria-pressed", "false");
   const apres = await lignesVisibles(page);
-  expect(apres).toHaveLength(8);
+  expect(apres).toHaveLength(12);
   expect(apres.every((l) => l.endsWith(":volume"))).toBe(true);
   expect(await valeursExactes(page)).toEqual(valeurs);
   // Des unités différentes ne s'additionnent pas : pas de pied en volume.
@@ -281,10 +284,13 @@ test("[T34] EX-34, EX-13 : les mois, les cultures et le total restent visibles p
   };
   expect(await dansLaBoite(page.locator("#tableau thead th").first())).toBe(true);
   expect(await dansLaBoite(page.locator("#tableau thead th.col-total"))).toBe(true);
-  expect(await dansLaBoite(page.locator('#tableau tbody tr[data-mesure="ca"]').last().locator("th"))).toBe(true);
-  expect(await dansLaBoite(page.locator('#tableau tbody tr[data-mesure="ca"]').last().locator('td[data-mois="total"]'))).toBe(true);
+  // R2 : avec les charges fixes et le revenu, le pied occupe le bas de la boîte défilée ; la dernière ligne du
+  // tableau est celle du revenu, dont le nom est dans la même colonne figée que les cultures.
+  const derniere = page.locator('#tableau tfoot tr[data-mesure="revenu"]');
+  expect(await dansLaBoite(derniere.locator("th"))).toBe(true);
+  expect(await dansLaBoite(derniere.locator('td[data-mois="total"]'))).toBe(true);
   // Rien ne se superpose au nom de la ligne : l'en-tête figé est au-dessus, la case du mois passe dessous.
-  const dessus = await page.locator('#tableau tbody tr[data-mesure="ca"]').last().locator("th").evaluate((th) => {
+  const dessus = await derniere.locator("th").evaluate((th) => {
     const r = th.getBoundingClientRect();
     return th.contains(document.elementFromPoint(r.left + 6, r.top + r.height / 2));
   });

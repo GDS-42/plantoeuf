@@ -112,32 +112,32 @@ Familles botaniques : classification usuelle. Rendement commercialisable par m²
 | Chouchou péi | Chouchou | Population locale [E] |
 | Vacoa | Ail péi | Avec le Gros bleu, les variétés qui dominent grâce à un meilleur rendement [P5] [R] |
 
-## 5. Calendrier des plantations (`PLANTATIONS`, 55 plantations)
+## 5. Calendrier des plantations (`PLANTATIONS`, 51 plantations)
 
 | Plantation | Espace | Surface (m²) | Dates de mise en place |
 | --- | --- | --- | --- |
-| Tomate Heatmaster | Tunnel 1 | 120 | 10/01, 15/06 |
-| Tomate Heatmaster | Tunnel 2 | 120 | 01/04, 01/09 |
+| Tomate Heatmaster | Tunnel 1 | 120 | 10/01, 10/06 |
+| Tomate Heatmaster | Tunnel 2 | 120 | 01/03, 01/08 |
 | Concombre Lambert | Tunnel 1 | 15 | 10/01, 10/04 |
 | Concombre Lambert | Tunnel 2 | 15 | 01/10 |
 | Courgette Sofia F1 | Tunnel 2 | 60 | 01/02 |
-| Courgette Sofia F1 | Tunnel 1 | 60 | 01/11 |
-| Salade Goldorac | Parcelle 1 | 40 | 05/01, 26/01, 16/02, 09/03, 30/03, 20/04, 11/05, 01/06, 22/06, 13/07, 03/08, 24/08, 14/09, 05/10, 26/10, 16/11, 07/12 |
-| Brède Petsaï | Parcelle 2 | 80 | 08/01, 29/01, 19/02, 12/03, 02/04, 23/04, 14/05, 04/06, 25/06, 16/07, 06/08, 27/08, 17/09, 08/10, 29/10, 19/11, 10/12 |
+| Courgette Sofia F1 | Tunnel 1 | 60 | 01/09 |
+| Salade Goldorac | Parcelle 1 | 40 | 05/01, 26/01, 16/02, 09/03, 30/03, 20/04, 11/05, 01/06, 22/06, 13/07, 03/08, 24/08, 14/09, 05/10, 26/10 |
+| Brède Petsaï | Parcelle 2 | 80 | 08/01, 29/01, 19/02, 12/03, 02/04, 23/04, 14/05, 04/06, 25/06, 16/07, 06/08, 27/08, 17/09, 08/10, 29/10 |
 | Chou Farao F1 | Parcelle 3 | 80 | 01/04, 01/06, 01/08 |
 | Carotte Nantaise | Parcelle 4 | 100 | 15/03, 15/05, 15/07 |
 | Haricot nain | Parcelle 5 | 150 | 15/04, 01/08 |
 | Courgette Sofia F1 | Parcelle 3 | 100 | 15/05 |
 | Piment Zoizo | Parcelle 5 | 40 | 01/03 |
-| Chouchou péi | Treille de chouchou | 300 | 15/02 |
+| Chouchou péi | Treille de chouchou | 300 | 15/01 |
 | Ail Vacoa | Parcelle haute | 300 | 25/04 |
 
-Surfaces et dates : estimations de l'agent [E], dans les contraintes sourcées ci-dessous, fixées pour que la production suive à peu près la demande des débouchés (§ 8), sans sur-occupation.
+Surfaces et dates : estimations de l'agent [E], dans les contraintes sourcées ci-dessous, fixées pour que la production suive à peu près la demande des débouchés (§ 8), sans sur-occupation. Toutes les récoltes finissent dans l'année (au plus tard le 30/12) : après le 31 décembre, aucune séance ne les vendrait, et le calendrier tient en douze mois. Les récoltes de janvier d'une vraie ferme viennent de plantations de novembre et décembre de l'année précédente, hors de l'année modélisée : en janvier, la ferme d'exemple ne vend que ses œufs.
 
-- **Tunnels** (tomate, concombre, courgette) : la tomate passe sous abri à La Réunion (flétrissement bactérien et mouche de la tomate en plein champ) [A5] [G2] [R] ; deux cycles de tomate par tunnel, décalés pour une récolte presque continue ; concombre et courgette sous abri en saison chaude [D3] [N1]. Au-dessus de 30 °C, le rendement de la tomate baisse [C3] [R] ; à mi-pente, la moyenne des maximales de février reste sous 27 °C au Tampon (860 m) [M1].
-- **Salades et brèdes** : une plantation toutes les trois semaines, toute l'année ; laitues d'été en saison chaude [A1] [R] ; surfaces de 40 et 80 m² fixées par la demande (§ 8) [E].
+- **Tunnels** (tomate, concombre, courgette ; tomate plantée en janvier et juin dans le tunnel 1, en mars et août dans le tunnel 2) : la tomate passe sous abri à La Réunion (flétrissement bactérien et mouche de la tomate en plein champ) [A5] [G2] [R] ; deux cycles de tomate par tunnel, décalés pour une récolte presque continue ; concombre et courgette sous abri en saison chaude [D3] [N1]. Au-dessus de 30 °C, le rendement de la tomate baisse [C3] [R] ; à mi-pente, la moyenne des maximales de février reste sous 27 °C au Tampon (860 m) [M1].
+- **Salades et brèdes** : une plantation toutes les trois semaines, de janvier à octobre ; laitues d'été en saison chaude [A1] [R] ; surfaces de 40 et 80 m² fixées par la demande (§ 8) [E].
 - **Saison fraîche en plein champ** : chou (avril, juin, août), carotte (semis de mars à juillet ; la carotte d'été pose problème [A6] [R]), haricot (avril, août), courgette (mai) [E, dans le calendrier du rapport de compléments].
-- **Cultures longues** : piment (mars, 26 semaines de récolte) ; chouchou sur treille (février) ; ail péi fin avril [P5] [R], puis engrais vert.
+- **Cultures longues** : piment (mars, 26 semaines de récolte) ; chouchou sur treille (mi-janvier) ; ail péi fin avril [P5] [R], puis engrais vert.
 - **Gingembre** : écarté. Planté de septembre à novembre, il se récolte l'année suivante [C2] [R], hors de l'année modélisée.
 
 ## 6. Véhicule (`VEHICULES`)
@@ -264,10 +264,10 @@ Total : environ 6 700 / 13 850 / 26 400 € par an. Repère : en 2020, les mara�
 
 ## 11. Ce que donne la ferme (année 2026)
 
-Calcul de l'outil (`Calc.tableau`, `Calc.chiffresCles`), médiane et fourchette :
-- **Chiffre d'affaires** : 45 500 € (21 100 à 99 700). Les cultures font 31 500 €, dont la tomate 13 400 et la salade 5 000 ; les œufs, 14 100 €.
-- **Coûts déduits** : 12 800 €, dont séances de vente 3 200, aliment 5 400, semences, plants et intrants 4 200.
-- **Marge** : 32 800 € (2 900 à 90 700) ; charges fixes : 13 850 € (6 670 à 26 380) ; **revenu** : 18 900 € (− 23 510 à 84 000).
+Calcul de l'outil (`Calc.tableau`, `Calc.chiffresCles`), médiane et fourchette, pour les 51 plantations :
+- **Chiffre d'affaires** : 44 600 € (20 800 à 99 300). Les cultures font 30 500 €, dont la tomate 12 200 et la salade 5 000 ; les œufs, 14 100 €.
+- **Coûts déduits** : 12 500 €, dont séances de vente 3 200, aliment 5 400, semences, plants et intrants 3 900.
+- **Marge** : 32 100 € (2 900 à 90 500) ; charges fixes : 13 850 € (6 670 à 26 380) ; **revenu** : 18 200 € (− 23 500 à 83 800).
 - **Repère** : en 2017, l'EBE moyen des exploitations maraîchères suivies par le RICA à La Réunion était de 37 667 € pour 3,72 ha [S13] [R]. Ramené à 1,5 ha, l'ordre de grandeur est le même.
 
 ## 12. Limites et documents à relire

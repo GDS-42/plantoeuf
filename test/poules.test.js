@@ -309,21 +309,21 @@ function donneesDe(ferme) {
   return resultat;
 }
 
-test("[T31] la ferme d'exemple a un lot de poules dans l'année choisie ; ses œufs se vendent sans débouché", () => {
+test("[T31] la ferme d'exemple a deux lots de poules dans l'année choisie ; ses œufs se vendent par ses débouchés", () => {
   const ferme = Store.ouvrir(stockageEnMemoire());
   Exemple.charger(ferme, 2027);
   const d = donneesDe(ferme);
-  assert.equal(d.lots.length, 1);
-  for (const champ of ["arrivee", "debutPonte", "reforme"]) assert.match(d.lots[0][champ], /^2027-/);
-  // Le test [T24] de N2 exige que chaque débouché de l'exemple vende une culture : pas de débouché d'œufs (PROGRESS.md, T31).
-  assert.equal(d.debouches.some((x) => x.produitId === Calc.OEUFS), false);
+  assert.equal(d.lots.length, 2);
+  for (const lot of d.lots) for (const champ of ["arrivee", "debutPonte", "reforme"]) assert.match(lot[champ], /^2027-/);
+  // R2 (EX-53) : les œufs de l'exemple se vendent par des débouchés (marchés et paniers).
+  assert.equal(d.debouches.some((x) => x.produitId === Calc.OEUFS), true);
   const { poules, lignes } = Calc.tableau(d);
   assert.equal(lignes.length, d.cultures.length);
-  assert.equal(poules.aDebouche, false);
+  assert.equal(poules.aDebouche, true);
   assert.ok(poules.total.ca.mediane > 0 && poules.total.marge.mediane > 0);
-  // Les œufs ont leur ligne dans la matrice, sans demande.
+  // Les œufs ont leur ligne dans la matrice, avec une demande.
   const ligne = Calc.offreDemande(d).lignes.find((l) => l.produitId === Calc.OEUFS);
-  assert.ok(Object.values(ligne.semaines).every((s) => s.etat === "sans_debouche"));
+  assert.ok(Object.values(ligne.semaines).every((s) => s.etat !== "sans_debouche"));
 });
 
 test("[T31] effacer l'exemple efface aussi son lot de poules, et seulement lui", () => {
@@ -334,6 +334,6 @@ test("[T31] effacer l'exemple efface aussi son lot de poules, et seulement lui",
   Exemple.effacer(ferme);
   const reouverte = Store.ouvrir(stockage);
   assert.deepEqual(reouverte.lister("lots").map((l) => l.id), [mien.id]);
-  assert.equal(reouverte.lister("lots", { avecSupprimes: true }).length, 2);
+  assert.equal(reouverte.lister("lots", { avecSupprimes: true }).length, 3);
   assert.equal(Exemple.estAffichee(reouverte), false);
 });

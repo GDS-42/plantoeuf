@@ -309,9 +309,9 @@
       nul: "—",
     },
     exemple: {
-      proposition: "Première visite ? Découvrez l'outil avec une ferme d'exemple de La Réunion : {plantations} plantations sur la saison fraîche. Vous pourrez l'effacer d'un clic.",
+      proposition: "Première visite ? Découvrez l'outil avec une ferme d'exemple de La Réunion, dans les hauts de Petite-Île : {plantations} plantations sur toute l'année, 200 poules. Vous pourrez l'effacer d'un clic.",
       charger: "Charger la ferme d'exemple",
-      chargee: "Vous regardez la ferme d'exemple de La Réunion. Ses chiffres sont des ordres de grandeur, pas des références. Effacez-la pour commencer votre ferme ; ce que vous avez ajouté reste.",
+      chargee: "Vous regardez la ferme d'exemple de La Réunion. Ses chiffres viennent de sources publiques (DAAF, ARMEFLHOR, Chambre d'agriculture…) : ce sont des repères, pas des références pour votre ferme. Effacez-la pour commencer votre ferme ; ce que vous avez ajouté reste.",
       effacer: "Effacer la ferme d'exemple",
     },
     sauvegarde: {

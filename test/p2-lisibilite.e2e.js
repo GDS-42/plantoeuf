@@ -9,7 +9,7 @@ const PAGES = ["synthese", "espaces", "cultures", "plantations", "ventes", "poul
 async function chargerExemple(page) {
   await page.goto("index.html");
   await page.locator("#charger-exemple").click();
-  await expect(page.locator("#liste-plantations li")).toHaveCount(10);
+  await expect(page.locator("#liste-plantations li")).toHaveCount(51);
 }
 
 // Pour chaque texte affiché : sa taille et son contraste avec le fond réellement peint dessous
@@ -93,7 +93,7 @@ for (const theme of ["light", "dark"]) {
       await page.locator(`#onglet-${onglet}`).click();
       verifierLisibilite(await auditerTextes(page), `onglet ${onglet} (${theme})`);
     }
-    await modifier(page, "plantations", "Courgette");
+    await modifier(page, "plantations", "Ail péi");
     verifierLisibilite(await auditerTextes(page), `tiroir (${theme})`);
   });
 }

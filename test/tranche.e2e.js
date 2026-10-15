@@ -25,17 +25,17 @@ test("[T10] parcours de la tranche : ferme d'exemple, plantation modifiée, tabl
   const page = await browser.newPage();
   await page.goto("index.html");
   await page.locator("#charger-exemple").click();
-  await expect(page.locator("#liste-plantations li")).toHaveCount(10);
+  await expect(page.locator("#liste-plantations li")).toHaveCount(51);
   const avant = await caTotalMedian(page);
   expect(avant).toBeGreaterThan(0);
 
-  const courgette = page.locator("#liste-plantations li", { hasText: "Courgette" });
-  await modifier(page, "plantations", "Courgette");
+  const ail = page.locator("#liste-plantations li", { hasText: "Ail péi" });
+  await modifier(page, "plantations", "Ail péi");
   await page.locator("#plantation-surface").fill("15");
   await page.locator("#plantation-ajouter").click();
   await expect.poll(() => caTotalMedian(page)).toBeLessThan(avant);
   const apres = await caTotalMedian(page);
-  await expect(courgette).toContainText("15 m²");
+  await expect(ail).toContainText("15 m²");
 
   const fichier = await exporter(page);
 
@@ -43,8 +43,8 @@ test("[T10] parcours de la tranche : ferme d'exemple, plantation modifiée, tabl
   await autre.goto("index.html");
   await aller(autre, "sauvegarde");
   await autre.locator("#importer").setInputFiles({ name: "plantoeuf.json", mimeType: "application/json", buffer: Buffer.from(fichier) });
-  await expect(autre.locator("#liste-plantations li")).toHaveCount(10);
-  await expect(autre.locator("#liste-plantations li", { hasText: "Courgette" })).toContainText("15 m²");
+  await expect(autre.locator("#liste-plantations li")).toHaveCount(51);
+  await expect(autre.locator("#liste-plantations li", { hasText: "Ail péi" })).toContainText("15 m²");
   expect(await caTotalMedian(autre)).toBeCloseTo(apres, 6);
   expect(sansDate(await exporter(autre))).toEqual(sansDate(fichier));
 });

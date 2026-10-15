@@ -264,12 +264,15 @@ test("[T35] sans débouché, une case montre la fourchette de la production, et 
   await page.goto("index.html");
   await page.locator("#charger-exemple").click();
   await vue(page, "offre");
-  const oeufs = page.locator('#matrice tr[data-produit="oeufs"][data-mesure="offre"] td[data-etat="sans_debouche"]:not(.od-vide)').first();
-  for (const niveau of ["mediane", "basse", "haute"]) await expect(oeufs.locator(`.od-offre .${niveau}`)).toBeVisible();
-  const [basse, mediane, haute] = await trois(oeufs.locator(".od-offre"));
+  // R2 (EX-53) : les œufs ont des débouchés ; l'ail péi, vendu sans débouché détaillé, sert d'exemple.
+  const ligneAil = page.locator('#matrice tr[data-mesure="offre"]', { hasText: "Ail péi" });
+  const ail = ligneAil.locator('td[data-etat="sans_debouche"]:not(.od-vide)').first();
+  for (const niveau of ["mediane", "basse", "haute"]) await expect(ail.locator(`.od-offre .${niveau}`)).toBeVisible();
+  const [basse, mediane, haute] = await trois(ail.locator(".od-offre"));
   expect(basse).toBeLessThan(mediane);
   expect(mediane).toBeLessThan(haute);
-  await expect(page.locator('#matrice tr[data-produit="oeufs"][data-mesure="fourchettes"] th')).toContainText("œufs");
+  const produit = await ligneAil.getAttribute("data-produit");
+  await expect(page.locator(`#matrice tr[data-produit="${produit}"][data-mesure="fourchettes"] th`)).toContainText("kg");
   await expect(page.locator('#matrice tr[data-mesure="fourchettes"]', { hasText: "botte" })).toHaveCount(1);
 });
 

@@ -7,7 +7,7 @@ const PAGES = ["synthese", "espaces", "cultures", "plantations", "ventes", "poul
 async function chargerExemple(page) {
   await page.goto("index.html");
   await page.locator("#charger-exemple").click();
-  await expect(page.locator("#liste-plantations li")).toHaveCount(10);
+  await expect(page.locator("#liste-plantations li")).toHaveCount(51);
 }
 
 // Relève les erreurs de la page : exceptions non rattrapées et messages d'erreur de la console.
@@ -32,7 +32,7 @@ test("[T33] EX-30 : la navigation mène à chaque page, une seule visible à la 
     await expect(page.locator(`#navigation a[data-page="${nom}"]`)).toHaveAttribute("aria-current", "page");
     await expect(page.locator(`#page-${nom} h1`)).toBeVisible();
   }
-  const comptes = { espaces: "5", cultures: "7", plantations: "10", pointsVente: "3", lots: "1" };
+  const comptes = { espaces: "9", cultures: "11", plantations: "51", pointsVente: "4", lots: "2" };
   for (const [objet, nombre] of Object.entries(comptes)) {
     await expect(page.locator(`#navigation .compte-nav[data-objet="${objet}"]`)).toHaveText(nombre);
   }
@@ -67,9 +67,9 @@ test("[T33] EX-31, P2-S1 : « Ajouter un espace » ouvre le tiroir titré ; l'en
 test("[T33] EX-31, P2-S2 : « Modifier » ouvre le tiroir de modification, signale la ligne, et l'enregistrement recalcule la synthèse", async ({ page }) => {
   await chargerExemple(page);
   const avant = Number(await page.locator("#synthese .mediane").getAttribute("data-valeur"));
-  await modifier(page, "plantations", "Courgette");
+  await modifier(page, "plantations", "Ail péi");
   await expect(page.locator("#tiroir-plantations h2")).toHaveText("Modifier la plantation");
-  const ligne = page.locator("#liste-plantations li", { hasText: "Courgette" });
+  const ligne = page.locator("#liste-plantations li", { hasText: "Ail péi" });
   await expect(ligne).toHaveAttribute("aria-current", "true");
   await expect(page.locator("#section-plantations")).toHaveAttribute("data-mode", "modification");
 

@@ -1,16 +1,16 @@
-// T09 — EX-10 : à la première ouverture, une ferme d'exemple de 10 plantations est proposée,
+// T09 — EX-10 : à la première ouverture, une ferme d'exemple de 51 plantations est proposée,
 // et s'efface d'un geste.
 const { test, expect } = require("@playwright/test");
 // P2 : la proposition, le tableau et l'accueil sont sur la page Synthèse ; les listes sur leur page (EX-30).
 const { aller, ajouterEspace } = require("./outils.js");
 
-test("[T09] à la première ouverture, la ferme d'exemple est proposée et se charge d'un clic : 10 plantations et le tableau", async ({ page }) => {
+test("[T09] à la première ouverture, la ferme d'exemple est proposée et se charge d'un clic : 51 plantations et le tableau", async ({ page }) => {
   await page.goto("index.html");
   await expect(page.locator("#proposition-exemple")).toBeVisible();
   await expect(page.locator("#proposition-exemple")).toContainText("Réunion");
 
   await page.locator("#charger-exemple").click();
-  await expect(page.locator("#liste-plantations li")).toHaveCount(10);
+  await expect(page.locator("#liste-plantations li")).toHaveCount(51);
   await expect(page.locator("#tableau")).toBeVisible();
   await expect(page.locator("#proposition-exemple")).toBeHidden();
   await expect(page.locator("#bandeau-exemple")).toBeVisible();
@@ -20,7 +20,7 @@ test("[T09] à la première ouverture, la ferme d'exemple est proposée et se ch
 test("[T09] la ferme d'exemple s'efface d'un geste, sans toucher à ce que l'utilisateur a ajouté", async ({ page }) => {
   await page.goto("index.html");
   await page.locator("#charger-exemple").click();
-  await expect(page.locator("#liste-plantations li")).toHaveCount(10);
+  await expect(page.locator("#liste-plantations li")).toHaveCount(51);
   await ajouterEspace(page, { nom: "ma planche", surface: 20 });
 
   await page.locator("#effacer-exemple").click();
@@ -32,7 +32,7 @@ test("[T09] la ferme d'exemple s'efface d'un geste, sans toucher à ce que l'uti
   await expect(page.locator("#tableau")).toBeHidden();
   await expect(page.locator("#bandeau-exemple")).toBeHidden();
   const plantations = await page.evaluate(() => JSON.parse(localStorage.getItem("plantoeuf")).plantations);
-  expect(plantations).toHaveLength(10);
+  expect(plantations).toHaveLength(51);
   expect(plantations.every((p) => p.supprimeLe)).toBe(true);
 });
 

@@ -23,11 +23,11 @@ test("[T11] le rendu est découpé en modules, et l'outil s'utilise sans aucune 
   expect(modules).toEqual(["object", "object", "object", "object"]);
 
   await page.locator("#charger-exemple").click();
-  await expect(page.locator("#liste-plantations li")).toHaveCount(10);
-  await modifier(page, "plantations", "Courgette");
+  await expect(page.locator("#liste-plantations li")).toHaveCount(51);
+  await modifier(page, "plantations", "Ail péi");
   await page.locator("#plantation-surface").fill("20");
   await page.locator("#plantation-ajouter").click();
-  await expect(page.locator("#liste-plantations li", { hasText: "Courgette" })).toContainText("20 m²");
+  await expect(page.locator("#liste-plantations li", { hasText: "Ail péi" })).toContainText("20 m²");
   await aller(page, "sauvegarde");
   await Promise.all([page.waitForEvent("download"), page.locator("#exporter").click()]);
   await page.locator("#effacer-exemple").click();
@@ -42,7 +42,7 @@ test("[T11] le rendu est découpé en modules, et l'outil s'utilise sans aucune 
 async function chargerExemple(page) {
   await page.goto("index.html");
   await page.locator("#charger-exemple").click();
-  await expect(page.locator("#liste-plantations li")).toHaveCount(10);
+  await expect(page.locator("#liste-plantations li")).toHaveCount(51);
 }
 
 for (const [largeur, hauteur] of [[1280, 720], [1366, 768], [1920, 1080]]) {
@@ -56,14 +56,14 @@ for (const [largeur, hauteur] of [[1280, 720], [1366, 768], [1920, 1080]]) {
       await expect(page.locator("#synthese")).toBeInViewport();
     }
 
-    const courgette = page.locator("#tableau tbody tr[data-mesure=\"volume\"]", { hasText: "Courgette" });
-    const cultureId = await courgette.getAttribute("data-culture");
+    const ail = page.locator("#tableau tbody tr[data-mesure=\"volume\"]", { hasText: "Ail péi" });
+    const cultureId = await ail.getAttribute("data-culture");
     const total = page.locator(`#tableau tr[data-culture="${cultureId}"][data-mesure="ca"] td[data-mois="total"] .mediane`);
     const avant = Number(await total.getAttribute("data-valeur"));
     const enTete = page.locator("#synthese .mediane");
     const enTeteAvant = Number(await enTete.getAttribute("data-valeur"));
 
-    await modifier(page, "plantations", "Courgette");
+    await modifier(page, "plantations", "Ail péi");
     await page.locator("#plantation-surface").fill("15");
     await page.locator("#plantation-ajouter").click();
 
@@ -93,7 +93,7 @@ test("[T12] EX-16, EX-37 : aucun défilement horizontal de la page de 360 à 192
 
 test("[T13] chaque liste a son titre et le nombre de ses éléments actifs", async ({ page }) => {
   await chargerExemple(page);
-  const attendus = { espaces: "5", cultures: "7", varietes: "7", plantations: "10" };
+  const attendus = { espaces: "9", cultures: "11", varietes: "11", plantations: "51" };
   const pages = { espaces: "espaces", cultures: "cultures", varietes: "cultures", plantations: "plantations" };
   for (const [objet, nombre] of Object.entries(attendus)) {
     await aller(page, pages[objet]);
@@ -135,7 +135,9 @@ test("[T14] P1-S2 : les mois et les cultures restent visibles pendant le défile
     el.scrollTop = el.scrollHeight;
   });
   await expect(page.locator("#tableau thead th[data-mois]").last()).toBeInViewport();
-  await expect(page.locator('#tableau tbody tr[data-mesure="ca"] th', { hasText: "Tomate" })).toBeInViewport();
+  // R2 : avec les charges fixes et le revenu, le pied du tableau occupe le bas de la boîte ; la dernière ligne
+  // visible au-dessus est celle des œufs.
+  await expect(page.locator('#tableau tbody tr[data-mesure="ca"] th', { hasText: "Œufs" })).toBeInViewport();
   const derniere = page.locator("#tableau tbody tr[data-mesure]:not([hidden])").last().locator("th");
   await expect(derniere).toBeInViewport();
 });
@@ -245,8 +247,8 @@ test("[T15] EX-16 : mêmes règles avec la ferme d'exemple, une modification en 
   }
   // P2 : chaque page se lit à part ; la synthèse d'abord.
   verifierLisibilite(await auditerTextes(page));
-  await modifier(page, "plantations", "Courgette");
-  await page.locator("#plantation-surface").fill("45");
+  await modifier(page, "plantations", "Chouchou");
+  await page.locator("#plantation-surface").fill("350");
   await page.locator("#plantation-ajouter").click();
   await aller(page, "espaces");
   await expect(page.locator(".sur-occupation")).toHaveCount(1);

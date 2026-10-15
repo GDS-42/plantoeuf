@@ -9,7 +9,7 @@ async function exemple(page, date = "2026-05-20T10:00:00+04:00") {
   await page.clock.setFixedTime(new Date(date));
   await page.goto("index.html");
   await page.locator("#charger-exemple").click();
-  await expect(page.locator("#liste-plantations li")).toHaveCount(10);
+  await expect(page.locator("#liste-plantations li")).toHaveCount(51);
 }
 
 function ligne(page, objet, texte) {
@@ -52,15 +52,15 @@ function seChevauchent(a, b) {
 test("[T36] Lignes : un espace montre son type, sa surface et ce qui y pousse", async ({ page }) => {
   await exemple(page);
   await aller(page, "espaces");
-  const tunnel = ligne(page, "espaces", "Tunnel");
-  await expect(tunnel.locator(".ligne-titre")).toHaveText("Tunnel");
+  const tunnel = ligne(page, "espaces", "Tunnel 1");
+  await expect(tunnel.locator(".ligne-titre")).toHaveText("Tunnel 1");
   await expect(tunnel.locator(".ligne-entete .puce")).toHaveText("abri");
-  await expect(fait(tunnel, "surface")).toHaveText("60 m²");
-  await expect(fait(tunnel, "plantations")).toHaveText("Tomate × 2");
-  const planche3 = ligne(page, "espaces", "Planche 3");
-  await expect(planche3.locator(".ligne-entete .puce")).toHaveText("plein champ");
-  await expect(fait(planche3, "plantations")).toHaveText("Brède chou de Chine × 2, Carotte");
-  await expect(fait(ligne(page, "espaces", "Planche 1"), "plantations")).toHaveText("Courgette");
+  await expect(fait(tunnel, "surface")).toHaveText("200 m²");
+  await expect(fait(tunnel, "plantations")).toHaveText("Concombre × 2, Tomate × 2, Courgette");
+  const parcelle3 = ligne(page, "espaces", "Parcelle 3");
+  await expect(parcelle3.locator(".ligne-entete .puce")).toHaveText("plein champ");
+  await expect(fait(parcelle3, "plantations")).toHaveText("Chou pommé × 3, Courgette");
+  await expect(fait(ligne(page, "espaces", "Parcelle 1"), "plantations")).toHaveText("Salade batavia × 15");
   await expect(page.locator("#liste-espaces .sur-occupation")).toHaveCount(0);
   // L'occupation des espaces se voit dans le calendrier de culture, à un clic.
   await page.locator("#espaces-voir-calendrier").click();
@@ -75,62 +75,72 @@ test("[T36] Lignes : une culture montre sa famille, son unité de vente, son ren
   await expect(tomate.locator(".ligne-titre")).toHaveText("Tomate");
   await expect(tomate.locator(".ligne-entete .puce")).toHaveText("Solanacées");
   await expect(tomate.locator(".ligne-sous-titre")).toHaveText("vendue au kg");
-  await expect(fait(tomate, "rendement")).toHaveText("6 kg/m² 4 à 8");
-  await expect(fait(tomate, "prix")).toHaveText("3 €/kg 2,5 à 3,5");
-  await expect(fait(tomate, "recolte")).toHaveText("après 75 jours, pendant 10 semaines");
+  await expect(fait(tomate, "rendement")).toHaveText("12 kg/m² 8 à 16");
+  await expect(fait(tomate, "prix")).toHaveText("3,5 €/kg 2 à 7,5");
+  await expect(fait(tomate, "recolte")).toHaveText("après 70 jours, pendant 11 semaines");
   await expect(fait(tomate, "pertes")).toHaveText("15 %");
-  const laitue = ligne(page, "cultures", "Laitue batavia");
-  await expect(laitue.locator(".ligne-sous-titre")).toHaveText("vendue à la pièce");
-  await expect(fait(laitue, "rendement")).toHaveText("10 pièces/m² 8 à 12");
-  await expect(fait(laitue, "prix")).toHaveText("1 €/pièce 0,8 à 1,2");
+  const salade = ligne(page, "cultures", "Salade batavia");
+  await expect(salade.locator(".ligne-sous-titre")).toHaveText("vendue à la pièce");
+  await expect(fait(salade, "rendement")).toHaveText("9 pièces/m² 6,5 à 11");
+  await expect(fait(salade, "prix")).toHaveText("1,15 €/pièce 1 à 1,5");
   // La médiane en évidence, la fourchette à côté.
-  await expect(fait(tomate, "prix").locator(".f-mediane")).toHaveText("3 €/kg");
-  await expect(fait(tomate, "prix").locator(".f-bornes")).toHaveText("2,5 à 3,5");
+  await expect(fait(tomate, "prix").locator(".f-mediane")).toHaveText("3,5 €/kg");
+  await expect(fait(tomate, "prix").locator(".f-bornes")).toHaveText("2 à 7,5");
 });
 
 test("[T36] Lignes : une variété ne montre que ce qui diffère de sa culture, sinon le dit", async ({ page }) => {
   await exemple(page);
+  // R2 : la ferme d'exemple a une variété qui diffère de sa culture (Goldorac, une semaine de récolte de plus)
+  // et des variétés qui n'en diffèrent pas (Heatmaster). Elle n'a pas de variété qui change rendement et prix :
+  // le test en ajoute une, avec ses propres données.
+  await page.evaluate(() => {
+    const ferme = Store.ouvrir(localStorage);
+    const piment = ferme.lister("cultures").find((c) => c.nom === "Piment");
+    ferme.ajouter("varietes", { nom: "Cabri", cultureId: piment.id, rendement: Store.fourchette(0.3, 0.6, 1), prix: Store.fourchette(12, 15, 18) });
+  });
+  await page.reload();
   await aller(page, "cultures");
+  const cabri = ligne(page, "varietes", "Cabri");
+  await expect(cabri.locator("[data-fait]")).toHaveCount(2);
+  await expect(fait(cabri, "rendement")).toHaveText("0,6 kg/m² 0,3 à 1");
+  await expect(fait(cabri, "prix")).toHaveText("15 €/kg 12 à 18");
+  const goldorac = ligne(page, "varietes", "Goldorac");
+  await expect(goldorac.locator(".ligne-titre")).toHaveText("Goldorac");
+  await expect(goldorac.locator(".ligne-entete .puce")).toHaveText("Salade batavia");
+  await expect(goldorac.locator("[data-fait]")).toHaveCount(1);
+  await expect(fait(goldorac, "recolte")).toHaveText("pendant 3 semaines");
   const heatmaster = ligne(page, "varietes", "Heatmaster");
-  await expect(heatmaster.locator(".ligne-titre")).toHaveText("Heatmaster");
   await expect(heatmaster.locator(".ligne-entete .puce")).toHaveText("Tomate");
-  await expect(heatmaster.locator("[data-fait]")).toHaveCount(1);
-  await expect(fait(heatmaster, "recolte")).toHaveText("après 70 jours");
-  const zoizo = ligne(page, "varietes", "Zoizo");
-  await expect(zoizo.locator("[data-fait]")).toHaveCount(2);
-  await expect(fait(zoizo, "rendement")).toHaveText("0,6 kg/m² 0,3 à 1");
-  await expect(fait(zoizo, "prix")).toHaveText("15 €/kg 12 à 18");
-  const blonde = ligne(page, "varietes", "Blonde de Paris");
-  await expect(blonde.locator("[data-fait]")).toHaveCount(0);
-  await expect(blonde.locator(".ligne-note")).toHaveText("mêmes valeurs que la culture");
+  await expect(heatmaster.locator("[data-fait]")).toHaveCount(0);
+  await expect(heatmaster.locator(".ligne-note")).toHaveText("mêmes valeurs que la culture");
 });
 
 test("[T36] Lignes : une plantation montre sa culture, sa variété, son espace, sa surface, sa mise en place et sa récolte", async ({ page }) => {
   await exemple(page);
   await aller(page, "plantations");
-  const courgette = ligne(page, "plantations", "Black Beauty");
-  await expect(courgette.locator(".ligne-titre")).toHaveText("Courgette Black Beauty");
-  await expect(courgette.locator(".ligne-entete .puce")).toHaveText("Planche 1");
-  await expect(fait(courgette, "surface")).toHaveText("30 m²");
-  await expect(fait(courgette, "miseEnPlace")).toHaveText("01/05/2026");
-  await expect(fait(courgette, "recolte")).toHaveText("du 20/06/2026 au 14/08/2026");
-  // 30 m² × 2 / 3 / 4 kg × 90 % : une fourchette, jamais un chiffre seul.
-  await expect(fait(courgette, "production")).toHaveText("81 kg 54 à 108");
+  const ail = ligne(page, "plantations", "Vacoa");
+  await expect(ail.locator(".ligne-titre")).toHaveText("Ail péi Vacoa");
+  await expect(ail.locator(".ligne-entete .puce")).toHaveText("Parcelle haute");
+  await expect(fait(ail, "surface")).toHaveText("300 m²");
+  await expect(fait(ail, "miseEnPlace")).toHaveText("25/04/2026");
+  // 25/04 + 150 jours = 22/09 ; 8 semaines de récolte, jusqu'au 16/11 inclus.
+  await expect(fait(ail, "recolte")).toHaveText("du 22/09/2026 au 16/11/2026");
+  // 300 m² × 0,3 / 0,6 / 0,8 kg × 80 % : une fourchette, jamais un chiffre seul.
+  await expect(fait(ail, "production")).toHaveText("144 kg 72 à 192");
 });
 
 test("[T36] Lignes : un lot de poules montre son effectif, ses dates, sa ponte, ses œufs et son aliment par semaine en fourchette", async ({ page }) => {
   await exemple(page);
   await aller(page, "poules");
-  const lot = ligne(page, "lots", "Lot de printemps");
-  await expect(lot.locator(".ligne-titre")).toHaveText("Lot de printemps");
+  const lot = ligne(page, "lots", "Lot d'avril");
+  await expect(lot.locator(".ligne-titre")).toHaveText("Lot d'avril");
   await expect(lot.locator(".ligne-entete .puce")).toHaveText("100 poules");
-  await expect(lot.locator(".ligne-sous-titre")).toHaveText("arrivée le 02/03/2026 · réforme le 25/10/2026");
-  await expect(fait(lot, "ponte")).toHaveText("du 06/04/2026 au 25/10/2026");
-  await expect(fait(lot, "ponteParPoule")).toHaveText("0,72 œuf 0,6 à 0,8");
-  // 100 poules × 0,6 / 0,72 / 0,8 × 92 % × 7 jours ; 100 × 115 / 125 / 135 g × 7 jours × 0,70 / 0,80 / 0,95 €
-  // (la haute, 89,774 999… en virgule flottante, s'arrondit à 89,77).
-  await expect(fait(lot, "oeufs")).toHaveText("464 386 à 515");
-  await expect(fait(lot, "aliment")).toHaveText("70 € 56,35 à 89,77");
+  await expect(lot.locator(".ligne-sous-titre")).toHaveText("arrivée le 06/04/2026 · réforme le 31/12/2026");
+  await expect(fait(lot, "ponte")).toHaveText("du 27/04/2026 au 31/12/2026");
+  await expect(fait(lot, "ponteParPoule")).toHaveText("0,72 œuf 0,66 à 0,8");
+  // 100 poules × 0,66 / 0,72 / 0,8 × 94 % × 7 jours ; 100 × 105 / 115 / 130 g × 7 jours × 0,60 / 0,80 / 1,00 €.
+  await expect(fait(lot, "oeufs")).toHaveText("474 434 à 526");
+  await expect(fait(lot, "aliment")).toHaveText("64,4 € 44,1 à 91");
 });
 
 // ---- Calendrier de culture (EX-35)
@@ -153,17 +163,17 @@ test("[T36] EX-35 : une ligne par espace, nom et surface à gauche, et une barre
   await exemple(page);
   await aller(page, "plantations");
   const lignes = page.locator("#calendrier .cal-ligne[data-espace]");
-  await expect(lignes).toHaveCount(5);
-  await expect(lignes.locator(".cal-espace-nom")).toHaveText(["Planche 1", "Planche 2", "Planche 3", "Planche 4", "Tunnel"]);
-  await expect(lignes.filter({ hasText: "Tunnel" }).locator(".cal-espace-detail")).toContainText("60 m²");
-  await expect(page.locator("#calendrier [data-plantation]")).toHaveCount(10);
+  await expect(lignes).toHaveCount(9);
+  await expect(lignes.locator(".cal-espace-nom")).toHaveText(["Parcelle 1", "Parcelle 2", "Parcelle 3", "Parcelle 4", "Parcelle 5", "Parcelle haute", "Treille de chouchou", "Tunnel 1", "Tunnel 2"]);
+  await expect(lignes.filter({ hasText: "Tunnel 1" }).locator(".cal-espace-detail")).toContainText("200 m²");
+  await expect(page.locator("#calendrier [data-plantation]")).toHaveCount(51);
   for (const plantation of await stockees(page, "plantations")) {
     await expect(page.locator(`#calendrier .cal-ligne[data-espace="${plantation.espaceId}"] [data-plantation="${plantation.id}"]`)).toHaveCount(1);
   }
-  // L'axe des mois va de la première mise en place (15 mars) à la dernière fin de récolte (2 octobre).
-  await expect(page.locator("#calendrier .cal-mois")).toHaveText(["mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct."]);
+  // L'axe des mois va de la première mise en place (5 janvier) à la dernière fin de récolte (30 décembre).
+  await expect(page.locator("#calendrier .cal-mois")).toHaveText(["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."]);
   // Le nom de la culture s'inscrit dans les barres assez larges.
-  const tomate = page.locator(`#calendrier [data-plantation="${await idDe(page, "plantations", "Heatmaster", "15/04/2026")}"]`);
+  const tomate = page.locator(`#calendrier [data-plantation="${await idDe(page, "plantations", "Heatmaster", "01/03/2026")}"]`);
   await expect(tomate.locator(".cal-etiquette:visible")).toContainText("Tomate");
 });
 
@@ -171,14 +181,14 @@ test("[T36] EX-35 : chaque barre va de la mise en place à la fin de la récolte
   await page.setViewportSize({ width: 1366, height: 768 });
   await exemple(page);
   await aller(page, "plantations");
-  const id = await idDe(page, "plantations", "Black Beauty");
+  const id = await idDe(page, "plantations", "Vacoa");
   const barre = page.locator(`#calendrier [data-plantation="${id}"]`);
   const croissance = await barre.locator(".cal-croissance").boundingBox();
   const recolte = await barre.locator(".cal-recolte").boundingBox();
-  // Courgette : en terre le 01/05, récolte du 20/06 au 14/08 inclus.
-  proche(croissance.x, await abscisse(page, "2026-05-01"), "début de la barre");
-  proche(recolte.x, await abscisse(page, "2026-06-20"), "début de la récolte");
-  proche(recolte.x + recolte.width, await abscisse(page, "2026-08-15"), "fin de la récolte");
+  // Ail péi : en terre le 25/04, récolte du 22/09 au 16/11 inclus.
+  proche(croissance.x, await abscisse(page, "2026-04-25"), "début de la barre");
+  proche(recolte.x, await abscisse(page, "2026-09-22"), "début de la récolte");
+  proche(recolte.x + recolte.width, await abscisse(page, "2026-11-17"), "fin de la récolte");
   const fond = (selecteur) => barre.locator(selecteur).evaluate((el) => getComputedStyle(el).backgroundColor);
   expect(await fond(".cal-croissance")).not.toBe(await fond(".cal-recolte"));
   // La légende reprend les deux teintes.
@@ -191,9 +201,9 @@ test("[T36] EX-35 : des plantations qui se chevauchent sur un même espace occup
   await aller(page, "plantations");
   const espaces = await stockees(page, "espaces");
   const id = (nom) => espaces.find((e) => e.nom === nom).id;
-  await expect(page.locator(`#calendrier .cal-ligne[data-espace="${id("Planche 1")}"]`)).toHaveAttribute("data-sous-lignes", "1");
-  await expect(page.locator(`#calendrier .cal-ligne[data-espace="${id("Planche 3")}"]`)).toHaveAttribute("data-sous-lignes", "2");
-  await expect(page.locator(`#calendrier .cal-ligne[data-espace="${id("Tunnel")}"]`)).toHaveAttribute("data-sous-lignes", "2");
+  await expect(page.locator(`#calendrier .cal-ligne[data-espace="${id("Parcelle haute")}"]`)).toHaveAttribute("data-sous-lignes", "1");
+  await expect(page.locator(`#calendrier .cal-ligne[data-espace="${id("Parcelle 5")}"]`)).toHaveAttribute("data-sous-lignes", "2");
+  await expect(page.locator(`#calendrier .cal-ligne[data-espace="${id("Parcelle 1")}"]`)).toHaveAttribute("data-sous-lignes", "3");
   for (const espace of espaces) {
     const boites = [];
     for (const barre of await page.locator(`#calendrier .cal-ligne[data-espace="${espace.id}"] [data-plantation]`).all()) boites.push(await barre.boundingBox());
@@ -208,20 +218,21 @@ test("[T36] EX-35 : agrandir une plantation marque la sur-occupation sur la lign
   await exemple(page);
   await aller(page, "plantations");
   await expect(page.locator("#calendrier .cal-sur-occupation")).toHaveCount(0);
-  // Laitue du 22/05 sur la planche 2 (30 m²) : 20 m² + 15 m² de la laitue du 01/05, récoltée jusqu'au 05/07.
-  await modifier(page, "plantations", "22/05/2026");
-  await page.locator("#plantation-surface").fill("20");
+  // Courgette du 01/09 dans le tunnel 1 (200 m²) passée à 100 m² : avec la tomate du 10/06 (120 m², récoltée
+  // jusqu'au 03/11), 220 m² du 01/09 au 03/11.
+  await modifier(page, "plantations", "01/09/2026");
+  await page.locator("#plantation-surface").fill("100");
   await page.locator("#plantation-ajouter").click();
   await expect(page.locator("#tiroir-plantations")).toBeHidden();
-  const planche2 = (await stockees(page, "espaces")).find((e) => e.nom === "Planche 2").id;
-  const ligneCalendrier = page.locator(`#calendrier .cal-ligne[data-espace="${planche2}"]`);
+  const tunnel = (await stockees(page, "espaces")).find((e) => e.nom === "Tunnel 1").id;
+  const ligneCalendrier = page.locator(`#calendrier .cal-ligne[data-espace="${tunnel}"]`);
   const marque = ligneCalendrier.locator(".cal-sur-occupation");
   await expect(marque).toHaveCount(1);
   await expect(page.locator("#calendrier .cal-sur-occupation")).toHaveCount(1);
   await expect(ligneCalendrier.locator(".cal-espace")).toContainText(/sur-occupé/i);
   const boite = await marque.boundingBox();
-  proche(boite.x, await abscisse(page, "2026-05-22"), "début de la sur-occupation");
-  proche(boite.x + boite.width, await abscisse(page, "2026-07-06"), "fin de la sur-occupation");
+  proche(boite.x, await abscisse(page, "2026-09-01"), "début de la sur-occupation");
+  proche(boite.x + boite.width, await abscisse(page, "2026-11-04"), "fin de la sur-occupation");
   await aller(page, "espaces");
   await expect(page.locator("#liste-espaces .sur-occupation")).toHaveCount(1);
 });
@@ -229,26 +240,26 @@ test("[T36] EX-35 : agrandir une plantation marque la sur-occupation sur la lign
 test("[T36] EX-35 : un clic ou la touche Entrée sur une barre ouvre la modification de sa plantation", async ({ page }) => {
   await exemple(page);
   await aller(page, "plantations");
-  const id = await idDe(page, "plantations", "Black Beauty");
+  const id = await idDe(page, "plantations", "Vacoa");
   const barre = page.locator(`#calendrier [data-plantation="${id}"]`);
-  await expect(barre).toHaveAttribute("aria-label", /Courgette.*Black Beauty.*Planche 1.*30 m².*01\/05\/2026.*20\/06\/2026.*14\/08\/2026/);
+  await expect(barre).toHaveAttribute("aria-label", /Ail péi.*Vacoa.*Parcelle haute.*300 m².*25\/04\/2026.*22\/09\/2026.*16\/11\/2026/);
   await barre.click();
   await expect(page.locator("#tiroir-plantations")).toBeVisible();
   await expect(page.locator("#tiroir-plantations h2")).toHaveText("Modifier la plantation");
-  await expect(page.locator("#plantation-surface")).toHaveValue("30");
-  await expect(page.locator("#plantation-date")).toHaveValue("01/05/2026");
-  await expect(ligne(page, "plantations", "Black Beauty")).toHaveAttribute("aria-current", "true");
+  await expect(page.locator("#plantation-surface")).toHaveValue("300");
+  await expect(page.locator("#plantation-date")).toHaveValue("25/04/2026");
+  await expect(ligne(page, "plantations", "Vacoa")).toHaveAttribute("aria-current", "true");
   await page.keyboard.press("Escape");
   await expect(page.locator("#tiroir-plantations")).toBeHidden();
 
   await barre.focus();
   await page.keyboard.press("Enter");
   await expect(page.locator("#tiroir-plantations")).toBeVisible();
-  await expect(page.locator("#plantation-surface")).toHaveValue("30");
-  await page.locator("#plantation-surface").fill("12");
+  await expect(page.locator("#plantation-surface")).toHaveValue("300");
+  await page.locator("#plantation-surface").fill("120");
   await page.locator("#plantation-ajouter").click();
   await expect(page.locator("#tiroir-plantations")).toBeHidden();
-  await expect(ligne(page, "plantations", "Black Beauty")).toContainText("12 m²");
+  await expect(ligne(page, "plantations", "Vacoa")).toContainText("120 m²");
   // Après l'enregistrement, le focus revient sur la barre de la plantation.
   await expect(page.locator(`#calendrier [data-plantation="${id}"]`)).toBeFocused();
 });
@@ -258,10 +269,12 @@ test("[T36] EX-35 : au survol ou au focus d'une barre, une infobulle donne la va
   await aller(page, "plantations");
   const infobulle = page.locator("#calendrier-infobulle");
   await expect(infobulle).toBeHidden();
-  const barre = page.locator(`#calendrier [data-plantation="${await idDe(page, "plantations", "Black Beauty")}"]`);
+  // Une barre de la première ligne du calendrier : la salade du 05/01 sur la parcelle 1, récoltée du 16/02 au
+  // 08/03 (Goldorac : 3 semaines) ; 40 m² × 9 pièces × 80 % = 288 pièces.
+  const barre = page.locator(`#calendrier [data-plantation="${await idDe(page, "plantations", "Goldorac", "05/01/2026")}"]`);
   await barre.hover();
   await expect(infobulle).toBeVisible();
-  for (const texte of ["Courgette", "Black Beauty", "Planche 1", "30 m²", "01/05/2026", "20/06/2026", "14/08/2026", "81 kg"]) {
+  for (const texte of ["Salade batavia", "Goldorac", "Parcelle 1", "40 m²", "05/01/2026", "16/02/2026", "08/03/2026", "288 pièces"]) {
     await expect(infobulle).toContainText(texte);
   }
   await page.mouse.move(2, 2);
@@ -272,7 +285,7 @@ test("[T36] EX-35 : au survol ou au focus d'une barre, une infobulle donne la va
   await page.keyboard.press("Shift+Tab");
   await expect(barre).toBeFocused();
   await expect(infobulle).toBeVisible();
-  await expect(infobulle).toContainText("Black Beauty");
+  await expect(infobulle).toContainText("Goldorac");
 });
 
 test("[T36] EX-35 : un repère « aujourd'hui » quand la date tombe dans la saison, aucun sinon", async ({ page }) => {
@@ -284,9 +297,18 @@ test("[T36] EX-35 : un repère « aujourd'hui » quand la date tombe dans la sai
   const boite = await repere.boundingBox();
   proche(boite.x + boite.width / 2, await abscisse(page, "2026-05-20"), "repère du 20 mai", 4);
 
-  // En janvier, la ferme d'exemple se charge pour la saison qui vient : aujourd'hui est avant elle.
-  await page.evaluate(() => localStorage.clear());
-  await exemple(page, "2027-01-15T10:00:00+04:00");
+  // Une saison qui ne contient pas aujourd'hui : aucun repère. R2 : la ferme d'exemple couvre toute l'année de
+  // son chargement ; le test prend une plantation de l'année suivante, saisie directement.
+  await page.evaluate(() => {
+    localStorage.clear();
+    const ferme = Store.ouvrir(localStorage);
+    const F = Store.fourchette;
+    const espace = ferme.ajouter("espaces", { nom: "planche", surface: 30, type: "plein_champ" });
+    const culture = ferme.ajouter("cultures", { nom: "courgette", unite: "kg", rendement: F(3), prix: F(2.5), joursAvantRecolte: 50, semainesRecolte: 8, pertes: 10 });
+    const variete = ferme.ajouter("varietes", { nom: "Sofia F1", cultureId: culture.id });
+    ferme.ajouter("plantations", { varieteId: variete.id, espaceId: espace.id, surface: 30, date: "2027-03-15" });
+  });
+  await page.reload();
   await aller(page, "plantations");
   await expect(page.locator("#calendrier .cal-ligne")).not.toHaveCount(0);
   await expect(page.locator("#calendrier .cal-aujourdhui")).toHaveCount(0);
@@ -347,16 +369,16 @@ test("[T36] EX-36 : sans espace ni variété, le tiroir des plantations dit quoi
 
 test("[T36] Tiroir des plantations : la récolte prévue suit la variété, la date et la surface saisies", async ({ page }) => {
   await exemple(page);
-  await modifier(page, "plantations", "Black Beauty");
+  await modifier(page, "plantations", "Vacoa");
   const apercu = page.locator("#plantation-apercu");
   await expect(apercu).toBeVisible();
-  await expect(apercu).toContainText("du 20/06/2026 au 14/08/2026");
-  await expect(apercu).toContainText("81 kg 54 à 108");
-  // 11/05 + 50 jours = 30/06 ; 8 semaines de récolte ; 15 m² × 2 / 3 / 4 kg × 90 %.
+  await expect(apercu).toContainText("du 22/09/2026 au 16/11/2026");
+  await expect(apercu).toContainText("144 kg 72 à 192");
+  // 11/05 + 150 jours = 08/10 ; 8 semaines de récolte ; 15 m² × 0,3 / 0,6 / 0,8 kg × 80 %.
   await page.locator("#plantation-date").fill("2026-05-11");
   await page.locator("#plantation-surface").fill("15");
-  await expect(apercu).toContainText("du 30/06/2026 au 24/08/2026");
-  await expect(apercu).toContainText("40,5 kg 27 à 54");
+  await expect(apercu).toContainText("du 08/10/2026 au 02/12/2026");
+  await expect(apercu).toContainText("7,2 kg 3,6 à 9,6");
   verifierLisibilite(await auditerTextes(page), "tiroir et récolte prévue");
   await page.keyboard.press("Escape");
   await ouvrir(page, "plantations");
@@ -382,16 +404,18 @@ test("[T36] Poules : un repère montre, pour chaque lot, la présence des poules
   await aller(page, "poules");
   const carte = page.locator("#carte-calendrier-lots");
   await expect(carte).toBeVisible();
-  const lot = carte.locator(".cal-ligne[data-lot]");
-  await expect(lot).toHaveCount(1);
-  await expect(lot.locator(".cal-espace-nom")).toHaveText("Lot de printemps");
+  await expect(carte.locator(".cal-ligne[data-lot]")).toHaveCount(2);
+  const lot = carte.locator(".cal-ligne[data-lot]", { hasText: "Lot d'avril" });
+  await expect(lot.locator(".cal-espace-nom")).toHaveText("Lot d'avril");
   const presence = await lot.locator(".cal-arrivee").boundingBox();
   const ponte = await lot.locator(".cal-ponte").boundingBox();
-  proche(presence.x, await abscisse(page, "2026-03-02", "#calendrier-lots"), "arrivée");
-  proche(ponte.x, await abscisse(page, "2026-04-06", "#calendrier-lots"), "début de ponte");
-  proche(ponte.x + ponte.width, await abscisse(page, "2026-10-26", "#calendrier-lots"), "réforme");
+  proche(presence.x, await abscisse(page, "2026-04-06", "#calendrier-lots"), "arrivée");
+  proche(ponte.x, await abscisse(page, "2026-04-27", "#calendrier-lots"), "début de ponte");
+  // Réforme le 31/12 inclus : la fin de l'axe, à droite de décembre.
+  const decembre = await page.locator('#calendrier-lots .cal-mois[data-mois="2026-12"]').boundingBox();
+  proche(ponte.x + ponte.width, decembre.x + decembre.width, "réforme");
 
-  await page.locator('#liste-lots [data-action="supprimer"]').click();
+  for (let i = 0; i < 2; i++) await page.locator('#liste-lots [data-action="supprimer"]').first().click();
   await expect(carte).toBeHidden();
 });
 
@@ -457,8 +481,8 @@ for (const theme of ["light", "dark"]) {
     await page.setViewportSize({ width: 1366, height: 900 });
     await exemple(page);
     // Une sur-occupation, pour voir l'alerte de la liste et la marque du calendrier.
-    await modifier(page, "plantations", "22/05/2026");
-    await page.locator("#plantation-surface").fill("20");
+    await modifier(page, "plantations", "Chouchou");
+    await page.locator("#plantation-surface").fill("350");
     await page.locator("#plantation-ajouter").click();
     for (const nom of ["espaces", "cultures", "plantations", "poules", "sauvegarde"]) {
       await aller(page, nom);
@@ -505,9 +529,9 @@ test("[T36] Sauvegarde : export en bouton principal, import par un sélecteur de
   await aller(page, "sauvegarde");
   await expect(page.locator("#exporter")).toBeVisible();
   await expect(page.locator("#exporter")).toHaveClass(/\bprincipal\b/);
-  await expect(page.locator("#sauvegarde-contenu")).toContainText("5 espaces");
-  await expect(page.locator("#sauvegarde-contenu")).toContainText("10 plantations");
-  await expect(page.locator("#sauvegarde-contenu")).toContainText("1 lot de poules");
+  await expect(page.locator("#sauvegarde-contenu")).toContainText("9 espaces");
+  await expect(page.locator("#sauvegarde-contenu")).toContainText("51 plantations");
+  await expect(page.locator("#sauvegarde-contenu")).toContainText("2 lots de poules");
   const choisir = page.locator('label[for="importer"]');
   await expect(choisir).toBeVisible();
   await expect(choisir).toContainText(/choisir un fichier/i);
@@ -522,5 +546,5 @@ test("[T36] Sauvegarde : export en bouton principal, import par un sélecteur de
   await expect(message).toBeVisible();
   await expect(message).toHaveAttribute("role", "status");
   await expect(message).not.toHaveClass(/erreur/);
-  await expect(message).toContainText("10 plantations");
+  await expect(message).toContainText("51 plantations");
 });
