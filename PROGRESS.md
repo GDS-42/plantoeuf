@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R4 (rotation et associations) · Sessions consommées : 2 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R4 (rotation et associations) · Sessions consommées : 3 / 10 · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5357,6 +5357,56 @@ $ ./verify.sh R4
 # pass 161
 # fail 0
 178 passed (2.3m)
+== R4 : vérification verte ==
+exit 0
+```
+
+## 15/10/2026 · T60 — Règles de rotation et d'association (EX-62 à EX-65)
+
+- Session 3 / 10 du seuil d'alerte de R4.
+- Modèle : Opus 5.5, effort élevé · Reprises : 0 · Relecteur : Fable, contexte frais → **CONFORME** (règles contrôlées par script, bornes comprises : délai strict, fenêtre de 365 jours, même jour ; valeurs attendues recalculées à la main ; 23 à 56 ms pour toutes les aides de l'exemple avec sept familles à délai ; `src/calc.js` modifié en ajout seulement).
+- Fait (`src/calc.js`) : `familleDe` (nom normalisé : NFC, espaces, minuscules), `retoursTropTot` (règle à la surface), `precedents` et `voisins` (aussi pour une plantation en cours de saisie), `associationsDefavorables` (pour les alertes des lignes, EX-64), `surfaceLibre`, `suggestions` (classement sans poids chiffrés, raisons).
+- Après relecture : le test de performance garde la meilleure de trois mesures (le build de mise en ligne relance les tests unitaires).
+
+Preuve rouge (avant le code) :
+
+```text
+not ok 7 - [T60] S18, EX-62 : une tomate revient trop tôt sur une planche ; sur une parcelle, seulement quand la place manque
+not ok 8 - [T60] famille_par_nom : une culture se rattache à sa famille par le seul nom, sans tenir compte des majuscules, des espaces ni de la forme des accents
+not ok 9 - [T60] S19, EX-63, EX-64 : les précédents d'une plantation (même non enregistrée) et ses voisins, avec leur effet
+not ok 10 - [T60] la surface libre d'un espace à une date : sa surface moins les plantations en place ce jour-là
+not ok 11 - [T60] S20, EX-65 : « Que planter ici ? » classe les cultures avec leurs raisons, sans rien changer aux données
+not ok 12 - [T60] sans_regle_comme_r3 et alerte_seulement : sans famille, association, rotation ni groupe, aucune alerte, aucun effet, suggestions par ordre alphabétique
+not ok 13 - [T60] le calcul des aides d'une ferme de la taille de l'exemple reste sous 100 ms
+# tests 13
+# pass 6
+# fail 7
+```
+
+Preuve verte :
+
+```text
+$ ./verify.sh T60
+ok 11 - [T60] S18, EX-62 : une tomate revient trop tôt sur une planche ; sur une parcelle, seulement quand la place manque
+ok 12 - [T60] famille_par_nom : une culture se rattache à sa famille par le seul nom, sans tenir compte des majuscules, des espaces ni de la forme des accents
+ok 13 - [T60] S19, EX-63, EX-64 : les précédents d'une plantation (même non enregistrée) et ses voisins, avec leur effet
+ok 14 - [T60] la surface libre d'un espace à une date : sa surface moins les plantations en place ce jour-là
+ok 15 - [T60] S20, EX-65 : « Que planter ici ? » classe les cultures avec leurs raisons, sans rien changer aux données
+ok 16 - [T60] sans_regle_comme_r3 et alerte_seulement : sans famille, association, rotation ni groupe, aucune alerte, aucun effet, suggestions par ordre alphabétique
+ok 17 - [T60] le calcul des aides d'une ferme de la taille de l'exemple reste sous 100 ms
+ok 18 - [T60] une plantation en cours de saisie vient après celles du même jour pour le délai de retour
+# tests 22
+# pass 22
+# fail 0
+✓  1 test/rotation.e2e.js:38:1 › [T60] EX-62 à EX-65 : le fichier livré calcule les retours trop tôt, les précédents, les voisins et les suggestions (258ms)
+1 passed (1.4s)
+== T60 : vérification verte ==
+exit 0
+$ ./verify.sh R4
+# tests 169
+# pass 169
+# fail 0
+179 passed (2.3m)
 == R4 : vérification verte ==
 exit 0
 ```

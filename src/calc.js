@@ -210,6 +210,169 @@
     };
   }
 
+  // ---- Rotation et associations (R4)
+
+  // R4 : le nom d'une famille, sans majuscules, avec ses accents composés d'une seule façon et ses espaces réduits.
+  function cleFamille(nom) {
+    return String(nom || "").normalize("NFC").trim().replace(/\s+/g, " ").toLocaleLowerCase("fr");
+  }
+
+  // R4 (famille_par_nom) : la famille active d'une culture, par le seul nom ; null sans famille.
+  function familleDe(culture, familles = []) {
+    const cle = cleFamille(culture && culture.famille);
+    if (!cle) return null;
+    return familles.find((f) => !f.supprimeLe && cleFamille(f.nom) === cle) || null;
+  }
+
+  // Une plantation (enregistrée ou en cours de saisie) avec sa culture, ses paramètres et sa période ; null si
+  // sa variété ou sa culture manque.
+  function enPlace(donnees, plantation) {
+    const actifs = (liste) => (liste || []).filter((e) => !e.supprimeLe);
+    const variete = actifs(donnees.varietes).find((v) => v.id === plantation.varieteId);
+    const culture = variete && actifs(donnees.cultures).find((c) => c.id === variete.cultureId);
+    if (!culture || !plantation.date || !plantation.espaceId) return null;
+    const p = parametres(culture, variete);
+    return { plantation, culture, p, fin: datesRecolte(plantation, p).fin };
+  }
+
+  // Les plantations calculables d'un espace, avec leur période, dans l'ordre des dates puis des identifiants.
+  function plantationsDeLEspace(donnees, espaceId) {
+    return plantationsCalculables(donnees)
+      .filter(({ plantation }) => plantation.espaceId === espaceId)
+      .map(({ plantation, culture, p }) => ({ plantation, culture, p, fin: datesRecolte(plantation, p).fin }))
+      .sort((a, b) => a.plantation.date.localeCompare(b.plantation.date) || String(a.plantation.id).localeCompare(String(b.plantation.id)));
+  }
+
+  function espaceActif(donnees, espaceId) {
+    return (donnees.espaces || []).find((e) => e.id === espaceId && !e.supprimeLe) || null;
+  }
+
+  // R4 (EX-62) : retour trop tôt, règle à la surface. La plantation revient trop tôt quand sa surface, ajoutée à
+  // celle des plantations de la même famille sur l'espace, mises en place avant elle (même jour : par identifiant ;
+  // une plantation en cours de saisie vient après celles du même jour)
+  // et dont la fin de récolte plus la médiane du délai de retour (× 365 jours) dépasse sa date, excède la
+  // surface de l'espace. Rend { espaceId, famille, delai, surface, avant } ou null.
+  function verdictRetour(donnees, ici, autres) {
+    const famille = familleDe(ici.culture, donnees.familles);
+    const espace = espaceActif(donnees, ici.plantation.espaceId);
+    if (!famille || !famille.delaiRetour || !espace) return null;
+    const delaiJours = famille.delaiRetour.mediane * 365;
+    const avantElle = (a) => a.plantation.date < ici.plantation.date ||
+      (a.plantation.date === ici.plantation.date && (ici.plantation.id === undefined || String(a.plantation.id) < String(ici.plantation.id)));
+    const avant = autres.filter((a) => a.plantation.id !== ici.plantation.id && avantElle(a) &&
+      familleDe(a.culture, donnees.familles) === famille && versJour(a.fin) + delaiJours > versJour(ici.plantation.date));
+    const surface = avant.reduce((total, a) => total + a.plantation.surface, ici.plantation.surface);
+    if (surface <= espace.surface + 1e-9) return null;
+    return { espaceId: espace.id, famille: famille.nom, delai: famille.delaiRetour, surface, avant: avant.map((a) => a.plantation.id) };
+  }
+
+  // R4 (EX-62) : les plantations qui reviennent trop tôt, par identifiant.
+  function retoursTropTot(donnees) {
+    const resultat = {};
+    for (const espace of (donnees.espaces || []).filter((e) => !e.supprimeLe)) {
+      const plantations = plantationsDeLEspace(donnees, espace.id);
+      for (const ici of plantations) {
+        const verdict = verdictRetour(donnees, ici, plantations);
+        if (verdict) resultat[ici.plantation.id] = verdict;
+      }
+    }
+    return resultat;
+  }
+
+  // L'effet d'une association active entre deux cultures : un précédent va de A vers B, un voisinage vaut
+  // dans les deux sens ; défavorable l'emporte sur favorable ; null sans association.
+  function effetEntre(donnees, type, cultureA, cultureB) {
+    const effets = (donnees.associations || []).filter((a) => !a.supprimeLe && a.type === type &&
+      ((a.cultureA === cultureA && a.cultureB === cultureB) || (type === "voisinage" && a.cultureA === cultureB && a.cultureB === cultureA)))
+      .map((a) => a.effet);
+    return effets.includes("defavorable") ? "defavorable" : effets.includes("favorable") ? "favorable" : null;
+  }
+
+  // R4 (EX-63) : les précédents d'une plantation, même en cours de saisie — les plantations du même espace dont
+  // la récolte s'est achevée dans les 365 jours avant sa mise en place, la plus récente d'abord, chacune avec
+  // l'effet de l'association « précédent » — et son verdict de retour trop tôt.
+  function precedents(donnees, plantation) {
+    const ici = enPlace(donnees, plantation);
+    if (!ici) return { precedents: [], tropTot: null };
+    const autres = plantationsDeLEspace(donnees, plantation.espaceId).filter((a) => a.plantation.id === undefined || a.plantation.id !== plantation.id);
+    const date = versJour(plantation.date);
+    const liste = autres
+      .filter((a) => versJour(a.fin) < date && date - versJour(a.fin) <= 365)
+      .sort((a, b) => b.fin.localeCompare(a.fin))
+      .map((a) => ({ plantationId: a.plantation.id, cultureId: a.culture.id, culture: a.culture.nom, fin: a.fin, effet: effetEntre(donnees, "precedent", a.culture.id, ici.culture.id) }));
+    return { precedents: liste, tropTot: verdictRetour(donnees, ici, autres) };
+  }
+
+  // R4 (EX-63) : les voisins d'une plantation — les plantations du même espace dont la période chevauche la
+  // sienne —, chacun avec l'effet de l'association « voisinage ».
+  function voisins(donnees, plantation) {
+    const ici = enPlace(donnees, plantation);
+    if (!ici) return [];
+    return plantationsDeLEspace(donnees, plantation.espaceId)
+      .filter((a) => (a.plantation.id === undefined || a.plantation.id !== plantation.id) && a.plantation.date <= ici.fin && a.fin >= plantation.date)
+      .map((a) => ({ plantationId: a.plantation.id, cultureId: a.culture.id, culture: a.culture.nom, effet: effetEntre(donnees, "voisinage", a.culture.id, ici.culture.id) }));
+  }
+
+  // R4 (EX-64) : les plantations qui ont un précédent ou un voisin défavorable, par identifiant :
+  // { precedents: [ids], voisins: [ids] }.
+  function associationsDefavorables(donnees) {
+    const resultat = {};
+    for (const { plantation } of plantationsCalculables(donnees)) {
+      if (!espaceActif(donnees, plantation.espaceId)) continue;
+      const mauvais = precedents(donnees, plantation).precedents.filter((x) => x.effet === "defavorable").map((x) => x.plantationId);
+      const genants = voisins(donnees, plantation).filter((x) => x.effet === "defavorable").map((x) => x.plantationId);
+      if (mauvais.length || genants.length) resultat[plantation.id] = { precedents: mauvais, voisins: genants };
+    }
+    return resultat;
+  }
+
+  // R4 : la surface libre d'un espace à une date — sa surface moins celle des plantations en place ce jour-là.
+  function surfaceLibre(donnees, espaceId, date) {
+    const espace = espaceActif(donnees, espaceId);
+    if (!espace) return 0;
+    const occupee = plantationsDeLEspace(donnees, espaceId)
+      .filter((a) => a.plantation.date <= date && a.fin >= date)
+      .reduce((total, a) => total + a.plantation.surface, 0);
+    return Math.max(0, espace.surface - occupee);
+  }
+
+  // R4 (EX-65) : « Que planter ici ? » — les cultures actives qui ont une variété, classées sans poids chiffrés :
+  // d'abord celles qui ne reviennent pas trop tôt, puis celles sans précédent ni voisin défavorable, puis le
+  // plus de raisons favorables, puis celles dont le groupe suit, dans une rotation, celui de la dernière culture
+  // de l'espace (ordre circulaire), puis l'ordre alphabétique. Chacune avec ses raisons ; rien n'est enregistré.
+  function suggestions(donnees, { espaceId, date, surface }) {
+    if (!espaceActif(donnees, espaceId) || !date) return [];
+    const aPlanter = surface === undefined || surface === null ? surfaceLibre(donnees, espaceId, date) : surface;
+    const derniere = plantationsDeLEspace(donnees, espaceId).filter((a) => a.fin < date).sort((a, b) => a.fin.localeCompare(b.fin)).pop();
+    const groupeAvant = derniere && derniere.culture.groupe;
+    const rotations = (donnees.rotations || []).filter((r) => !r.supprimeLe && Array.isArray(r.groupes));
+    const varietes = (donnees.varietes || []).filter((v) => !v.supprimeLe).sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+    const liste = [];
+    for (const culture of (donnees.cultures || []).filter((c) => !c.supprimeLe)) {
+      const variete = varietes.find((v) => v.cultureId === culture.id);
+      if (!variete) continue;
+      const essai = { varieteId: variete.id, espaceId, surface: aPlanter, date };
+      const { precedents: avant, tropTot } = precedents(donnees, essai);
+      const autour = voisins(donnees, essai);
+      const raisons = [];
+      if (tropTot) raisons.push({ code: "trop_tot", famille: tropTot.famille, delai: tropTot.delai });
+      for (const x of avant) if (x.effet) raisons.push({ code: `precedent_${x.effet}`, culture: x.culture });
+      for (const x of autour) if (x.effet) raisons.push({ code: `voisin_${x.effet}`, culture: x.culture });
+      const rotation = groupeAvant && culture.groupe && rotations.find((r) => {
+        const i = r.groupes.indexOf(groupeAvant);
+        return i !== -1 && r.groupes[(i + 1) % r.groupes.length] === culture.groupe;
+      });
+      if (rotation) raisons.push({ code: "groupe_suivant", groupe: culture.groupe, rotation: rotation.nom });
+      liste.push({
+        cultureId: culture.id, varieteId: variete.id, culture: culture.nom, groupe: culture.groupe || "", surface: aPlanter, tropTot, raisons,
+        cles: [tropTot ? 1 : 0, raisons.some((r) => r.code.endsWith("_defavorable")) ? 1 : 0,
+          -raisons.filter((r) => r.code.endsWith("_favorable")).length, rotation ? 0 : 1],
+      });
+    }
+    liste.sort((a, b) => a.cles.reduce((d, c, i) => d || c - b.cles[i], 0) || a.culture.localeCompare(b.culture, "fr"));
+    return liste.map(({ cles, ...suggestion }) => suggestion);
+  }
+
   function plantationsCalculables({ cultures = [], varietes = [], plantations = [] }) {
     const actifs = (liste) => liste.filter((e) => !e.supprimeLe);
     const culturesParId = new Map(actifs(cultures).map((c) => [c.id, c]));
@@ -942,5 +1105,12 @@
     annees,
     anneeParDefaut,
     bornesDeLAnnee,
+    familleDe,
+    retoursTropTot,
+    precedents,
+    voisins,
+    associationsDefavorables,
+    surfaceLibre,
+    suggestions,
   };
 });

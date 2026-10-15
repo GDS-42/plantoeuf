@@ -71,6 +71,7 @@ Le format exporté passe en version 6 ; un fichier de version 1 à 5 s'importe p
 
 ## ✎ Décisions
 
+- T60 · « La dernière culture de l'espace » (groupe suivant) est celle dont la récolte s'est achevée en dernier avant la date, sans limite de temps ; une plantation encore en place n'en est pas une. Une plantation en cours de saisie vient après celles du même jour. Un précédent finit strictement avant la date de mise en place (une récolte qui finit le jour même est un voisin, période inclusive de N1). Ajout de `associationsDefavorables`, qui regroupe par plantation les précédents et voisins défavorables (EX-64).
 - T59 · Une association lie deux cultures différentes (une culture après elle-même relève du délai de famille ; un voisinage d'une culture avec elle-même n'a pas de sens). La borne haute d'une rotation est le nombre de groupes du vocabulaire (6).
 - T58 · Quand le rapport proposait une borne estimée et qu'une variante entièrement sourcée existait, la variante sourcée est retenue (Astéracées 3 / 3 / 4, Amaryllidacées 4 / 5 / 5, Fabacées 5 / 5 / 5). Associations retenues : seulement celles appuyées par un essai ou une fiche technique ; aucune avec le chouchou.
 
