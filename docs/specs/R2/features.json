@@ -87,7 +87,7 @@
       "modele": "fable",
       "effort": "high",
       "relecture": false,
-      "passe": false
+      "passe": true
     }
   ]
 }

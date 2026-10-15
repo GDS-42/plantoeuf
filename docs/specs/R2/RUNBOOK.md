@@ -76,5 +76,17 @@ Le format exporté ne change pas (version 5). Une ferme d'exemple déjà chargé
 - T51 · Toutes les récoltes finissent dans l'année de chargement (au plus tard le 30/12) : 55 → 51 plantations. `DONNEES.md` (fichier de T50, hors de la liste `fichiers` de T51) suit la ferme (§ 5 et § 11 : dates et surfaces [E], chiffres calculés) pour tenir l'invariant `exemple_tout_sourcé` ; aucune valeur sourcée ne change. En janvier, la ferme ne vend que ses œufs.
 - T51 · Tests alignés : quand la nouvelle ferme n'offre plus le cas qu'un test examinait (variété qui change rendement et prix ; saison qui ne contient pas aujourd'hui), le test ajoute ses propres données plutôt que de perdre le cas.
 - T52 · L'évaluateur juge que les deux tests de défilement ([T34] à 1000 × 700, [T14] à 1280 × 720) ont changé de propriété en T51 (dernière ligne de culture → ligne « revenu » du pied). Condition d'arrêt : T52 suspendue, mise en page inchangée, site en ligne inchangé ; décision demandée à l'humain (garder et consigner, ou corriger la mise en page et rétablir les assertions d'origine).
+- T52 · **Décision de l'humain, 15/10/2026 : garder l'alignement et le consigner.** Les tests [T34] (1000 × 700) et [T14] (1280 × 720) vérifient sur la dernière ligne du tableau, celle du revenu dans le pied, que les colonnes des noms et des totaux restent figées et que rien ne les recouvre. La propriété « la dernière ligne de culture reste visible en bas de défilement » est abandonnée aux hauteurs de 700 à 768 px quand le pied porte les charges fixes et le revenu. Mise en page inchangée.
 
 ## ✎ Bilan de fin de tranche
+
+Tranche terminée le 15/10/2026 en 3 sessions sur 6 : T50 (1 reprise), T51 (1 reprise), T52 (suspendue, puis close sur décision de l'humain). `./verify.sh R2` → exit 0 (143 tests unitaires, 165 de bout en bout). Évaluateur Fable : EX-51 à EX-54, invariants et fidélité au dossier conformes ; un écart sur deux tests de défilement, tranché par l'humain (voir ✎ Décisions). Déploiement du commit 14dab97 READY sur plantoeuf.vercel.app.
+
+Résultat : la ferme d'exemple des hauts de Petite-Île (9 espaces, 11 cultures, 51 plantations de janvier à décembre, 200 poules en deux lots, quatre points de vente dont deux marchés, des paniers et une épicerie, dix charges fixes) donne 44 600 € de chiffre d'affaires et 18 200 € de revenu en médiane, chaque valeur renvoyant à `DONNEES.md`. L'écart EX-29 de S3 (œufs sans débouché) est levé par EX-53.
+
+À suivre (points de l'évaluateur) :
+- Calibrage offre-demande : la demande des débouchés dépasse la production presque toute l'année pour le chouchou, la courgette, la carotte, le chou et le haricot ; volumes estimés [E], à faire relire par un maraîcher.
+- En janvier, la ferme ne vend que ses œufs (les récoltes de janvier viennent de plantations de l'année précédente, hors de l'année modélisée).
+- « 200 poules » écrit en clair dans le texte de proposition (un gabarit `{poules}` demanderait de toucher `src/index.html`).
+- Le test `exemple_tout_sourcé` vérifie les noms ; les valeurs sont prouvées par les relectures.
+- Passage d'année : en 2027, le tableau aurait une colonne « déc. 2026 » (règle du jeudi) ; traité par la tranche R3 « Plusieurs années », décidée par l'humain le 15/10.
