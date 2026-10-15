@@ -27,7 +27,8 @@
     precedente.addEventListener("click", () => choisir(annee - 1));
     suivante.addEventListener("click", () => choisir(annee + 1));
 
-    // Met à jour la commande pour ces données et rend l'année à montrer (null pour une ferme sans donnée).
+    // Met à jour la commande pour ces données ; rend les années de la ferme et l'année à montrer (null pour
+    // une ferme sans donnée).
     function afficher(donnees) {
       annees = Calc.annees(donnees);
       annee = Calc.anneeParDefaut(annees, aujourdhui(), ferme().annee());
@@ -35,7 +36,7 @@
       sortie.textContent = annee === null ? "" : String(annee);
       precedente.disabled = annee === null || annee <= annees[0];
       suivante.disabled = annee === null || annee >= annees[annees.length - 1];
-      return annee;
+      return { annees, annee };
     }
 
     return { afficher };

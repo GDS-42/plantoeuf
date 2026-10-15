@@ -60,16 +60,24 @@
 
   const pct = (v) => `${Math.round(v * 1000) / 1000}%`;
 
+  // R3 (EX-59) : la position de chaque frise — le jour au bord gauche de sa piste visible —, gardée d'un
+  // affichage à l'autre tant que l'année choisie ne change pas. Un jour, pas des pixels : la position tient
+  // quand l'axe s'allonge d'une année ou que la largeur change.
+  const positions = new WeakMap();
+
   // ---- Une frise : en-tête des mois, une ligne par espace (ou par lot), des barres en deux périodes.
+  // R3 (EX-59) : l'axe va de janvier de la première année (des barres et des années de la ferme) à
+  // décembre de la dernière ; une année prend la largeur de la boîte, qui s'ouvre sur l'année choisie.
   // lignes : [{ attributs, nom, detail, alerte, barres, bandes }] ;
   // barre : { id, objet, debut, milieu (premier jour de la seconde période), fin (inclus), classes: [première, seconde],
   //           nom, second, etiquette (aria-label), infobulle: () => éléments } ;
   // bande : { debut, fin, titre } (sur-occupation).
-  function frise(racine, { titreColonne, lignes, repere }) {
+  function frise(racine, { titreColonne, lignes, repere, annees = [], annee = null }) {
     const toutes = lignes.flatMap((l) => l.barres);
-    const a = axe(toutes.reduce((m, b) => (b.debut < m ? b.debut : m), toutes[0].debut),
-      toutes.reduce((m, b) => (b.fin > m ? b.fin : m), toutes[0].fin));
-    const plusieursAnnees = a.mois[0].slice(0, 4) !== a.mois[a.mois.length - 1].slice(0, 4);
+    const premiereAnnee = Math.min(Number(toutes.reduce((m, b) => (b.debut < m ? b.debut : m), toutes[0].debut).slice(0, 4)), ...annees);
+    const derniereAnnee = Math.max(Number(toutes.reduce((m, b) => (b.fin > m ? b.fin : m), toutes[0].fin).slice(0, 4)), ...annees);
+    const a = axe(`${premiereAnnee}-01-01`, `${derniereAnnee}-12-31`);
+    const plusieursAnnees = premiereAnnee !== derniereAnnee;
     const bornes = (debut, finIncluse) => {
       const gauche = a.position(jour(debut));
       return { left: gauche, width: a.position(jour(finIncluse) + 1) - gauche };
@@ -81,13 +89,15 @@
       element("div", { class: "cal-piste cal-piste-mois" }, ...a.mois.map((m) => {
         const gauche = a.position(jour(`${m}-01`));
         const largeur = a.position(jour(`${moisSuivant(m)}-01`)) - gauche;
-        let nom = moisCourt.format(enDate(`${m}-01`));
-        if (plusieursAnnees && (m === a.mois[0] || m.endsWith("-01"))) nom += ` ${m.slice(0, 4)}`;
-        return element("span", { class: "cal-mois", "data-mois": m, style: `left: ${pct(gauche)}; width: ${pct(largeur)}` }, nom);
+        const nom = moisCourt.format(enDate(`${m}-01`));
+        // L'année, sous le nom du mois, au premier mois et à chaque janvier d'un axe sur plusieurs années.
+        const annee = plusieursAnnees && (m === a.mois[0] || m.endsWith("-01")) ? [element("span", { class: "cal-mois-annee" }, m.slice(0, 4))] : [];
+        return element("span", { class: "cal-mois", "data-mois": m, style: `left: ${pct(gauche)}; width: ${pct(largeur)}` }, nom, ...annee);
       })));
 
     // Quadrillage des mois et repère du jour, sous les barres.
-    const traits = a.mois.slice(1).map((m) => element("span", { class: "cal-trait", style: `left: ${pct(a.position(jour(`${m}-01`)))}` }));
+    // Un trait plus marqué au 1er janvier de chaque année qui suit la première.
+    const traits = a.mois.slice(1).map((m) => element("span", { class: m.endsWith("-01") ? "cal-trait cal-trait-annee" : "cal-trait", style: `left: ${pct(a.position(jour(`${m}-01`)))}` }));
     if (repere && jour(repere) >= a.debut && jour(repere) < a.fin) {
       traits.push(element("span", { class: "cal-aujourdhui", style: `left: ${pct(a.position(jour(repere) + 0.5))}`, title: F.calendrier.aujourdhui }));
     }
@@ -129,13 +139,39 @@
         piste);
     });
 
-    const grille = element("div", { class: "cal-grille", style: `--mois: ${a.mois.length}` }, entete, quadrillage, ...corps);
+    const grille = element("div", { class: "cal-grille", style: `--mois: ${a.mois.length}; --annees: ${derniereAnnee - premiereAnnee + 1}` }, entete, quadrillage, ...corps);
     const defilement = element("div", { class: "cal-defilement" }, grille);
     const infobulle = element("div", { id: `${racine.id}-infobulle`, class: "cal-infobulle", role: "tooltip", hidden: "" });
     const parId = new Map(toutes.map((b) => [b.id, b]));
+
+    // Même année qu'à l'affichage précédent : la frise garde le jour qu'elle montrait ; sinon elle s'ouvre
+    // sur le 1er janvier de l'année choisie. Elle se place dès que la boîte a une largeur (une page cachée
+    // n'en a pas), et se replace sur le même jour quand la largeur change.
+    const avant = positions.get(racine);
+    if (avant) avant.lire();
+    const position = { annee, jour: avant && avant.annee === annee ? avant.jour : null };
+    positions.set(racine, position);
+    const piste = () => grille.offsetWidth - grille.querySelector(".cal-coin").offsetWidth;
+    position.lire = () => {
+      if (defilement.isConnected && defilement.clientWidth > 0) position.jour = a.debut + (defilement.scrollLeft / piste()) * (a.fin - a.debut);
+    };
+    const placerSurLAnnee = () => {
+      if (defilement.clientWidth === 0) return;
+      const cible = position.jour !== null ? position.jour : annee !== null ? jour(`${annee}-01-01`) : null;
+      if (cible === null) return;
+      defilement.scrollLeft = (a.position(cible) / 100) * piste();
+      position.attendu = defilement.scrollLeft;
+    };
+    // Seul un défilement de l'utilisateur change le jour gardé : l'écho d'un placement (arrondi au pixel) ne compte pas.
+    defilement.addEventListener("scroll", () => {
+      if (defilement.scrollLeft === position.attendu) return;
+      position.attendu = null;
+      position.lire();
+    });
+
     racine.replaceChildren(defilement, infobulle);
     brancherInfobulle(racine, infobulle, parId);
-    surveiller(racine, defilement);
+    surveiller(racine, defilement, placerSurLAnnee);
     return { aujourdhuiVisible: traits.some((t) => t.classList.contains("cal-aujourdhui")) };
   }
 
@@ -167,13 +203,23 @@
 
   // Les étiquettes se replacent quand la largeur change, et quand la page devient visible.
   const observateurs = new WeakMap();
-  function surveiller(racine, boite) {
+  // R3 : apresMesure (placer la frise sur l'année choisie) s'exécute dès que la boîte a une largeur.
+  function surveiller(racine, boite, apresMesure = () => {}) {
     if (observateurs.has(racine)) observateurs.get(racine).disconnect();
-    if (typeof ResizeObserver !== "function") return;
-    const observateur = new ResizeObserver(() => ajuster(racine));
+    if (typeof ResizeObserver !== "function") {
+      if (boite.clientWidth > 0) apresMesure();
+      return;
+    }
+    const observateur = new ResizeObserver(() => {
+      ajuster(racine);
+      apresMesure();
+    });
     observateur.observe(boite);
     observateurs.set(racine, observateur);
-    if (boite.clientWidth > 0) ajuster(racine);
+    if (boite.clientWidth > 0) {
+      ajuster(racine);
+      apresMesure();
+    }
   }
 
   // ---- Infobulle : au survol ou au focus d'une barre ; elle reste dans la fenêtre.
@@ -233,7 +279,7 @@
 
   // ---- Calendrier de culture (EX-35)
 
-  function afficherCulture(donnees, repere) {
+  function afficherCulture(donnees, repere, choix) {
     const carte = document.getElementById("carte-calendrier");
     const racine = document.getElementById("calendrier");
     const actifs = (liste) => new Map(liste.map((e) => [e.id, e]));
@@ -300,7 +346,7 @@
       };
     });
 
-    const { aujourdhuiVisible } = frise(racine, { titreColonne: F.calendrier.espaces, lignes, repere });
+    const { aujourdhuiVisible } = frise(racine, { titreColonne: F.calendrier.espaces, lignes, repere, ...choix });
 
     // Saison : de la première mise en place à la dernière fin de récolte.
     const premiere = barres.reduce((m, b) => (b.debut < m ? b.debut : m), barres[0].debut);
@@ -319,7 +365,7 @@
 
   // ---- Repère des lots de poules (page Poules)
 
-  function afficherLots(donnees, repere) {
+  function afficherLots(donnees, repere, choix) {
     const carte = document.getElementById("carte-calendrier-lots");
     const racine = document.getElementById("calendrier-lots");
     const lots = donnees.lots.slice().sort((a, b) => a.arrivee.localeCompare(b.arrivee) || a.nom.localeCompare(b.nom, "fr"));
@@ -354,7 +400,7 @@
         ],
       }],
     }));
-    const { aujourdhuiVisible } = frise(racine, { titreColonne: F.calendrierLots.lots, lignes, repere });
+    const { aujourdhuiVisible } = frise(racine, { titreColonne: F.calendrierLots.lots, lignes, repere, ...choix });
     legende(document.getElementById("calendrier-lots-legende"), [
       ["cal-pastille-arrivee", F.calendrierLots.arrivee],
       ["cal-pastille-ponte", F.calendrierLots.ponte],
@@ -362,14 +408,15 @@
     ]);
   }
 
-  // donnees : enregistrements actifs de la ferme.
-  function afficher(donnees) {
+  // donnees : enregistrements actifs de la ferme ; choix (R3) : { annees, annee }, les années de la ferme
+  // et l'année choisie.
+  function afficher(donnees, choix = {}) {
     // Le focus sur une barre (après une modification) revient sur la barre redessinée.
     const actif = document.activeElement && document.activeElement.closest && document.activeElement.closest(".cal-barre");
     const focus = actif && { racine: actif.closest("[role=group]").id, id: actif.dataset.id };
     const repere = aujourdhui();
-    afficherCulture(donnees, repere);
-    afficherLots(donnees, repere);
+    afficherCulture(donnees, repere, choix);
+    afficherLots(donnees, repere, choix);
     if (focus) {
       const barre = document.querySelector(`#${focus.racine} .cal-barre[data-id="${focus.id}"]`);
       if (barre) barre.focus({ preventScroll: true });

@@ -195,3 +195,124 @@ test("[T55] EX-56 : une année sans coût de culture n'en montre pas la ligne au
   await page.locator("#annee-precedente").click();
   await expect(page.locator('#tableau tfoot tr[data-mesure="cultures"]')).toHaveCount(1);
 });
+
+// ---- T56 : les calendriers continus (EX-59, scénario S17)
+
+const boites = (page, racine) => page.evaluate((racine) => {
+  const defilement = document.querySelector(`${racine} .cal-defilement`);
+  const coin = document.querySelector(`${racine} .cal-coin`).getBoundingClientRect();
+  const r = (m) => document.querySelector(`${racine} .cal-mois[data-mois="${m}"]`).getBoundingClientRect();
+  return {
+    boite: defilement.getBoundingClientRect().toJSON(), clientWidth: defilement.clientWidth, scrollWidth: defilement.scrollWidth,
+    coin: coin.toJSON(), mois: [...document.querySelectorAll(`${racine} .cal-mois`)].map((s) => s.dataset.mois),
+    janvier2026: r("2026-01").toJSON(), janvier2027: r("2027-01").toJSON(), decembre2027: r("2027-12").toJSON(),
+    page: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  };
+}, racine);
+
+test("[T56] EX-59, S17 : à 1366 px, le calendrier va de janvier 2026 à décembre 2027, une année à la largeur de sa boîte, ouvert sur l'année choisie", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 800 });
+  await fermeDeuxAnnees(page);
+  await page.evaluate(() => { location.hash = "plantations"; });
+  await expect(page.locator("#calendrier .cal-barre")).toHaveCount(2);
+  // Le calendrier se place sur l'année choisie dès que sa page a une largeur.
+  await expect.poll(async () => { const x = await boites(page, "#calendrier"); return Math.abs(x.janvier2027.left - x.coin.right) <= 2; }).toBe(true);
+  let b = await boites(page, "#calendrier");
+  expect(b.mois).toHaveLength(24);
+  expect(b.mois[0]).toBe("2026-01");
+  expect(b.mois[23]).toBe("2027-12");
+  // Une année à la largeur de la boîte, colonne des espaces mise à part ; la boîte défile, pas la page.
+  const annee = b.clientWidth - b.coin.width;
+  expect(Math.abs((b.decembre2027.right - b.janvier2027.left) - annee)).toBeLessThanOrEqual(2);
+  expect(b.scrollWidth).toBeGreaterThan(b.clientWidth);
+  expect(b.page).toBeLessThanOrEqual(0);
+  // Ouvert sur 2027, l'année choisie : janvier 2027 juste à droite de la colonne des espaces.
+  expect(Math.abs(b.janvier2027.left - b.coin.right)).toBeLessThanOrEqual(2);
+  await expect(page.locator("#calendrier .cal-trait-annee")).toHaveCount(1);
+  // En faisant défiler la boîte, on voit 2026.
+  await page.locator("#calendrier .cal-defilement").evaluate((el) => { el.scrollLeft = 0; });
+  b = await boites(page, "#calendrier");
+  expect(Math.abs(b.janvier2026.left - b.coin.right)).toBeLessThanOrEqual(2);
+  expect(b.page).toBeLessThanOrEqual(0);
+  // Choisir 2026 rouvre le calendrier sur 2026 ; revenir à 2027 le rouvre sur 2027.
+  await page.locator("#calendrier .cal-defilement").evaluate((el) => { el.scrollLeft = el.scrollWidth; });
+  await page.locator("#annee-precedente").click();
+  await expect(page.locator("#annee-choisie")).toHaveText("2026");
+  await expect.poll(async () => { const x = await boites(page, "#calendrier"); return Math.abs(x.janvier2026.left - x.coin.right) <= 2; }).toBe(true);
+  await page.locator("#annee-suivante").click();
+  await expect.poll(async () => { const x = await boites(page, "#calendrier"); return Math.abs(x.janvier2027.left - x.coin.right) <= 2; }).toBe(true);
+});
+
+test("[T56] EX-59 : le calendrier des poules suit la même règle ; une modification garde la position du calendrier", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 800 });
+  await fermeDeuxAnnees(page);
+  await page.evaluate(() => {
+    const ferme = Store.ouvrir(localStorage);
+    const F = Store.fourchette;
+    ferme.ajouter("lots", { nom: "Lot", effectif: 100, arrivee: "2026-09-01", debutPonte: "2026-09-21", reforme: "2027-04-30",
+      ponte: F(0.72), pertes: 6, aliment: F(115), prixAliment: F(0.8), prixOeuf: F(0.35) });
+  });
+  await page.reload();
+  await page.evaluate(() => { location.hash = "poules"; });
+  await expect(page.locator("#calendrier-lots .cal-barre")).toHaveCount(1);
+  await expect.poll(async () => { const x = await boites(page, "#calendrier-lots"); return Math.abs(x.janvier2027.left - x.coin.right) <= 2; }).toBe(true);
+  const b = await boites(page, "#calendrier-lots");
+  expect(b.mois).toHaveLength(24);
+  expect(Math.abs(b.janvier2027.left - b.coin.right)).toBeLessThanOrEqual(2);
+  expect(b.page).toBeLessThanOrEqual(0);
+  // Une modification de la ferme redessine le calendrier sans le ramener à l'année choisie.
+  await page.evaluate(() => { location.hash = "plantations"; });
+  await page.locator("#calendrier .cal-defilement").evaluate((el) => { el.scrollLeft = 0; });
+  await page.evaluate(() => {
+    const ferme = Store.ouvrir(localStorage);
+    const plantation = ferme.lister("plantations")[0];
+    ferme.modifier("plantations", plantation.id, { surface: 90 });
+  });
+  await page.evaluate(() => window.dispatchEvent(new StorageEvent("storage", { key: Store.CLE })));
+  const apres = await boites(page, "#calendrier");
+  expect(Math.abs(apres.janvier2026.left - apres.coin.right)).toBeLessThanOrEqual(2);
+});
+
+test("[T56] EX-59 : au téléphone, le calendrier sur deux années défile dans sa boîte, les espaces restant à gauche, sans défilement de la page", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await fermeDeuxAnnees(page);
+  await page.evaluate(() => { location.hash = "plantations"; });
+  await expect(page.locator("#calendrier .cal-barre")).toHaveCount(2);
+  await expect.poll(async () => { const x = await boites(page, "#calendrier"); return Math.abs(x.janvier2027.left - x.coin.right) <= 2; }).toBe(true);
+  const b = await boites(page, "#calendrier");
+  expect(b.mois).toHaveLength(24);
+  expect(b.scrollWidth).toBeGreaterThan(b.clientWidth);
+  expect(b.page).toBeLessThanOrEqual(0);
+  expect(Math.abs(b.janvier2027.left - b.coin.right)).toBeLessThanOrEqual(2);
+  expect(Math.abs(b.coin.left - b.boite.left)).toBeLessThanOrEqual(2);
+  // Au téléphone, une année est au moins aussi large que la boîte ; aucun nom de mois ne déborde de sa case.
+  expect(b.decembre2027.right - b.janvier2027.left).toBeGreaterThanOrEqual(b.clientWidth - b.coin.width - 2);
+  const debordements = await page.locator("#calendrier .cal-mois").evaluateAll((spans) => spans.filter((s) => s.scrollWidth > s.clientWidth + 1).map((s) => s.dataset.mois));
+  expect(debordements).toEqual([]);
+  await page.locator("#calendrier .cal-defilement").evaluate((el) => { el.scrollLeft = 0; });
+  const debut = await boites(page, "#calendrier");
+  expect(Math.abs(debut.janvier2026.left - debut.coin.right)).toBeLessThanOrEqual(2);
+});
+
+test("[T56] EX-59 : le calendrier reste sur l'année choisie quand l'axe s'allonge d'une année ou que la fenêtre change de largeur", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 800 });
+  await fermeDeuxAnnees(page);
+  await page.evaluate(() => { location.hash = "plantations"; });
+  await expect.poll(async () => { const x = await boites(page, "#calendrier"); return Math.abs(x.janvier2027.left - x.coin.right) <= 2; }).toBe(true);
+  // Une plantation de 2025 allonge l'axe d'une année, avant : le calendrier montre toujours janvier 2027.
+  await page.evaluate(() => {
+    const ferme = Store.ouvrir(localStorage);
+    const p = ferme.lister("plantations")[0];
+    ferme.ajouter("plantations", { varieteId: p.varieteId, espaceId: p.espaceId, surface: 50, date: "2025-03-01" });
+  });
+  await page.evaluate(() => window.dispatchEvent(new StorageEvent("storage", { key: Store.CLE })));
+  await expect(page.locator("#calendrier .cal-mois")).toHaveCount(36);
+  await expect(page.locator("#annee-choisie")).toHaveText("2027");
+  let b = await boites(page, "#calendrier");
+  expect(Math.abs(b.janvier2027.left - b.coin.right)).toBeLessThanOrEqual(2);
+  // Une fenêtre plus étroite : toujours janvier 2027 au bord gauche.
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await expect.poll(async () => { const x = await boites(page, "#calendrier"); return Math.abs(x.janvier2027.left - x.coin.right) <= 2; }).toBe(true);
+  b = await boites(page, "#calendrier");
+  expect(b.page).toBeLessThanOrEqual(0);
+});

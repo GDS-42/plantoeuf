@@ -843,7 +843,8 @@
   .cal-grille {
     --col: 9.5rem; --h: 1.6rem; --ecart: 0.375rem; --marge: 0.55rem; --largeur-mois: 4.25rem;
     position: relative; isolation: isolate;
-    min-width: calc(var(--col) + var(--mois) * var(--largeur-mois));
+    /* R3 (EX-59) : une année prend au moins la largeur de la boîte, colonne des espaces mise à part. */
+    min-width: max(calc(var(--col) + var(--mois) * var(--largeur-mois)), calc(var(--col) + (100% - var(--col)) * var(--annees, 1)));
   }
   .cal-ligne { display: grid; grid-template-columns: var(--col) minmax(0, 1fr); border-bottom: 1px solid var(--trait); }
   .cal-ligne:last-child { border-bottom: 0; }
@@ -861,10 +862,13 @@
   .cal-axe { background: var(--surface-douce); border-bottom-color: var(--trait-fort); }
   .cal-axe .cal-espace { background: var(--surface-douce); color: var(--encre-pale); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
   .cal-piste-mois { min-height: 2.1rem; }
-  .cal-mois { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding-left: 0.55rem; color: var(--encre-douce); font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+  .cal-mois { position: absolute; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding-left: 0.55rem; color: var(--encre-douce); font-size: 0.8rem; font-weight: 600; line-height: 1.15; white-space: nowrap; }
+  /* R3 : l'année sous le nom du mois (premier mois et janviers d'un axe sur plusieurs années). */
+  .cal-mois-annee { color: var(--encre-pale); font-size: 0.75rem; font-weight: 600; }
   /* Quadrillage des mois et repère du jour, sous les barres. */
   .cal-quadrillage { position: absolute; z-index: 0; top: 0; bottom: 0; left: var(--col); right: 0; pointer-events: none; }
   .cal-trait { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--trait); }
+  .cal-trait-annee { border-left: 2px solid var(--trait-fort); }
   .cal-aujourdhui { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--bleu); }
   .cal-aujourdhui::before { content: ""; position: absolute; top: 0.3rem; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--bleu); }
   /* La sur-occupation, sur toute la hauteur de la ligne de l'espace, aux dates du dépassement. */
@@ -1936,7 +1940,7 @@
   // R3 (EX-56, EX-57) : la synthèse, les ventes, les véhicules et les besoins montrent l'année choisie.
   function rafraichir() {
     const donnees = donneesActives();
-    const annee = choixAnnee.afficher(donnees);
+    const { annees, annee } = choixAnnee.afficher(donnees);
     const parAnnee = annee === null ? {} : { annee };
     saisie.afficher(donnees);
     ventes.afficher(donnees, parAnnee);
@@ -1948,7 +1952,7 @@
     const tableau = Calc.tableau(donnees, parAnnee);
     UiTableau.afficher(tableau);
     UiSynthese.afficher(tableau, donnees);
-    UiCalendrier.afficher(donnees);
+    UiCalendrier.afficher(donnees, { annees, annee });
     afficherAccueil(donnees);
     document.getElementById("pastille-sauvegarde").hidden = document.getElementById("rappel-export").hidden;
   }

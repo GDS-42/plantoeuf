@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R3 (plusieurs années) · Sessions consommées : 3 / 7 · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R3 (plusieurs années) · Sessions consommées : 4 / 7 · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5210,6 +5210,48 @@ $ ./verify.sh R3
 # pass 155
 # fail 0
 173 passed (2.0m)
+== R3 : vérification verte ==
+exit 0
+```
+
+## 15/10/2026 · T56 — Calendriers continus (EX-59, scénario S17)
+
+- Session 4 / 7 du seuil d'alerte de R3.
+- Modèle : Opus 5.5, effort élevé · Reprises : 1 · Relecteur : Fable, contexte frais → **ÉCARTS** à la première relecture : (1) la position du calendrier était gardée en pixels — un axe allongé d'une année (plantation de 2025) ou une fenêtre plus étroite ne montrait plus l'année choisie ; (2) à 390 px, l'étiquette « janv. 2027 » débordait sur « févr. » ; (3) forme : `src/ui-annee.js` modifié hors de la liste de T56. Repris : la frise garde le **jour** au bord gauche de sa piste et s'y replace à chaque changement de largeur ; l'année s'écrit sous le nom du mois (12 px) ; (3) consigné au RUNBOOK. À la relecture de la reprise : **CONFORME**. Remarques reprises ensuite : l'écho du placement (arrondi au pixel) ne change plus le jour gardé (dérive mesurée au redimensionnement continu : 0,0 px après deux cycles 1366 → 1200 → 1366 px) ; deux tests attendent le placement (`expect.poll`).
+- Fait (`src/ui-calendrier.js`, `src/index.html`) : l'axe va de janvier de la première année (barres et années de la ferme) à décembre de la dernière ; une année prend au moins la largeur de la boîte, colonne des espaces mise à part ; la boîte défile, jamais la page ; ouverture sur le 1er janvier de l'année choisie, y compris quand la page est cachée au rendu ; un trait marqué à chaque 1er janvier ; même règle pour le calendrier des poules. `src/ui-annee.js` rend `{ annees, annee }` pour que `rafraichir` passe les années au calendrier sans les recalculer.
+- Une ferme d'une seule année dont les plantations n'en couvrent qu'une partie montre désormais l'année entière (12 mois, sans défilement à 1366 px) ; aucun test existant modifié ni cassé.
+
+Preuve rouge (avant le code) :
+
+```text
+$ npx playwright test --grep "\[T56\]"
+1) test/annees.e2e.js:213:1 › [T56] EX-59, S17 : à 1366 px, le calendrier va de janvier 2026 à décembre 2027, une année à la largeur de sa boîte, ouvert sur l'année choisie
+2) test/annees.e2e.js:244:1 › [T56] EX-59 : le calendrier des poules suit la même règle ; une modification garde la position du calendrier
+3) test/annees.e2e.js:273:1 › [T56] EX-59 : au téléphone, le calendrier sur deux années défile dans sa boîte, les espaces restant à gauche, sans défilement de la page
+3 failed
+$ tests renforcés à la reprise, sur la version d'avant reprise
+1) test/annees.e2e.js:275:1 › [T56] EX-59 : au téléphone, le calendrier sur deux années défile dans sa boîte, les espaces restant à gauche, sans défilement de la page 
+  2) test/annees.e2e.js:295:1 › [T56] EX-59 : le calendrier reste sur l'année choisie quand l'axe s'allonge d'une année ou que la fenêtre change de largeur 
+  2 failed
+  2 passed (4.1s)
+```
+
+Preuve verte :
+
+```text
+$ ./verify.sh T56
+✓  1 test/annees.e2e.js:213:1 › [T56] EX-59, S17 : à 1366 px, le calendrier va de janvier 2026 à décembre 2027, une année à la largeur de sa boîte, ouvert sur l'année choisie (566ms)
+✓  2 test/annees.e2e.js:246:1 › [T56] EX-59 : le calendrier des poules suit la même règle ; une modification garde la position du calendrier (490ms)
+✓  3 test/annees.e2e.js:276:1 › [T56] EX-59 : au téléphone, le calendrier sur deux années défile dans sa boîte, les espaces restant à gauche, sans défilement de la page (360ms)
+✓  4 test/annees.e2e.js:297:1 › [T56] EX-59 : le calendrier reste sur l'année choisie quand l'axe s'allonge d'une année ou que la fenêtre change de largeur (345ms)
+4 passed (2.8s)
+== T56 : vérification verte ==
+exit 0
+$ ./verify.sh R3
+# tests 155
+# pass 155
+# fail 0
+177 passed (2.1m)
 == R3 : vérification verte ==
 exit 0
 ```
