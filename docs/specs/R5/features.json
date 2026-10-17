@@ -14,35 +14,46 @@
   "taches": [
     {
       "id": "T65",
-      "exigences": ["EX-68"],
+      "exigences": [
+        "EX-68"
+      ],
       "description": "Conséquences d'un déplacement, sans DOM : alertes qui apparaissent et disparaissent sur les espaces de départ et d'arrivée",
-      "verification": ["./verify.sh T65"],
+      "verification": [
+        "./verify.sh T65"
+      ],
       "depend_de": [],
-      "fichiers": ["src/calc.js", "test/deplacement.test.js", "test/deplacement.e2e.js"],
+      "fichiers": [
+        "src/calc.js",
+        "test/deplacement.test.js",
+        "test/deplacement.e2e.js"
+      ],
       "modele": "opus",
       "effort": "high",
       "relecture": true,
       "passe": true
     },
     {
-      "id": "T67",
-      "exigences": ["EX-71"],
-      "description": "Ferme d'exemple sur deux ans : deuxième année selon les règles de rotation, séances et lots ; tests découplés du nombre de plantations",
-      "verification": ["./verify.sh T67"],
-      "depend_de": [],
-      "fichiers": ["src/exemple.js", "docs/specs/R2/DONNEES.md", "src/i18n.js", "test/exemple-r5.test.js", "test/exemple-r5.e2e.js", "tests existants listés dans SPEC.md"],
-      "modele": "opus",
-      "effort": "high",
-      "relecture": true,
-      "passe": false
-    },
-    {
       "id": "T66",
-      "exigences": ["EX-67", "EX-68", "EX-69", "EX-70"],
+      "exigences": [
+        "EX-67",
+        "EX-68",
+        "EX-69",
+        "EX-70"
+      ],
       "description": "Glisser-déposer dans le calendrier : souris, doigt, clavier ; étiquette en direct ; enregistrement au lâcher et « Annuler »",
-      "verification": ["./verify.sh T66"],
-      "depend_de": ["T65", "T67"],
-      "fichiers": ["src/ui-calendrier.js", "src/ui-saisie.js", "src/index.html", "src/i18n.js", "test/deplacement.e2e.js"],
+      "verification": [
+        "./verify.sh T66"
+      ],
+      "depend_de": [
+        "T65"
+      ],
+      "fichiers": [
+        "src/ui-calendrier.js",
+        "src/ui-saisie.js",
+        "src/index.html",
+        "src/i18n.js",
+        "test/deplacement.e2e.js"
+      ],
       "modele": "opus",
       "effort": "high",
       "relecture": true,
@@ -50,15 +61,26 @@
     },
     {
       "id": "T68",
-      "exigences": ["EX-67", "EX-68", "EX-69", "EX-70", "EX-71"],
+      "exigences": [
+        "EX-67",
+        "EX-68",
+        "EX-69",
+        "EX-70"
+      ],
       "description": "Vérification de bout en bout de la tranche, captures à 390 et 1366 px, puis revue par l'évaluateur séparé, restreinte à la conformité à la spec",
-      "verification": ["./verify.sh R5"],
-      "depend_de": ["T65", "T66", "T67"],
+      "verification": [
+        "./verify.sh R5"
+      ],
+      "depend_de": [
+        "T65",
+        "T66"
+      ],
       "fichiers": [],
       "modele": "fable",
       "effort": "high",
       "relecture": false,
       "passe": false
     }
-  ]
+  ],
+  "amendement": "17/10/2026, décision de l'humain : T67 (ferme d'exemple sur deux ans, EX-71) retirée"
 }

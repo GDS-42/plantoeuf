@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R5 (déplacer les plantations, exemple sur deux ans) · Sessions consommées : 1 / 8 · R4 terminée en 7 / 10 (rotation et associations), CONFORME · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R5 (déplacer les plantations) · Sessions consommées : 2 / 8 · R4 terminée en 7 / 10 (rotation et associations), CONFORME · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5643,3 +5643,12 @@ $ ./verify.sh R4 (toute la suite)
 193 passed (2.1m)
 exit 0
 ```
+
+## 17/10/2026 · T67 — Ferme d'exemple sur deux ans : essai, puis abandon sur décision de l'humain
+
+- Session 2 / 8 du seuil d'alerte de R5. Modèle : Opus 5.5, effort élevé. Pas de relecture (tâche retirée avant commit).
+- Essai : la deuxième année reprenait les 51 plantations aux mêmes dates, surfaces et variétés, sur les espaces du plan B de l'étude « rotation d'un clic » (5 retours trop tôt en 2027 : les 4 tomates des tunnels et le chouchou ; 9 précédents défavorables dans les tunnels ; aucune sur-occupation), avec ses séances et ses lots. Tests nouveaux [T67] verts (5 unitaires, 1 de bout en bout).
+- Mesure : la première année restait identique à celle de R4 — 0 écart sur le tableau, les points de vente, l'offre et la demande, les véhicules, les besoins, les retours trop tôt et les associations défavorables (instantané pris au commit 6702e90, comparaison sans tenir compte de l'ordre ni des arrondis ; un témoin donne aussi 0 écart).
+- Constat en cours de route : une séance unique de deux ans ajoutait au décembre de la première année les ventes du 1er au 3 janvier de la seconde (semaine du jeudi 31 décembre) ; corrigé dans l'essai par une séance par année.
+- Arrêt (condition du runbook) : après le remplacement approuvé des « 51 » par `Exemple.NOMBRE_DE_PLANTATIONS`, 37 tests existants tombaient encore (11 unitaires, 26 de bout en bout), au-delà de la liste approuvée : [T54] ×2, [T51] ×3 (cas type à 200 poules, douze mois, tout sourcé), [T63] ×2, [T09] ×2, [T34] (chiffres clés sur deux ans), [T31] ×3 (lots), [T24] (séances de l'année de chargement), [T55], [T36] ×14, [T37] ×2, [T33] ×2, [T11], [T12] ×3, [T15], [T10] — dont une vingtaine parce qu'ils désignent une plantation par son seul nom (« Ail péi », « Chouchou », « Vacoa »), qui existait deux fois.
+- Décision de l'humain (17/10) : « Rester sur un an ». Le travail non commité est défait (copie dans le brouillon de la session) ; `SPEC.md`, `features.json` et `RUNBOOK.md` amendés : EX-71, S24, T67 et l'invariant `premiere_annee_comme_r4` retirés.
