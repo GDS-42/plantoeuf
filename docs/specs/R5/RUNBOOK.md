@@ -76,5 +76,7 @@ Le format exporté ne change pas (version 6). Chaque tâche se défait par `git 
 - T66 · `scroll-padding-left` égal à la colonne fixe des espaces (`--col` passe de `.cal-grille` à `.cal-defilement`, même valeur) : une date ou une barre qu'on fait venir à l'écran, y compris par le focus au clavier, n'est plus laissée sous cette colonne (EX-37, focus visible).
 - T66 · Le bord du calendrier ne fait défiler qu'une fois que le pointeur l'a quitté, puis tant qu'il y reste. Un geste commencé près de la colonne n'emporte pas le calendrier.
 - T66 · Pendant un geste, l'infobulle de la barre ne s'affiche pas : l'étiquette du geste la remplace.
+- T66 (reprise, après les captures de T68) · Près du haut et du bas de la zone visible, la page défile pendant le geste (sous les bandeaux collés en haut sur écran étroit, dans la zone de contenu sur grand écran), avec la même règle que pour la gauche et la droite. Au clavier, le fantôme est ramené à l'écran. La classe `deplacement-au-doigt` ne s'applique plus que si le contact est non annulable (touchstart `cancelable=false`) ; sinon le `preventDefault` du touchmove suffit, et aucune barre de défilement classique ne disparaît pendant le geste.
+- T66 (reprise) · Le message « Annuler » prend la largeur de son texte : à 390 px, `left: 50%` le bornait à la moitié de l'écran (4 lignes).
 
 ## ✎ Bilan de fin de tranche

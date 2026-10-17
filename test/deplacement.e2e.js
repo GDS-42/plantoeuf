@@ -167,3 +167,93 @@ test.describe("au doigt", () => {
     expect(await plantation(page, ids.a)).toEqual({ date: "2026-03-08", espaceId: ids.p2 });
   });
 });
+
+// ---- T66, reprise après la vérification de la tranche : un espace hors de l'écran, en haut ou en bas.
+
+// Douze planches (« planche 01 » à « planche 12 », dans cet ordre), une tomate sur la première :
+// le calendrier dépasse la hauteur de l'écran.
+async function douzePlanches(page) {
+  await page.goto("index.html");
+  const ids = await page.evaluate(() => {
+    const f = Store.ouvrir(localStorage);
+    const F = Store.fourchette;
+    f.ajouter("familles", { nom: "Solanacées", delaiRetour: F(2, 3, 4) });
+    const c = f.ajouter("cultures", { nom: "tomate", famille: "Solanacées", unite: "kg", rendement: F(12), prix: F(3.5), joursAvantRecolte: 70, semainesRecolte: 11, pertes: 15 });
+    const v = f.ajouter("varietes", { cultureId: c.id, nom: "Heatmaster" });
+    const planches = [];
+    for (let i = 1; i <= 12; i++) planches.push(f.ajouter("espaces", { nom: `planche ${String(i).padStart(2, "0")}`, surface: 30, type: "plein_champ" }).id);
+    const a = f.ajouter("plantations", { varieteId: v.id, espaceId: planches[0], surface: 30, date: "2026-03-01" });
+    return { planches, a: a.id };
+  });
+  await page.reload();
+  await aller(page, "plantations");
+  return ids;
+}
+
+// Les espaces dont la ligne est entièrement sous le bas de l'écran.
+const lignesSousLEcran = (page) => page.evaluate(() => [...document.querySelectorAll("#calendrier .cal-ligne[data-espace]")]
+  .filter((l) => l.getBoundingClientRect().top >= window.innerHeight).map((l) => l.dataset.espace));
+
+test("[T66] EX-67 : à la souris, tenir le pointeur près du bas de l'écran fait défiler jusqu'à un espace qui était hors de l'écran", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 640 });
+  const ids = await douzePlanches(page);
+  await page.locator(`#calendrier .cal-mois[data-mois="2026-03"]`).scrollIntoViewIfNeeded();
+  const barre = page.locator(`#calendrier .cal-barre[data-id="${ids.a}"]`);
+  await barre.scrollIntoViewIfNeeded();
+  const cachees = await lignesSousLEcran(page);
+  expect(cachees.length).toBeGreaterThan(0);
+  const b = await barre.boundingBox();
+  const x0 = b.x + 10;
+  await page.mouse.move(x0, b.y + b.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(x0 + 8, b.y + b.height / 2, { steps: 2 });
+  await page.mouse.move(x0 + 8, 300, { steps: 4 });
+  await page.mouse.move(x0 + 8, 630, { steps: 6 });
+  await expect.poll(async () => page.evaluate(() => document.querySelector("#calendrier .cal-ligne-visee").dataset.espace), { timeout: 8000 }).toBe(ids.planches[11]);
+  await page.mouse.up();
+  const apres = await plantation(page, ids.a);
+  expect(apres.espaceId).toBe(ids.planches[11]);
+  expect(cachees).toContain(apres.espaceId);
+});
+
+test("[T66] EX-70 : au clavier, la flèche vers le bas amène à l'écran la ligne visée, même hors de l'écran", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 640 });
+  const ids = await douzePlanches(page);
+  const barre = page.locator(`#calendrier .cal-barre[data-id="${ids.a}"]`);
+  await barre.scrollIntoViewIfNeeded();
+  await barre.focus();
+  await page.keyboard.press("d");
+  for (let i = 0; i < 11; i++) await page.keyboard.press("ArrowDown");
+  await expect(page.locator("#deplacement-etiquette")).toContainText("01/03/2026 · planche 12");
+  const fantome = await page.locator("#calendrier .cal-fantome").boundingBox();
+  expect(fantome.y).toBeGreaterThanOrEqual(0);
+  expect(fantome.y + fantome.height).toBeLessThanOrEqual(640);
+  await page.keyboard.press("Enter");
+  expect(await plantation(page, ids.a)).toEqual({ date: "2026-03-01", espaceId: ids.planches[11] });
+});
+
+test.describe("au doigt, hors de l'écran", () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+
+  test("[T66] EX-70 : au doigt, tenir le doigt près du bas de l'écran fait défiler jusqu'à un espace qui était hors de l'écran", async ({ page }) => {
+    const ids = await douzePlanches(page);
+    await page.locator(`#calendrier .cal-mois[data-mois="2026-03"]`).scrollIntoViewIfNeeded();
+    const barre = page.locator(`#calendrier .cal-barre[data-id="${ids.a}"]`);
+    await barre.scrollIntoViewIfNeeded();
+    const cachees = await lignesSousLEcran(page);
+    expect(cachees.length).toBeGreaterThan(0);
+    const cdp = await page.context().newCDPSession(page);
+    const toucher = (type, x, y) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y, id: 1 }] });
+    const b = await barre.boundingBox();
+    const x0 = Math.max(b.x, 140) + 8;
+    const y0 = b.y + b.height / 2;
+    await toucher("touchStart", x0, y0);
+    await page.waitForTimeout(500);
+    for (let i = 1; i <= 8; i++) await toucher("touchMove", x0, y0 + ((835 - y0) * i) / 8);
+    await expect.poll(async () => page.evaluate(() => document.querySelector("#calendrier .cal-ligne-visee").dataset.espace), { timeout: 8000 }).toBe(ids.planches[11]);
+    await toucher("touchEnd");
+    const apres = await plantation(page, ids.a);
+    expect(apres.espaceId).toBe(ids.planches[11]);
+    expect(cachees).toContain(apres.espaceId);
+  });
+});

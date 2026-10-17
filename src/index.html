@@ -1043,7 +1043,8 @@
     background: var(--encre); color: var(--fond); font-weight: 600; box-shadow: var(--ombre-haute);
   }
 
-  .annonce { display: flex; align-items: center; gap: 0.85rem; max-width: calc(100vw - 2rem); }
+  /* R5 : un message plus long, avec « Annuler » : sa largeur suit le texte (et non la moitié de l'écran). */
+  .annonce { display: flex; align-items: center; gap: 0.85rem; width: max-content; max-width: calc(100vw - 2rem); border-radius: 1.4rem; }
   .annonce-action {
     flex: none; padding: 0.2rem 0.75rem; border: 1px solid currentColor; border-radius: 999px;
     background: transparent; color: inherit; font: inherit; font-weight: 700; cursor: pointer;

@@ -541,6 +541,7 @@
         ligne.querySelector(".cal-piste").append(geste.fantome);
       }
       geste.etiquette.replaceChildren(...contenuEtiquette());
+      if (x === undefined && geste.fantome.isConnected) amenerALEcran(geste.fantome);
     }
     // L'étiquette suit le pointeur, ou le fantôme au clavier ; elle reste dans la fenêtre.
     const reference = x === undefined ? geste.fantome.getBoundingClientRect() : { left: x, bottom: y };
@@ -552,7 +553,9 @@
     geste.etiquette.style.top = `${Math.round(haut)}px`;
   }
 
-  function commencer(barre, mode, x) {
+  // bloquer : au doigt, le contact ne peut pas empêcher la page de défiler (appui posé pendant l'élan
+  // d'un défilement) ; le style la bloque alors le temps du geste.
+  function commencer(barre, mode, x, bloquer = false) {
     const p = plantationDe(barre.dataset.id);
     if (!p || !vue.espaces.has(p.espaceId)) return false;
     const debut = jour(p.date);
@@ -565,11 +568,11 @@
       duree: fin + 1 - debut, decalage: x === undefined ? 0 : jourSous(x) - debut,
       fantome: element("span", { class: "cal-fantome", "aria-hidden": "true" }),
       etiquette: document.getElementById("deplacement-etiquette"),
-      pointeur: null, horsBord: false, defilement: null,
+      pointeur: null, horsBordX: false, horsBordY: false, defilement: null, vertical: bandeVerticale(),
     };
     barre.classList.add("cal-deplacee");
     document.body.classList.add("deplacement-en-cours");
-    document.documentElement.classList.toggle("deplacement-au-doigt", mode === "doigt");
+    document.documentElement.classList.toggle("deplacement-au-doigt", mode === "doigt" && bloquer);
     geste.etiquette.hidden = false;
     const infobulle = vue.racine.querySelector(".cal-infobulle");
     if (infobulle) infobulle.hidden = true;
@@ -604,33 +607,66 @@
     });
   }
 
-  // Suivre le pointeur : jour visé (en gardant l'écart entre le pointeur et le début de la barre),
-  // ligne visée, et défilement de la boîte tant que le pointeur reste près d'un de ses bords. Le bord
-  // ne fait défiler qu'une fois que le pointeur l'a quitté : un geste commencé près du bord n'emporte
-  // pas le calendrier.
-  function suivre(x, y) {
-    const boite = vue.racine.querySelector(".cal-defilement");
-    const cadre = boite.getBoundingClientRect();
-    const coin = vue.racine.querySelector(".cal-coin").getBoundingClientRect();
-    const sens = x < coin.right + BORD_PX ? -1 : x > cadre.right - BORD_PX ? 1 : 0;
-    if (!sens) geste.horsBord = true;
-    geste.pointeur = { x, y, sens: geste.horsBord ? sens : 0 };
+  // Ce qui défile verticalement autour du calendrier (la page, ou la zone de contenu sur grand écran), et
+  // la bande visible : sous la barre du haut et le ruban de navigation quand ils restent collés en haut.
+  function bandeVerticale() {
+    let defileur = vue.racine.parentElement;
+    while (defileur && defileur !== document.body) {
+      if (/auto|scroll/.test(getComputedStyle(defileur).overflowY) && defileur.scrollHeight > defileur.clientHeight) break;
+      defileur = defileur.parentElement;
+    }
+    if (!defileur || defileur === document.body) defileur = document.scrollingElement;
+    const cadre = defileur === document.scrollingElement ? { top: 0, bottom: window.innerHeight } : defileur.getBoundingClientRect();
+    let haut = cadre.top;
+    for (const bandeau of document.querySelectorAll(".barre, #navigation")) {
+      const r = bandeau.getBoundingClientRect();
+      if (/sticky|fixed/.test(getComputedStyle(bandeau).position) && r.top <= haut + 1 && r.bottom > haut) haut = r.bottom;
+    }
+    return { defileur, haut, bas: Math.min(cadre.bottom, window.innerHeight) };
+  }
+
+  // Au clavier : le fantôme reste à l'écran, hors de la colonne des espaces et des bandeaux du haut.
+  function amenerALEcran(fantome) {
+    fantome.scrollIntoView({ block: "nearest", inline: "nearest" });
+    const { defileur, haut, bas } = geste.vertical;
+    const r = fantome.getBoundingClientRect();
+    if (r.top < haut + 8) defileur.scrollTop -= haut + 8 - r.top;
+    else if (r.bottom > bas - 8) defileur.scrollTop += r.bottom - bas + 8;
+  }
+
+  function viserSous(x, y) {
     const ligne = ligneSous(x, y);
     viser(versIso(jourSous(x) - geste.decalage), ligne ? ligne.dataset.espace : geste.espaceId, x, y);
-    if (geste.pointeur.sens && !geste.defilement) {
-      const pas = () => {
-        if (!geste || !geste.pointeur || !geste.pointeur.sens) { if (geste) geste.defilement = null; return; }
-        const avant = boite.scrollLeft;
-        boite.scrollLeft += geste.pointeur.sens * 10;
-        if (boite.scrollLeft !== avant) {
-          const { x: px, y: py } = geste.pointeur;
-          const sous = ligneSous(px, py);
-          viser(versIso(jourSous(px) - geste.decalage), sous ? sous.dataset.espace : geste.espaceId, px, py);
-        }
-        geste.defilement = requestAnimationFrame(pas);
-      };
-      geste.defilement = requestAnimationFrame(pas);
-    }
+  }
+
+  // Suivre le pointeur : jour visé (en gardant l'écart entre le pointeur et le début de la barre),
+  // ligne visée, et défilement tant que le pointeur reste près d'un bord : à gauche et à droite, la
+  // boîte du calendrier ; en haut et en bas, la page. Un bord ne fait défiler qu'une fois que le
+  // pointeur l'a quitté : un geste commencé près d'un bord n'emporte pas le calendrier.
+  function suivre(x, y) {
+    const cadre = vue.racine.querySelector(".cal-defilement").getBoundingClientRect();
+    const coin = vue.racine.querySelector(".cal-coin").getBoundingClientRect();
+    const { haut, bas } = geste.vertical;
+    const sensX = x < coin.right + BORD_PX ? -1 : x > cadre.right - BORD_PX ? 1 : 0;
+    const sensY = y < haut + BORD_PX ? -1 : y > bas - BORD_PX ? 1 : 0;
+    if (!sensX) geste.horsBordX = true;
+    if (!sensY) geste.horsBordY = true;
+    geste.pointeur = { x, y, sensX: geste.horsBordX ? sensX : 0, sensY: geste.horsBordY ? sensY : 0 };
+    viserSous(x, y);
+    if ((geste.pointeur.sensX || geste.pointeur.sensY) && !geste.defilement) geste.defilement = requestAnimationFrame(defiler);
+  }
+
+  function defiler() {
+    if (!geste) return;
+    const { x, y, sensX, sensY } = geste.pointeur;
+    if (!sensX && !sensY) { geste.defilement = null; return; }
+    const boite = vue.racine.querySelector(".cal-defilement");
+    const { defileur } = geste.vertical;
+    const [gauche, haut] = [boite.scrollLeft, defileur.scrollTop];
+    boite.scrollLeft += sensX * 10;
+    defileur.scrollTop += sensY * 10;
+    if (boite.scrollLeft !== gauche || defileur.scrollTop !== haut) viserSous(x, y);
+    geste.defilement = requestAnimationFrame(defiler);
   }
 
   function brancherDeplacement(racine) {
@@ -638,11 +674,12 @@
     racine.addEventListener("pointerdown", (e) => {
       const barre = sur(e);
       if (!barre || geste || (e.pointerType === "mouse" && e.button !== 0)) return;
-      appui = { barre, x: e.clientX, y: e.clientY, temps: e.timeStamp, type: e.pointerType, minuterie: null };
+      appui = { barre, x: e.clientX, y: e.clientY, temps: e.timeStamp, type: e.pointerType, annulable: true, minuterie: null };
       if (e.pointerType === "touch") {
-        appui.minuterie = setTimeout(() => { if (appui && !geste) commencer(appui.barre, "doigt", appui.x); }, APPUI_LONG_MS);
+        appui.minuterie = setTimeout(() => { if (appui && !geste) commencer(appui.barre, "doigt", appui.x, !appui.annulable); }, APPUI_LONG_MS);
       }
     });
+    racine.addEventListener("touchstart", (e) => { if (appui && appui.type === "touch") appui.annulable = e.cancelable; }, { passive: true });
     racine.addEventListener("pointermove", (e) => {
       if (geste && geste.mode === "pointeur") {
         e.preventDefault();
@@ -681,7 +718,7 @@
     }, true);
     // Au doigt, le geste suit les événements tactiles : un appui posé pendant l'élan d'un défilement ne
     // peut pas empêcher la page de défiler (le navigateur ne le permet pas) ; le style la bloque alors
-    // (classe deplacement-au-doigt). Le minuteur peut passer après le premier mouvement quand la page
+    // (commencer, bloquer). Le minuteur peut passer après le premier mouvement quand la page
     // est occupée : l'heure de l'événement dit si le doigt est resté posé assez longtemps.
     racine.addEventListener("touchmove", (e) => {
       const t = e.changedTouches[0];
@@ -689,7 +726,7 @@
       if (!geste && appui && appui.type === "touch") {
         if (e.timeStamp - appui.temps >= APPUI_LONG_MS) {
           clearTimeout(appui.minuterie);
-          commencer(appui.barre, "doigt", appui.x);
+          commencer(appui.barre, "doigt", appui.x, !appui.annulable);
         } else if (Math.hypot(t.clientX - appui.x, t.clientY - appui.y) > SEUIL_DOIGT_PX) {
           clearTimeout(appui.minuterie); // le doigt fait défiler
           appui = null;

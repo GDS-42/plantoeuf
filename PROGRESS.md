@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R5 (déplacer les plantations) · Sessions consommées : 3 / 8 · R4 terminée en 7 / 10 (rotation et associations), CONFORME · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R5 (déplacer les plantations) · Sessions consommées : 4 / 8 · R4 terminée en 7 / 10 (rotation et associations), CONFORME · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5703,4 +5703,49 @@ $ node --test test/*.test.js ; npx playwright test (toute la suite)
 # pass 183
 # fail 0
 197 passed (2.2m)
+```
+
+## 17/10/2026 · T66 (reprise) — Un espace hors de l'écran, en haut ou en bas
+
+- Session 4 / 8 du seuil d'alerte de R5 (ouverte pour T68 ; la vérification de la tranche a montré ce manque, repris dans T66 avant de continuer).
+- Modèle : Opus 5.5, effort élevé · Relecteur : Fable, contexte frais → **CONFORME**.
+- Constat (captures de T68) : il faut glisser une tomate du Tunnel 1 vers la Parcelle 3, plus haut dans la page. Rien ne faisait défiler la page verticalement pendant le geste. À la souris, la molette restait possible. Au doigt, la page ne défile pas pendant le geste, donc un espace hors de l'écran était inaccessible. Au clavier, le fantôme sortait de l'écran.
+- Fait (`src/ui-calendrier.js`, `src/index.html`) :
+  - la page défile près du haut et du bas de la zone visible : sous la barre et le ruban collés en haut sur écran étroit, ou dans la zone de contenu sur grand écran. Comme à gauche et à droite, le bord ne fait défiler qu'une fois que le pointeur l'a quitté ;
+  - au clavier, le fantôme est ramené à l'écran ;
+  - le blocage du défilement au doigt ne s'applique que si le contact est non annulable ;
+  - le message « Annuler » prend la largeur de son texte. Avant, à 390 px, il tenait sur 4 lignes, puisque `left: 50%` le limitait à la moitié de l'écran.
+- Tests nouveaux : 3 [T66] en fin de `test/deplacement.e2e.js` (souris, clavier, doigt), sur douze planches. Les tests existants n'ont pas changé.
+  - Première version rouge pour une mauvaise raison : le calendrier trie les espaces par nom, et « planche 10 » passait avant « planche 2 ».
+  - Les planches sont maintenant numérotées « planche 01 » à « planche 12 ». Après cette correction, les trois tests sont rouges pour la bonne raison, ci-dessous.
+- Stabilité : `--repeat-each=10 --workers=4` → 80 sur 80.
+
+Preuve rouge (avant le code) :
+
+```text
+✘  1 test/deplacement.e2e.js:197:1 › [T66] EX-67 : à la souris, tenir le pointeur près du bas de l'écran fait défiler jusqu'à un espace qui était hors de l'écran (8.6s)
+✘  2 test/deplacement.e2e.js:219:1 › [T66] EX-70 : au clavier, la flèche vers le bas amène à l'écran la ligne visée, même hors de l'écran (732ms)
+✘  3 test/deplacement.e2e.js:238:3 › au doigt, hors de l'écran › [T66] EX-70 : au doigt, tenir le doigt près du bas de l'écran fait défiler jusqu'à un espace qui était hors de l'écran (9.3s)
+  (souris et doigt : la ligne visée n'atteint pas la planche 12 ; clavier : fantôme à y = 1185 pour un écran de 640)
+```
+
+Preuve verte :
+
+```text
+$ ./verify.sh T66
+✓  1 … S22, EX-67, EX-68 : glisser la barre vers une autre date et un autre espace … (659ms)
+✓  2 … S23, EX-69 : après le déplacement, « Annuler » remet la plantation … (663ms)
+✓  3 … EX-70 : au clavier, D puis les flèches déplacent la barre … (453ms)
+✓  4 … au doigt › EX-70 : au doigt, un appui long saisit la barre … (1.6s)
+✓  5 … EX-67 : à la souris, tenir le pointeur près du bas de l'écran fait défiler jusqu'à un espace qui était hors de l'écran (1.4s)
+✓  6 … EX-70 : au clavier, la flèche vers le bas amène à l'écran la ligne visée, même hors de l'écran (478ms)
+✓  7 … au doigt, hors de l'écran › EX-70 : au doigt, tenir le doigt près du bas de l'écran fait défiler … (3.1s)
+7 passed (9.2s)
+== T66 : vérification verte ==
+exit 0
+$ node --test test/*.test.js ; npx playwright test (toute la suite)
+# tests 183
+# pass 183
+# fail 0
+200 passed (2.2m)
 ```
