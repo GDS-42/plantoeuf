@@ -66,4 +66,7 @@ Le format exporté ne change pas (version 6). Chaque tâche se défait par `git 
 
 ## ✎ Décisions
 
+- T65 · « Alertes que le déplacement fait apparaître » se lit à la lettre : présentes après et pas avant, la plantation déplacée comprise ; une alerte qu'elle avait déjà à sa place d'origine n'apparaît pas et n'est pas levée. `levees` est un nombre. Une sur-occupation qui baisse sans disparaître compte comme levée.
+- T65 · Pour tenir les 30 ms sur une ferme de deux ans, `associationsDefavorables` lit les plantations de chaque espace une seule fois (aides internes `precedentsParmi`, `voisinsParmi`) : mêmes résultats qu'en R4, seul l'ordre des clés de l'objet rendu change (par espace puis date).
+
 ## ✎ Bilan de fin de tranche

@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R5 (déplacer les plantations, exemple sur deux ans) · Sessions consommées : 0 / 8 · R4 terminée en 7 / 10 (rotation et associations), CONFORME · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : R5 (déplacer les plantations, exemple sur deux ans) · Sessions consommées : 1 / 8 · R4 terminée en 7 / 10 (rotation et associations), CONFORME · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5593,3 +5593,53 @@ ERREURS : aucune
 - Gardé pour plus tard, non commencé : la documentation (groupe « Réglages », page Documentation, lien « ? » sur chaque page et tiroir, Nouveautés datées, règle dans `AGENTS.md`, test qui bloque une page, un champ, un message, un objet ou une exigence non documentés) ; la tranche R6 « rotation d'un clic ».
 - Étude « rotation d'un clic » (agent Opus, en parallèle, sans toucher au dépôt) : rapport, résultats et prototype dans `docs/etudes/rotation-automatique/`. Faisable si le bouton reprend les plantations de l'année aux mêmes dates, surfaces et variétés et ne choisit que leur espace (plan de 2027 : 5 retours trop tôt au lieu de 36, chiffre d'affaires inchangé, 60 à 100 ms) ; décisions à prendre par l'humain avant R6 (no-go du BRIEF, champs « abri » et « vivace », cultures courtes, séances de l'année suivante). Son plan B sert de base à la deuxième année de l'exemple (T67).
 
+## 17/10/2026 · T65 — Conséquences d'un déplacement (EX-68)
+
+- Session 1 / 8 du seuil d'alerte de R5.
+- Modèle : Opus 5.5, effort élevé · Reprises : 1 · Relecteur : Fable, contexte frais → **ÉCART**, puis **CONFORME** après reprise.
+  - Écart : après le premier vert, l'agent avait ajouté une exception (une plantation qui bouge donne toutes ses alertes à l'endroit visé, même celles qu'elle avait déjà) ; la spec dit « après et pas avant, la plantation déplacée comprise ». Reprise : retour à la lettre, test inversé.
+  - Risque relevé par le relecteur et traité dans la reprise : sur une ferme de deux ans simulée, le pire appel montait à 42 ms (seuil 30 ms), à cause de `associationsDefavorables` (quadratique, appelée avant et après). Elle lit maintenant les plantations de chaque espace une seule fois : pire appel 10 ms. Résultats identiques à ceux de R4 sur 462 appels comparés par le relecteur ; seul l'ordre des clés de l'objet rendu change.
+- Fait (`src/calc.js`) : `consequencesDeplacement(donnees, plantationId, { date, espaceId })` compare la ferme avant et après sur les espaces de départ et d'arrivée : sur-occupations par mois nouvelles ou plus fortes, retours trop tôt, précédents et voisins défavorables qui apparaissent, nombre d'alertes levées ; aucun enregistrement modifié. Restreindre le calcul aux deux espaces donne le même résultat que sur toute la ferme (1 377 déplacements vérifiés par le relecteur).
+- Tests nouveaux : `test/deplacement.test.js` (8), `test/deplacement.e2e.js` (1).
+
+Preuve rouge (avant le code) :
+
+```text
+not ok 6 - [T65] S22, EX-68 : glisser la tomate de 2027 sur la planche 1 au 15 mars fait apparaître son retour trop tôt
+not ok 7 - [T65] EX-68 : un déplacement qui chevauche une autre plantation fait apparaître la sur-occupation de l'espace visé, mois par mois
+not ok 8 - [T65] EX-68 : éloigner une plantation qui revenait trop tôt lève l'alerte, sans en faire apparaître
+not ok 9 - [T65] EX-68 : un voisin défavorable apparaît pour la plantation déplacée et pour celle qu'elle rejoint ; un précédent défavorable aussi
+not ok 10 - [T65] deplacement_sans_effet : calculer les conséquences ne change ni les données passées ni la ferme enregistrée
+not ok 11 - [T65] EX-68 : reposer une plantation à sa place ne fait apparaître ni lever aucune alerte ; une plantation inconnue ne donne rien
+not ok 12 - [T65] le calcul des conséquences d'un déplacement suit le pointeur : sous 30 ms sur la ferme d'exemple
+# pass 16
+# fail 7
+✘  1 test/deplacement.e2e.js:4:1 › [T65] EX-68 : le fichier livré calcule les conséquences d'un déplacement (362ms)
+1 failed
+```
+
+Preuve verte (après la reprise) :
+
+```text
+$ ./verify.sh T65
+ok 6 - [T65] S22, EX-68 : glisser la tomate de 2027 sur la planche 1 au 15 mars fait apparaître son retour trop tôt
+ok 7 - [T65] EX-68 : un déplacement qui chevauche une autre plantation fait apparaître la sur-occupation de l'espace visé, mois par mois
+ok 8 - [T65] EX-68 : éloigner une plantation qui revenait trop tôt lève l'alerte, sans en faire apparaître
+ok 9 - [T65] EX-68 : un voisin défavorable apparaît pour la plantation déplacée et pour celle qu'elle rejoint ; un précédent défavorable aussi
+ok 10 - [T65] EX-68 : une alerte que la plantation avait déjà avant le déplacement n'apparaît pas, et n'est pas levée
+ok 11 - [T65] deplacement_sans_effet : calculer les conséquences ne change ni les données passées ni la ferme enregistrée
+ok 12 - [T65] EX-68 : reposer une plantation à sa place ne fait apparaître ni lever aucune alerte ; une plantation inconnue ne donne rien
+ok 13 - [T65] le calcul des conséquences d'un déplacement suit le pointeur : sous 30 ms sur la ferme d'exemple
+# pass 24
+# fail 0
+✓  1 test/deplacement.e2e.js:4:1 › [T65] EX-68 : le fichier livré calcule les conséquences d'un déplacement (177ms)
+1 passed (986ms)
+== T65 : vérification verte ==
+exit 0
+$ ./verify.sh R4 (toute la suite)
+# tests 183
+# pass 183
+# fail 0
+193 passed (2.1m)
+exit 0
+```

@@ -294,13 +294,29 @@
   function precedents(donnees, plantation) {
     const ici = enPlace(donnees, plantation);
     if (!ici) return { precedents: [], tropTot: null };
-    const autres = plantationsDeLEspace(donnees, plantation.espaceId).filter((a) => a.plantation.id === undefined || a.plantation.id !== plantation.id);
-    const date = versJour(plantation.date);
-    const liste = autres
+    const autres = autresDeLEspace(plantationsDeLEspace(donnees, plantation.espaceId), plantation);
+    return { precedents: precedentsParmi(donnees, ici, autres), tropTot: verdictRetour(donnees, ici, autres) };
+  }
+
+  // Les autres plantations de l'espace (une plantation en cours de saisie n'a pas d'identifiant).
+  function autresDeLEspace(liste, plantation) {
+    return liste.filter((a) => a.plantation.id === undefined || a.plantation.id !== plantation.id);
+  }
+
+  // Les précédents de la plantation `ici` parmi les plantations `autres` de son espace, la plus récente d'abord.
+  function precedentsParmi(donnees, ici, autres) {
+    const date = versJour(ici.plantation.date);
+    return autres
       .filter((a) => versJour(a.fin) < date && date - versJour(a.fin) <= 365)
       .sort((a, b) => b.fin.localeCompare(a.fin))
       .map((a) => ({ plantationId: a.plantation.id, cultureId: a.culture.id, culture: a.culture.nom, fin: a.fin, effet: effetEntre(donnees, "precedent", a.culture.id, ici.culture.id) }));
-    return { precedents: liste, tropTot: verdictRetour(donnees, ici, autres) };
+  }
+
+  // Les voisins de la plantation `ici` parmi les plantations `autres` de son espace.
+  function voisinsParmi(donnees, ici, autres) {
+    return autres
+      .filter((a) => a.plantation.date <= ici.fin && a.fin >= ici.plantation.date)
+      .map((a) => ({ plantationId: a.plantation.id, cultureId: a.culture.id, culture: a.culture.nom, effet: effetEntre(donnees, "voisinage", a.culture.id, ici.culture.id) }));
   }
 
   // R4 (EX-63) : les voisins d'une plantation — les plantations du même espace dont la période chevauche la
@@ -308,20 +324,21 @@
   function voisins(donnees, plantation) {
     const ici = enPlace(donnees, plantation);
     if (!ici) return [];
-    return plantationsDeLEspace(donnees, plantation.espaceId)
-      .filter((a) => (a.plantation.id === undefined || a.plantation.id !== plantation.id) && a.plantation.date <= ici.fin && a.fin >= plantation.date)
-      .map((a) => ({ plantationId: a.plantation.id, cultureId: a.culture.id, culture: a.culture.nom, effet: effetEntre(donnees, "voisinage", a.culture.id, ici.culture.id) }));
+    return voisinsParmi(donnees, ici, autresDeLEspace(plantationsDeLEspace(donnees, plantation.espaceId), plantation));
   }
 
   // R4 (EX-64) : les plantations qui ont un précédent ou un voisin défavorable, par identifiant :
-  // { precedents: [ids], voisins: [ids] }.
+  // { precedents: [ids], voisins: [ids] }. Les plantations de chaque espace sont lues une seule fois.
   function associationsDefavorables(donnees) {
     const resultat = {};
-    for (const { plantation } of plantationsCalculables(donnees)) {
-      if (!espaceActif(donnees, plantation.espaceId)) continue;
-      const mauvais = precedents(donnees, plantation).precedents.filter((x) => x.effet === "defavorable").map((x) => x.plantationId);
-      const genants = voisins(donnees, plantation).filter((x) => x.effet === "defavorable").map((x) => x.plantationId);
-      if (mauvais.length || genants.length) resultat[plantation.id] = { precedents: mauvais, voisins: genants };
+    for (const espace of (donnees.espaces || []).filter((e) => !e.supprimeLe)) {
+      const liste = plantationsDeLEspace(donnees, espace.id);
+      for (const ici of liste) {
+        const autres = autresDeLEspace(liste, ici.plantation);
+        const mauvais = precedentsParmi(donnees, ici, autres).filter((x) => x.effet === "defavorable").map((x) => x.plantationId);
+        const genants = voisinsParmi(donnees, ici, autres).filter((x) => x.effet === "defavorable").map((x) => x.plantationId);
+        if (mauvais.length || genants.length) resultat[ici.plantation.id] = { precedents: mauvais, voisins: genants };
+      }
     }
     return resultat;
   }
@@ -371,6 +388,57 @@
     }
     liste.sort((a, b) => a.cles.reduce((d, c, i) => d || c - b.cles[i], 0) || a.culture.localeCompare(b.culture, "fr"));
     return liste.map(({ cles, ...suggestion }) => suggestion);
+  }
+
+  // R5 (EX-68) : les conséquences d'un déplacement — la plantation posée à une autre date ou sur un autre
+  // espace. Les alertes ne dépendent que des plantations d'un même espace : on compare la ferme avant et
+  // après sur les deux espaces concernés (départ et arrivée). Rend les alertes qui apparaissent —
+  // sur-occupations par mois (nouvelles ou plus fortes), retours trop tôt, précédents et voisins
+  // défavorables, présentes après et pas avant, la plantation déplacée comprise — et le nombre de celles
+  // qui disparaissent ; null pour une plantation inconnue. Aucun enregistrement n'est modifié
+  // (deplacement_sans_effet).
+  function consequencesDeplacement(donnees, plantationId, { date, espaceId }) {
+    const plantations = donnees.plantations || [];
+    const deplacee = plantations.find((p) => p.id === plantationId && !p.supprimeLe);
+    if (!deplacee) return null;
+    const concernes = new Set([deplacee.espaceId, espaceId]);
+    const surLesEspaces = (liste) => ({ ...donnees, plantations: liste.filter((p) => concernes.has(p.espaceId)) });
+    const avant = surLesEspaces(plantations);
+    const apres = surLesEspaces(plantations.map((p) => (p.id === plantationId ? { ...p, date, espaceId } : p)));
+    const etat = (d) => ({ sur: surOccupations(d), retours: retoursTropTot(d), defavorables: associationsDefavorables(d) });
+    const a = etat(avant);
+    const b = etat(apres);
+    let levees = 0;
+
+    const surfaceDisponible = (id) => (espaceActif(donnees, id) || { surface: 0 }).surface;
+    const moisDe = (sur, id) => new Map(((sur[id] || {}).mois || []).map((m) => [m.mois, m.surface]));
+    const surOccupationsApparues = [];
+    for (const id of concernes) {
+      const avantMois = moisDe(a.sur, id);
+      const apresMois = moisDe(b.sur, id);
+      for (const [mois, surface] of apresMois) {
+        if (!avantMois.has(mois) || surface > avantMois.get(mois) + 1e-9) surOccupationsApparues.push({ espaceId: id, mois, surface, disponible: surfaceDisponible(id) });
+      }
+      for (const [mois, surface] of avantMois) if (!apresMois.has(mois) || apresMois.get(mois) < surface - 1e-9) levees++;
+    }
+
+    const retours = Object.entries(b.retours).filter(([id]) => !a.retours[id])
+      .map(([plantationId, verdict]) => ({ plantationId, ...verdict }));
+    levees += Object.keys(a.retours).filter((id) => !b.retours[id]).length;
+
+    const nouveaux = (liste, anciens) => liste.filter((id) => !anciens.includes(id));
+    const defavorables = [];
+    for (const [id, x] of Object.entries(b.defavorables)) {
+      const ancien = a.defavorables[id] || { precedents: [], voisins: [] };
+      const precedentsApparus = nouveaux(x.precedents, ancien.precedents);
+      const voisinsApparus = nouveaux(x.voisins, ancien.voisins);
+      if (precedentsApparus.length || voisinsApparus.length) defavorables.push({ plantationId: id, precedents: precedentsApparus, voisins: voisinsApparus });
+    }
+    for (const [id, x] of Object.entries(a.defavorables)) {
+      const nouveau = b.defavorables[id] || { precedents: [], voisins: [] };
+      levees += nouveaux(x.precedents, nouveau.precedents).length + nouveaux(x.voisins, nouveau.voisins).length;
+    }
+    return { surOccupations: surOccupationsApparues, retours, defavorables, levees };
   }
 
   function plantationsCalculables({ cultures = [], varietes = [], plantations = [] }) {
@@ -1112,5 +1180,6 @@
     associationsDefavorables,
     surfaceLibre,
     suggestions,
+    consequencesDeplacement,
   };
 });
