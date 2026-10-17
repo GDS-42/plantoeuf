@@ -2,7 +2,7 @@
 // Prototype — étude de faisabilité « créer la rotation d'un clic » pour plantoeuf.
 // Lecture seule du dépôt : la ferme d'exemple est chargée dans un stockage en mémoire (comme
 // test/exemple-r4.test.js) ; rien n'est enregistré. Lancer : node prototype-rotation.js
-const RACINE = process.env.PLANTOEUF || "/home/user/plantoeuf";
+const RACINE = process.env.PLANTOEUF || require("node:path").resolve(__dirname, "../../..");
 const Store = require(RACINE + "/src/store.js");
 const Calc = require(RACINE + "/src/calc.js");
 const Exemple = require(RACINE + "/src/exemple.js");

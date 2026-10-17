@@ -4,7 +4,7 @@
 
 Demande de l'utilisateur, mot pour mot : « étudier la possibilité de créer automatiquement la rotation via un simple bouton avec les données préexistantes de l'utilisateur pour ses plantations, rotations qui respecte les contraintes ».
 
-> **Où sont les fichiers.** La session était en mode plan : on ne pouvait écrire que dans ce fichier. Le rapport, les résultats bruts (annexe A) et le prototype (annexe B) sont donc tous ici. Quand l'écriture sera permise, on les recopiera tels quels dans `/tmp/claude-0/-home-user-plantoeuf/3f1449c7-1c47-55c6-a176-1e34ae643017/scratchpad/etude-rotation/` : `RAPPORT.md` (de ce titre à l'annexe A comprise), `prototype-rotation.js` (annexe B) et `resultats.txt` (annexe A). Pour relancer le prototype directement depuis ce fichier : `awk '/^```js prototype$/{f=1;next} /^```$/{if(f){f=0}} f' <ce fichier> | node -` (Node 22, aucune dépendance).
+> **Où sont les fichiers.** Dans ce dossier : ce rapport, les résultats bruts (`resultats.txt`, annexe A) et le prototype (`prototype-rotation.js`). Pour relancer le prototype depuis la racine du dépôt : `node docs/etudes/rotation-automatique/prototype-rotation.js` (Node 22, aucune dépendance).
 
 ## En bref
 
