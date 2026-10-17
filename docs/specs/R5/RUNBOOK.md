@@ -63,6 +63,8 @@ Le format exporté ne change pas (version 6). Chaque tâche se défait par `git 
 
 - T67 (essai, abandonné) · Une séance qui enjambe le 1er janvier ajoute au mois de décembre de la première année les ventes des premiers jours de la seconde (une semaine compte dans le mois de son jeudi) : une ferme sur plusieurs années doit borner chaque séance à son année, comme la ferme d'exemple le fait depuis R3.
 - T67 (essai, abandonné) · Une vingtaine de tests de bout en bout désignent une plantation de l'exemple par son seul nom (« Ail péi », « Chouchou ») et d'autres comptent ses lots ou lisent le contenu d'une ligne : tout enrichissement de la ferme d'exemple fait tomber ces tests. À traiter avant la documentation, dont la ferme d'exemple doit pouvoir montrer chaque fonction.
+- T66 · Un appui posé pendant l'élan d'un défilement : Chrome rend le contact non annulable (touchstart et touchmove avec `cancelable=false`). La page défile alors et un `pointercancel` coupe les événements de pointeur ; les événements tactiles, eux, continuent. Mesuré sous charge : le test tactile tombait 4 fois sur 10.
+- T66 · Le test tactile mesure les positions juste après un glissé rapide. Sous une charge extrême (deux suites complètes en même temps), l'élan n'est parfois pas fini et la date visée glisse d'un jour ou plus : 2 échecs sur 20. Hors de cette charge : 80 sur 80. Ne pas lancer deux suites Playwright en même temps.
 
 ## ✎ Décisions
 
@@ -70,5 +72,9 @@ Le format exporté ne change pas (version 6). Chaque tâche se défait par `git 
 
 - T65 · « Alertes que le déplacement fait apparaître » se lit à la lettre : présentes après et pas avant, la plantation déplacée comprise ; une alerte qu'elle avait déjà à sa place d'origine n'apparaît pas et n'est pas levée. `levees` est un nombre. Une sur-occupation qui baisse sans disparaître compte comme levée.
 - T65 · Pour tenir les 30 ms sur une ferme de deux ans, `associationsDefavorables` lit les plantations de chaque espace une seule fois (aides internes `precedentsParmi`, `voisinsParmi`) : mêmes résultats qu'en R4, seul l'ordre des clés de l'objet rendu change (par espace puis date).
+- T66 · Au doigt, le geste suit les événements tactiles, et la classe `deplacement-au-doigt` bloque le défilement le temps du geste. L'appui long se décide aussi par l'heure des événements quand le minuteur passe après le premier mouvement (page occupée).
+- T66 · `scroll-padding-left` égal à la colonne fixe des espaces (`--col` passe de `.cal-grille` à `.cal-defilement`, même valeur) : une date ou une barre qu'on fait venir à l'écran, y compris par le focus au clavier, n'est plus laissée sous cette colonne (EX-37, focus visible).
+- T66 · Le bord du calendrier ne fait défiler qu'une fois que le pointeur l'a quitté, puis tant qu'il y reste. Un geste commencé près de la colonne n'emporte pas le calendrier.
+- T66 · Pendant un geste, l'infobulle de la barre ne s'affiche pas : l'étiquette du geste la remplace.
 
 ## ✎ Bilan de fin de tranche

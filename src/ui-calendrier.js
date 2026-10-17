@@ -174,7 +174,7 @@
     racine.replaceChildren(defilement, infobulle);
     brancherInfobulle(racine, infobulle, parId);
     surveiller(racine, defilement, placerSurLAnnee);
-    return { aujourdhuiVisible: traits.some((t) => t.classList.contains("cal-aujourdhui")) };
+    return { aujourdhuiVisible: traits.some((t) => t.classList.contains("cal-aujourdhui")), axe: a };
   }
 
   // ---- Étiquettes : le nom s'inscrit en entier dans la première période où il tient, sinon dans la
@@ -232,6 +232,7 @@
     if (racine.dataset.infobulle) return;
     racine.dataset.infobulle = "branchee";
     const montrer = (barre, x) => {
+      if (geste) return; // R5 : pendant un déplacement, l'étiquette du geste remplace l'infobulle
       const { infobulle: bulle, parId: donnees } = infobulles.get(racine);
       const d = donnees.get(barre.dataset.id);
       if (!d) return;
@@ -281,6 +282,8 @@
 
   // ---- Calendrier de culture (EX-35)
 
+  let vue = null; // le calendrier de culture affiché : axe, données et noms (R5, déplacement)
+
   function afficherCulture(donnees, repere, choix) {
     const carte = document.getElementById("carte-calendrier");
     const racine = document.getElementById("calendrier");
@@ -315,7 +318,7 @@
         debut: plantation.date, milieu: recolte.debut, fin: recolte.fin, classes: ["cal-croissance", "cal-recolte"],
         nom: culture.nom, second: variete.nom,
         marque: retour ? "cal-retour" : "",
-        etiquette: retour ? remplir(T.rotation.calendrier.barre, { etiquette, famille: retour.famille }) : etiquette,
+        etiquette: `${retour ? remplir(T.rotation.calendrier.barre, { etiquette, famille: retour.famille }) : etiquette} ${T.deplacement.aideBarre}`,
         infobulle: () => [
           element("p", { class: "cal-info-titre" }, culture.nom, " ", element("span", { class: "cal-info-second" }, variete.nom)),
           element("p", { class: "cal-info-sous-titre" }, `${nomEspace} · ${surface}`),
@@ -323,7 +326,7 @@
           ligneInfo(F.faits.recolte, remplir(F.periode, { debut: afficherDate(recolte.debut), fin: afficherDate(recolte.fin) })),
           ligneInfo(F.faits.production, elementFourchette(production, formats.volumes, F.unitesPluriel[culture.unite])),
           ...(retour ? [element("p", { class: "cal-info-alerte" }, icone("alerte"), UiRotation.texteRetour(retour, espace))] : []),
-          element("p", { class: "cal-info-action" }, F.calendrier.modifier),
+          element("p", { class: "cal-info-action" }, F.calendrier.modifier, element("br"), T.deplacement.infobulle),
         ],
       });
     }
@@ -332,6 +335,7 @@
     carte.hidden = barres.length === 0;
     if (barres.length === 0) {
       racine.replaceChildren();
+      vue = null;
       return;
     }
 
@@ -359,7 +363,9 @@
       };
     });
 
-    const { aujourdhuiVisible } = frise(racine, { titreColonne: F.calendrier.espaces, lignes, repere, ...choix });
+    const { aujourdhuiVisible, axe: a } = frise(racine, { titreColonne: F.calendrier.espaces, lignes, repere, ...choix });
+    // R5 : ce qu'il faut au geste de déplacement (axe des jours, données, noms).
+    vue = { racine, a, donnees, espaces: new Map(espaces.map((e) => [e.id, e])), cultures, varietes };
 
     // Saison : de la première mise en place à la dernière fin de récolte.
     const premiere = barres.reduce((m, b) => (b.debut < m ? b.debut : m), barres[0].debut);
@@ -437,5 +443,302 @@
     }
   }
 
-  globalThis.UiCalendrier = { afficher };
+
+  // ---- R5 (EX-67 à EX-70) : déplacer une plantation dans le calendrier de culture.
+  // À la souris : appui sur une barre puis plus de 4 px ; au doigt : appui long d'un tiers de seconde
+  // (sinon le calendrier défile) ; au clavier : touche D, flèches, Entrée, Échap. Pendant le geste, une
+  // étiquette dit la date et l'espace visés, et les alertes que Calc.consequencesDeplacement fait
+  // apparaître ; au lâcher, la plantation est enregistrée et le message propose « Annuler ». Rien n'est
+  // refusé (alerte_seulement).
+
+  const SEUIL_PX = 4;
+  const SEUIL_DOIGT_PX = 10;
+  const APPUI_LONG_MS = 330;
+  const BORD_PX = 36;
+  let rappels = null; // { ferme, rafraichir, annoncer }
+  let appui = null; // pointeur posé sur une barre, avant que le geste ne commence
+  let geste = null; // le déplacement en cours
+  let ignorerClic = false;
+
+  const versIso = (n) => new Date(Math.round(n) * JOUR_MS).toISOString().slice(0, 10);
+
+  function plantationDe(id) {
+    return vue && vue.donnees.plantations.find((p) => p.id === id);
+  }
+
+  // Les lignes d'espaces actifs, dans l'ordre du calendrier (cibles possibles).
+  function lignesCibles() {
+    return [...vue.racine.querySelectorAll(".cal-ligne[data-espace]")].filter((l) => vue.espaces.has(l.dataset.espace));
+  }
+
+  // Le jour sous une abscisse de la page (toutes les pistes ont la même géométrie horizontale).
+  function jourSous(x) {
+    const piste = vue.racine.querySelector(".cal-ligne[data-espace] .cal-piste").getBoundingClientRect();
+    return vue.a.debut + ((x - piste.left) / piste.width) * (vue.a.fin - vue.a.debut);
+  }
+
+  function ligneSous(x, y) {
+    const sous = document.elementFromPoint(x, y);
+    const ligne = sous && sous.closest(".cal-ligne[data-espace]");
+    return ligne && vue.racine.contains(ligne) && vue.espaces.has(ligne.dataset.espace) ? ligne : null;
+  }
+
+  function nomCulture(p) {
+    const variete = vue.varietes.get(p.varieteId);
+    const c = variete && vue.cultures.get(variete.cultureId);
+    return c ? c.nom : "";
+  }
+
+  // Les lignes de l'étiquette : la date et l'espace visés, puis les alertes qui apparaîtraient.
+  function contenuEtiquette() {
+    const { id, date, espaceId, mode } = geste;
+    const D = T.deplacement;
+    const espace = vue.espaces.get(espaceId);
+    const c = Calc.consequencesDeplacement(vue.donnees, id, { date, espaceId }) || { surOccupations: [], retours: [], defavorables: [], levees: 0 };
+    const parId = new Map(vue.donnees.plantations.map((p) => [p.id, p.id === id ? { ...p, date, espaceId } : p]));
+    const alertes = [];
+    const parEspace = new Map();
+    for (const s of c.surOccupations) parEspace.set(s.espaceId, [...(parEspace.get(s.espaceId) || []), s]);
+    for (const [, liste] of parEspace) {
+      alertes.push(remplir(D.surOccupation, {
+        mois: liste.map((s) => moisCourt.format(enDate(`${s.mois}-01`))).join(", "),
+        surface: formats.nombre.format(Math.max(...liste.map((s) => s.surface))), disponible: formats.nombre.format(liste[0].disponible),
+      }));
+    }
+    for (const r of c.retours) {
+      const p = parId.get(r.plantationId);
+      alertes.push(remplir(D.retour, { famille: r.famille, culture: nomCulture(p), date: afficherDate(p.date) }));
+    }
+    const noms = (ids) => [...new Set(ids.map((i) => nomCulture(parId.get(i))))].join(", ");
+    for (const x of c.defavorables) {
+      const nom = nomCulture(parId.get(x.plantationId));
+      if (x.precedents.length) alertes.push(remplir(D.precedent, { culture: nom, cultures: noms(x.precedents) }));
+      if (x.voisins.length) alertes.push(remplir(D.voisin, { culture: nom, cultures: noms(x.voisins) }));
+    }
+    return [
+      element("strong", { class: "dep-vise" }, remplir(D.vise, { date: afficherDate(date), espace: espace ? espace.nom : "" })),
+      alertes.length
+        ? element("ul", { class: "dep-alertes" }, ...alertes.map((a) => element("li", {}, icone("alerte"), element("span", {}, a))))
+        : element("p", { class: "dep-calme" }, D.aucuneAlerte),
+      ...(c.levees ? [element("p", { class: "dep-levees" }, remplir(c.levees === 1 ? D.levees.un : D.levees.plusieurs, { nombre: c.levees }))] : []),
+      ...(mode === "clavier" ? [element("p", { class: "dep-aide" }, D.aideClavier)] : []),
+    ];
+  }
+
+  // Place le fantôme de la barre au jour et sur la ligne visés, et met l'étiquette à jour.
+  function viser(date, espaceId, x, y) {
+    const change = date !== geste.date || espaceId !== geste.espaceId;
+    geste.date = date;
+    geste.espaceId = espaceId;
+    const ligne = lignesCibles().find((l) => l.dataset.espace === espaceId);
+    if (change || !geste.fantome.isConnected) {
+      vue.racine.querySelectorAll(".cal-ligne-visee").forEach((l) => l.classList.remove("cal-ligne-visee"));
+      if (ligne) {
+        ligne.classList.add("cal-ligne-visee");
+        const gauche = vue.a.position(jour(date));
+        geste.fantome.style.left = `${gauche}%`;
+        geste.fantome.style.width = `${vue.a.position(jour(date) + geste.duree) - gauche}%`;
+        ligne.querySelector(".cal-piste").append(geste.fantome);
+      }
+      geste.etiquette.replaceChildren(...contenuEtiquette());
+    }
+    // L'étiquette suit le pointeur, ou le fantôme au clavier ; elle reste dans la fenêtre.
+    const reference = x === undefined ? geste.fantome.getBoundingClientRect() : { left: x, bottom: y };
+    const largeur = geste.etiquette.offsetWidth;
+    const hauteur = geste.etiquette.offsetHeight;
+    const gaucheEtiquette = Math.min(Math.max(8, reference.left + 14), window.innerWidth - largeur - 8);
+    const haut = reference.bottom + 18 + hauteur <= window.innerHeight ? reference.bottom + 18 : Math.max(8, reference.bottom - hauteur - 40);
+    geste.etiquette.style.left = `${Math.round(gaucheEtiquette)}px`;
+    geste.etiquette.style.top = `${Math.round(haut)}px`;
+  }
+
+  function commencer(barre, mode, x) {
+    const p = plantationDe(barre.dataset.id);
+    if (!p || !vue.espaces.has(p.espaceId)) return false;
+    const debut = jour(p.date);
+    const variete = vue.varietes.get(p.varieteId);
+    const c = variete && vue.cultures.get(variete.cultureId);
+    if (!c) return false;
+    const fin = jour(Calc.datesRecolte(p, Calc.parametres(c, variete)).fin);
+    geste = {
+      id: p.id, avant: { date: p.date, espaceId: p.espaceId }, date: null, espaceId: null, mode, barre,
+      duree: fin + 1 - debut, decalage: x === undefined ? 0 : jourSous(x) - debut,
+      fantome: element("span", { class: "cal-fantome", "aria-hidden": "true" }),
+      etiquette: document.getElementById("deplacement-etiquette"),
+      pointeur: null, horsBord: false, defilement: null,
+    };
+    barre.classList.add("cal-deplacee");
+    document.body.classList.add("deplacement-en-cours");
+    document.documentElement.classList.toggle("deplacement-au-doigt", mode === "doigt");
+    geste.etiquette.hidden = false;
+    const infobulle = vue.racine.querySelector(".cal-infobulle");
+    if (infobulle) infobulle.hidden = true;
+    viser(p.date, p.espaceId, x, x === undefined ? undefined : barre.getBoundingClientRect().bottom);
+    return true;
+  }
+
+  function finir(valider) {
+    if (!geste) return;
+    const { id, avant, date, espaceId, barre, fantome, etiquette, defilement } = geste;
+    geste = null;
+    if (defilement) cancelAnimationFrame(defilement);
+    fantome.remove();
+    barre.classList.remove("cal-deplacee");
+    document.body.classList.remove("deplacement-en-cours");
+    document.documentElement.classList.remove("deplacement-au-doigt");
+    if (vue) vue.racine.querySelectorAll(".cal-ligne-visee").forEach((l) => l.classList.remove("cal-ligne-visee"));
+    etiquette.hidden = true;
+    etiquette.replaceChildren();
+    if (!valider || (date === avant.date && espaceId === avant.espaceId) || !rappels) return;
+    const espace = vue.espaces.get(espaceId);
+    rappels.ferme().modifier("plantations", id, { date, espaceId });
+    rappels.rafraichir();
+    rappels.annoncer(remplir(T.deplacement.deplacee, { date: afficherDate(date), espace: espace ? espace.nom : "" }), {
+      libelle: T.deplacement.annuler,
+      faire: () => {
+        if (!rappels.ferme().obtenir("plantations", id)) return;
+        rappels.ferme().modifier("plantations", id, avant);
+        rappels.rafraichir();
+        rappels.annoncer(T.deplacement.annulee);
+      },
+    });
+  }
+
+  // Suivre le pointeur : jour visé (en gardant l'écart entre le pointeur et le début de la barre),
+  // ligne visée, et défilement de la boîte tant que le pointeur reste près d'un de ses bords. Le bord
+  // ne fait défiler qu'une fois que le pointeur l'a quitté : un geste commencé près du bord n'emporte
+  // pas le calendrier.
+  function suivre(x, y) {
+    const boite = vue.racine.querySelector(".cal-defilement");
+    const cadre = boite.getBoundingClientRect();
+    const coin = vue.racine.querySelector(".cal-coin").getBoundingClientRect();
+    const sens = x < coin.right + BORD_PX ? -1 : x > cadre.right - BORD_PX ? 1 : 0;
+    if (!sens) geste.horsBord = true;
+    geste.pointeur = { x, y, sens: geste.horsBord ? sens : 0 };
+    const ligne = ligneSous(x, y);
+    viser(versIso(jourSous(x) - geste.decalage), ligne ? ligne.dataset.espace : geste.espaceId, x, y);
+    if (geste.pointeur.sens && !geste.defilement) {
+      const pas = () => {
+        if (!geste || !geste.pointeur || !geste.pointeur.sens) { if (geste) geste.defilement = null; return; }
+        const avant = boite.scrollLeft;
+        boite.scrollLeft += geste.pointeur.sens * 10;
+        if (boite.scrollLeft !== avant) {
+          const { x: px, y: py } = geste.pointeur;
+          const sous = ligneSous(px, py);
+          viser(versIso(jourSous(px) - geste.decalage), sous ? sous.dataset.espace : geste.espaceId, px, py);
+        }
+        geste.defilement = requestAnimationFrame(pas);
+      };
+      geste.defilement = requestAnimationFrame(pas);
+    }
+  }
+
+  function brancherDeplacement(racine) {
+    const sur = (e) => e.target.closest && e.target.closest('.cal-barre[data-modifier="plantations"]');
+    racine.addEventListener("pointerdown", (e) => {
+      const barre = sur(e);
+      if (!barre || geste || (e.pointerType === "mouse" && e.button !== 0)) return;
+      appui = { barre, x: e.clientX, y: e.clientY, temps: e.timeStamp, type: e.pointerType, minuterie: null };
+      if (e.pointerType === "touch") {
+        appui.minuterie = setTimeout(() => { if (appui && !geste) commencer(appui.barre, "doigt", appui.x); }, APPUI_LONG_MS);
+      }
+    });
+    racine.addEventListener("pointermove", (e) => {
+      if (geste && geste.mode === "pointeur") {
+        e.preventDefault();
+        suivre(e.clientX, e.clientY);
+        return;
+      }
+      if (!appui || appui.type === "touch") return;
+      if (Math.hypot(e.clientX - appui.x, e.clientY - appui.y) > SEUIL_PX && commencer(appui.barre, "pointeur", appui.x)) {
+        try { appui.barre.setPointerCapture(e.pointerId); } catch { /* sans capture, le geste suit quand même */ }
+        suivre(e.clientX, e.clientY);
+      }
+    });
+    // Fin d'un geste : le clic qui le suit n'ouvre pas la modification.
+    const terminer = (valider) => {
+      finir(valider);
+      ignorerClic = true;
+      setTimeout(() => { ignorerClic = false; }, 0);
+    };
+    racine.addEventListener("pointerup", () => {
+      if (appui) clearTimeout(appui.minuterie);
+      appui = null;
+      if (geste && geste.mode !== "clavier") terminer(true);
+    });
+    // Le navigateur reprend le pointeur pour défiler : avant l'appui long, c'est un défilement ; pendant
+    // un geste au doigt, les événements tactiles continuent et le geste les suit.
+    racine.addEventListener("pointercancel", () => {
+      if (appui) clearTimeout(appui.minuterie);
+      appui = null;
+      if (geste && geste.mode === "pointeur") terminer(false);
+    });
+    racine.addEventListener("click", (e) => {
+      if (!ignorerClic) return;
+      e.stopPropagation();
+      e.preventDefault();
+      ignorerClic = false;
+    }, true);
+    // Au doigt, le geste suit les événements tactiles : un appui posé pendant l'élan d'un défilement ne
+    // peut pas empêcher la page de défiler (le navigateur ne le permet pas) ; le style la bloque alors
+    // (classe deplacement-au-doigt). Le minuteur peut passer après le premier mouvement quand la page
+    // est occupée : l'heure de l'événement dit si le doigt est resté posé assez longtemps.
+    racine.addEventListener("touchmove", (e) => {
+      const t = e.changedTouches[0];
+      if (!t) return;
+      if (!geste && appui && appui.type === "touch") {
+        if (e.timeStamp - appui.temps >= APPUI_LONG_MS) {
+          clearTimeout(appui.minuterie);
+          commencer(appui.barre, "doigt", appui.x);
+        } else if (Math.hypot(t.clientX - appui.x, t.clientY - appui.y) > SEUIL_DOIGT_PX) {
+          clearTimeout(appui.minuterie); // le doigt fait défiler
+          appui = null;
+        }
+      }
+      if (!geste || geste.mode !== "doigt") return;
+      if (e.cancelable) e.preventDefault();
+      suivre(t.clientX, t.clientY);
+    }, { passive: false });
+    racine.addEventListener("touchend", () => { appui = null; if (geste && geste.mode === "doigt") terminer(true); });
+    racine.addEventListener("touchcancel", () => { appui = null; if (geste && geste.mode === "doigt") terminer(false); });
+    racine.addEventListener("contextmenu", (e) => { if (appui || geste) e.preventDefault(); });
+    // Au clavier.
+    racine.addEventListener("keydown", (e) => {
+      const barre = sur(e);
+      if (!barre) return;
+      if (!geste) {
+        if ((e.key === "d" || e.key === "D") && !e.ctrlKey && !e.metaKey && !e.altKey && commencer(barre, "clavier")) e.preventDefault();
+        return;
+      }
+      if (geste.mode !== "clavier") return;
+      const lignes = lignesCibles();
+      const rang = lignes.findIndex((l) => l.dataset.espace === geste.espaceId);
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        const pas = (e.shiftKey ? 7 : 1) * (e.key === "ArrowLeft" ? -1 : 1);
+        viser(versIso(jour(geste.date) + pas), geste.espaceId);
+      } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        const suivante = lignes[rang + (e.key === "ArrowUp" ? -1 : 1)];
+        if (suivante) viser(geste.date, suivante.dataset.espace);
+      } else if (e.key === "Enter") {
+        finir(true);
+      } else if (e.key === "Escape") {
+        finir(false);
+      } else if (e.key !== "Shift") {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    racine.addEventListener("focusout", (e) => {
+      if (geste && geste.mode === "clavier" && e.relatedTarget !== geste.barre) finir(false);
+    });
+  }
+
+  // ferme : rend le store ouvert ; rafraichir : recalcule tout l'affichage ; annoncer(message, action).
+  function brancher({ ferme, rafraichir, annoncer }) {
+    rappels = { ferme, rafraichir, annoncer };
+    brancherDeplacement(document.getElementById("calendrier"));
+  }
+
+  globalThis.UiCalendrier = { afficher, brancher };
 })();

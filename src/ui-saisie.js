@@ -365,14 +365,24 @@
     ouvrirTiroir(formulaire, "modifier");
   }
 
-  // Message bref après un enregistrement ou une suppression.
+  // Message bref après un enregistrement ou une suppression. R5 (EX-69) : action facultative
+  // { libelle, faire } — un bouton dans le message (« Annuler »), qui reste alors plus longtemps.
   let minuterieAnnonce = null;
-  function annoncer(message) {
+  function annoncer(message, action = null) {
     const zone = document.getElementById("annonce");
-    zone.textContent = message;
+    zone.replaceChildren(element("span", {}, message));
+    if (action) {
+      const bouton = element("button", { type: "button", class: "annonce-action" }, action.libelle);
+      bouton.addEventListener("click", () => {
+        clearTimeout(minuterieAnnonce);
+        zone.hidden = true;
+        action.faire();
+      });
+      zone.append(bouton);
+    }
     zone.hidden = false;
     clearTimeout(minuterieAnnonce);
-    minuterieAnnonce = setTimeout(() => { zone.hidden = true; }, 2600);
+    minuterieAnnonce = setTimeout(() => { zone.hidden = true; }, action ? 8000 : 2600);
   }
 
   // ferme : fonction qui rend la ferme ouverte (elle change si un autre onglet l'a modifiée).

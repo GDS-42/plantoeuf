@@ -227,6 +227,22 @@
         aucune: "aucune règle ne s'applique ici",
       },
     },
+    // R5 (EX-67 à EX-70) : déplacer une plantation dans le calendrier de culture.
+    deplacement: {
+      vise: "{date} · {espace}",
+      aucuneAlerte: "Aucune nouvelle alerte ici",
+      surOccupation: "Sur-occupé en {mois} : {surface} m² pour {disponible} m²",
+      retour: "Retour trop tôt des {famille} : {culture} du {date}",
+      precedent: "Mauvais précédent pour {culture} : {cultures}",
+      voisin: "Mauvais voisin pour {culture} : {cultures}",
+      levees: { un: "1 alerte levée", plusieurs: "{nombre} alertes levées" },
+      aideClavier: "Flèches : changer la date ou l'espace (Maj : une semaine). Entrée : poser. Échap : annuler.",
+      aideBarre: "Touche D : déplacer.",
+      infobulle: "Glisser ou touche D : déplacer",
+      deplacee: "Plantation déplacée au {date}, {espace}.",
+      annuler: "Annuler",
+      annulee: "Déplacement annulé.",
+    },
     varietes: {
       titre: "Variétés",
       nom: "Nom de la variété",
