@@ -3,7 +3,7 @@
 Une entrée par session : date, tâche, modèle et effort utilisés, nombre de reprises, verdict de l'évaluateur (si relecture), résultat, preuve (sortie de `./verify.sh`), commit.
 L'agent ajoute en bas ; il ne réécrit jamais les entrées précédentes.
 
-Tranche en cours : R5 (déplacer les plantations) · Sessions consommées : 4 / 8 · R4 terminée en 7 / 10 (rotation et associations), CONFORME · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
+Tranche en cours : aucune (R6 « rotation d'un clic » et la documentation attendent les décisions de l'humain) · R5 terminée en 4 / 8 (déplacer les plantations), CONFORME · R4 terminée en 7 / 10 (rotation et associations), CONFORME · R3 terminée en 5 / 7 (plusieurs années), CONFORME · R2 terminée en 3 / 6 (ferme d'exemple du Sud de La Réunion, chiffres sourcés), CONFORME avec la décision de l'humain du 15/10 sur deux tests de défilement · N3 terminée en 9 / 10 (coûts, charges fixes, revenu), CONFORME · R1 terminée en 4 / 6 (dates à l’européenne, véhicules), CONFORME · P2 terminée (T38 validée par l’humain, 14/10) · S3 : 7 / 11, écart EX-29 levé par R2 (EX-53), à valider par l'humain · N2 terminée en 10 / 12 · P1 : présentation refusée par l'humain (EX-17), remplacée par P2 · N1 terminée en 10 / 15
 
 ---
 
@@ -5749,3 +5749,44 @@ $ node --test test/*.test.js ; npx playwright test (toute la suite)
 # fail 0
 200 passed (2.2m)
 ```
+
+## 17/10/2026 · T68 — Vérification de la tranche R5, évaluateur séparé
+
+- Session 4 / 8 du seuil d'alerte de R5, la même que la reprise de T66 qu'elle a déclenchée.
+- Mise en ligne : T66 (24dd34a) et sa reprise (66c24b1) sont READY en production sur Vercel, contrôlés par le connecteur.
+- Modèle : Opus 5.5, effort élevé (vérification, captures) · Évaluateur : Fable, effort élevé, contexte frais, sur `git diff df6dbb1 66c24b1 -- src test` → **CONFORME**, aucun écart.
+  - Il a relancé `./verify.sh R5` (exit 0) et 9 essais à lui.
+  - Une sur-occupation est affichée puis enregistrée (`alerte_seulement`).
+  - On peut déplacer vers une autre année, à la souris (2027 → 15/12/2026) et au clavier (→ 10/01/2027).
+  - Après « Annuler », seule la date de modification diffère.
+  - Le pire calcul des conséquences prend 4,7 à 7,6 ms dans le navigateur (seuil 30 ms).
+  - Contrastes de l'étiquette et du message : 7,7 à 16,5 en clair, 9,2 à 15,4 en sombre.
+  - Aucun défilement horizontal de la page à 360 et 1920 px pendant le geste, et aucune requête hors `file://`.
+- Vérification : `./init.sh` puis `./verify.sh R5` → exit 0.
+- Captures à 390 px (au doigt), 1366 px clair et 1366 px sombre (à la souris), ferme d'exemple chargée en 2026 :
+  - une tomate du Tunnel 1 glissée vers la Parcelle 3, plus haut, que la page fait venir en défilant ;
+  - l'étiquette, puis « Annuler », qui remet tout en place.
+  - Résultat : aucune erreur, aucune requête réseau, aucun défilement horizontal de la page.
+  - Ces captures ont fait apparaître deux manques, repris dans T66 (entrée précédente) : le défilement vertical pendant le geste, et la largeur du message « Annuler » à 390 px.
+
+```text
+$ ./verify.sh R5
+# tests 183
+# pass 183
+# fail 0
+200 passed (2.2m)
+== R5 : vérification verte ==
+exit 0
+$ node capture-r5.js (dist/index.html)
+390-light {"plantation":"Tomate 2026-01-10","etiquette":"11/02/2026 · Parcelle 3 | Aucune nouvelle alerte ici | 2 alertes levées","apres":{"date":"2026-02-11","surParcelle3":true},"annonce":"Plantation déplacée au 11/02/2026, Parcelle 3. Annuler","retabli":true,"defilementPage":false}
+1366-light {"plantation":"Tomate 2026-01-10","etiquette":"05/02/2026 · Parcelle 3 | Aucune nouvelle alerte ici | 2 alertes levées","apres":{"date":"2026-02-05","surParcelle3":true},"annonce":"Plantation déplacée au 05/02/2026, Parcelle 3. Annuler","retabli":true,"defilementPage":false}
+1366-dark {"plantation":"Tomate 2026-01-10","etiquette":"05/02/2026 · Parcelle 3 | Aucune nouvelle alerte ici | 2 alertes levées","apres":{"date":"2026-02-05","surParcelle3":true},"annonce":"Plantation déplacée au 05/02/2026, Parcelle 3. Annuler","retabli":true,"defilementPage":false}
+ERREURS : aucune
+```
+
+- Points de l'évaluateur, pour l'humain (pas des écarts) :
+  1. Pendant un geste au clavier, la barre déplacée passe à 35 % d'opacité, et son contour de focus avec elle. Le fantôme en tirets et la ligne surlignée restent nets.
+  2. Une autre annonce (l'enregistrement d'un tiroir) remplace le message « Annuler » avant ses 8 s.
+  3. Le test S22 vérifie « retour trop tôt » sans la phrase entière ; l'évaluateur l'a vérifiée lui-même.
+  4. Au-delà de la lettre de la spec : « N alertes levées » dans l'étiquette.
+- `features.json` : `passe` de T68 → `true`. **R5 terminée en 4 sessions sur 8, CONFORME.**

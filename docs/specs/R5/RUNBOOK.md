@@ -80,3 +80,28 @@ Le format exporté ne change pas (version 6). Chaque tâche se défait par `git 
 - T66 (reprise) · Le message « Annuler » prend la largeur de son texte : à 390 px, `left: 50%` le bornait à la moitié de l'écran (4 lignes).
 
 ## ✎ Bilan de fin de tranche
+
+La tranche est terminée le 17/10/2026, en 4 sessions sur 8 :
+- T65 (1 reprise) ;
+- T67, essai abandonné sur décision de l'humain ;
+- T66 (0 reprise sur relecture, plus une reprise après les captures de T68) ;
+- T68.
+
+`./verify.sh R5` → exit 0 (183 tests unitaires, 200 de bout en bout). Évaluateur Fable : CONFORME, aucun écart. Déploiements READY sur plantoeuf.vercel.app.
+
+Résultat : dans le calendrier de culture, on saisit la barre d'une plantation et on la pose à une autre date ou sur un autre espace.
+- La saisie se fait à la souris, au doigt par un appui long, ou au clavier (touche D, flèches, Entrée, Échap).
+- Pendant le geste :
+  - une étiquette dit la date et l'espace visés, les alertes que le déplacement ferait apparaître et le nombre d'alertes levées ;
+  - la ligne visée est surlignée ;
+  - le calendrier défile près de ses bords, la page aussi en haut et en bas.
+- Au lâcher, la plantation est enregistrée, sans rien refuser, et tout est recalculé ; « Annuler » la remet en place pendant 8 s.
+- Un simple clic ou Entrée ouvre toujours la modification.
+
+À suivre (pour l'humain) :
+- Pendant un geste au clavier, le contour de focus de la barre déplacée est atténué (35 % d'opacité) : on peut garder la barre opaque quand elle a le focus.
+- Une autre annonce efface le message « Annuler » avant ses 8 s : on peut garder l'action tant qu'aucun autre déplacement n'a lieu.
+- La ferme d'exemple reste sur un an (décision du 17/10). Le défilement d'une année à l'autre se montre en ajoutant une plantation l'année suivante.
+- Une vingtaine de tests désignent les plantations de l'exemple par leur seul nom (✎ Surprises) : c'est à traiter avant d'enrichir l'exemple pour la documentation.
+- La tranche R6 « rotation d'un clic » attend les décisions de l'humain : le no-go du BRIEF, les champs « abri » et « vivace », les cultures courtes, les séances de l'année suivante (étude dans `docs/etudes/rotation-automatique/`). La documentation attend aussi.
+- Le test tactile de T66 est fragile sous une charge extrême (✎ Surprises) : ne pas lancer deux suites Playwright en même temps.
