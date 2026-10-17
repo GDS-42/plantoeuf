@@ -1,0 +1,93 @@
+## Annexe A — Résultats bruts du prototype (dernière exécution, Node v22.22.0)
+
+Les temps varient d'une exécution à l'autre (§ 4.6) ; les autres nombres sont identiques d'une exécution à l'autre.
+
+```text
+Prototype rotation — Node v22.22.0 — 51 plantations, 9 espaces
+
+## 1. Ferme d'exemple 2026 telle que saisie
+2026                                             {"retours":10,"avecDefavorable":4,"surOcc":0}
+
+## 2. Plan 2027 : alertes des 51 plantations de 2027
+A reconduction à l'identique                     {"retours":36,"precedentsDefav":9,"voisinsDefav":0,"surOcc":0,"avecFavorable":1,"groupeSuivant":0,"nonPlacees":0,"espacesParCulture":15}
+B glouton par plantation (recommandé)            {"retours":5,"precedentsDefav":9,"voisinsDefav":0,"surOcc":0,"avecFavorable":22,"groupeSuivant":12,"nonPlacees":0,"espacesParCulture":20}
+C B + recherche locale (toutes)                  {"retours":5,"precedentsDefav":9,"voisinsDefav":0,"surOcc":0,"avecFavorable":23,"groupeSuivant":12,"nonPlacees":0,"espacesParCulture":20,"passes":3,"deplacements":5}
+D B + recherche locale (alertes seulement)       {"retours":5,"precedentsDefav":9,"voisinsDefav":0,"surOcc":0,"avecFavorable":22,"groupeSuivant":12,"nonPlacees":0,"espacesParCulture":20,"passes":1,"deplacements":0}
+E B sans « vivace » (chouchou déplaçable)        {"retours":4,"precedentsDefav":9,"voisinsDefav":0,"surOcc":0,"avecFavorable":22,"groupeSuivant":13,"nonPlacees":0,"espacesParCulture":21}
+F B sans « abri reste abri »                     {"retours":1,"precedentsDefav":0,"voisinsDefav":0,"surOcc":0,"avecFavorable":32,"groupeSuivant":19,"nonPlacees":0,"espacesParCulture":22}
+G rotation par blocs (affectation exacte)        {"retours":13,"precedentsDefav":9,"voisinsDefav":0,"surOcc":0,"avecFavorable":5,"groupeSuivant":8,"nonPlacees":0,"espacesParCulture":15}
+H par espace, 1re suggestion, sans quotas        {"retours":0,"precedentsDefav":0,"voisinsDefav":0,"surOcc":0}
+I par espace, 1re suggestion, avec quotas        {"retours":6,"precedentsDefav":0,"voisinsDefav":0,"surOcc":0}
+J B sur la ferme sans aucune règle               {"retours":0,"precedentsDefav":0,"voisinsDefav":0,"surOcc":0,"avecFavorable":0,"groupeSuivant":0,"nonPlacees":0,"espacesParCulture":15,"deplacees":0}
+  B : plantations déplacées                      39
+Blocs : Parcelle 1 → Parcelle 2 ; Parcelle 2 → Parcelle 5 ; Tunnel 1 → Tunnel 1 ; Treille de chouchou → Treille de chouchou ; Tunnel 2 → Tunnel 2 ; Parcelle 5 → Parcelle haute ; Parcelle 4 → Parcelle 1 ; Parcelle 3 → Parcelle 3 ; Parcelle haute → Parcelle 4
+E : chouchou sur Parcelle 1 | F : tomates sur Parcelle 1, Parcelle 4 ; tunnels : Brède petsaï
+
+## 3. Volumes et chiffre d'affaires médians par culture : 2026 | 2027 B | 2027 H | 2027 I
+Ail péi          kg     volume 144 | 144 | 0 | 7            CA 2880 | 2880 | 0 | 144
+Brède petsaï     botte  volume 2700 | 2700 | 684 | 1416     CA 3300 | 3300 | 840 | 1740
+Carotte          kg     volume 608 | 608 | 1649 | 305       CA 1514 | 1514 | 4182 | 780
+Chou pommé       piece  volume 518 | 518 | 0 | 302          CA 948 | 948 | 0 | 556
+Chouchou         kg     volume 1200 | 1200 | 0 | 96         CA 1800 | 1800 | 0 | 144
+Concombre        piece  volume 666 | 666 | 222 | 444        CA 779 | 779 | 260 | 519
+Courgette        kg     volume 352 | 352 | 0 | 318          CA 704 | 704 | 0 | 635
+Haricot vert     kg     volume 198 | 198 | 0 | 144          CA 993 | 993 | 0 | 782
+Piment           kg     volume 27 | 27 | 33 | 33            CA 448 | 448 | 510 | 501
+Salade batavia   piece  volume 4320 | 4320 | 2342 | 3356    CA 4950 | 4950 | 2567 | 3679
+Tomate           kg     volume 3700 | 3700 | 2307 | 1956    CA 12210 | 12210 | 7615 | 6491
+CA médian des cultures : 30526 | 30526 | 15974 | 15972 ; tableau 2027 de A et de B identiques : true
+
+## 4. Temps de calcul (médiane, ms)
+glouton, ferme d'exemple (51)                    "102"
+glouton + locale (toutes)                        "2442"
+glouton + locale (alertes)                       "91"
+blocs (exact)                                    "69"
+par espace avec Calc.suggestions                 "101"
+contrôle Calc (retours, défav., sur-occ.)        "23"
+glouton, ferme ×4 (204 plantations, 36 espaces)  "704"
+  et ses alertes                                 {"retours":20,"precedentsDefav":36,"voisinsDefav":0,"surOcc":0,"avecFavorable":52,"groupeSuivant":81,"nonPlacees":0,"espacesParCulture":70}
+
+## 5. Retour arrière (séparation et évaluation sur retours trop tôt, puis défavorables)
+tunnels seuls (9 plantations)                    {"exact":[4,9],"complet":true,"noeuds":139,"ms":19,"glouton":[4,9]}
+ferme entière, budget 5 s                        {"meilleur":[5,9],"complet":false,"noeuds":33217}
+
+## 6. Bilan de place par famille au 1er janvier (m²) : 2027, puis 2028 après le plan B
+2027  Solanacées     délai 4  demande 520 (abri 480)   libre abri 0    plein champ 3760
+2027  Brassicacées   délai 4  demande 1440 (abri 0)    libre abri 400  plein champ 2960
+2027  Astéracées     délai 3  demande 600 (abri 0)     libre abri 400  plein champ 3200
+2027  Apiacées       délai 4  demande 300 (abri 0)     libre abri 400  plein champ 3500
+2027  Fabacées       délai 5  demande 300 (abri 0)     libre abri 400  plein champ 3500
+2027  Cucurbitacées  délai 3  demande 565 (abri 165)   libre abri 235  plein champ 3400
+2027  Amaryllidacées délai 5  demande 300 (abri 0)     libre abri 400  plein champ 3500
+2028  Solanacées     délai 4  demande 520 (abri 480)   libre abri 0    plein champ 3720
+2028  Brassicacées   délai 4  demande 1440 (abri 0)    libre abri 400  plein champ 1520
+2028  Astéracées     délai 3  demande 600 (abri 0)     libre abri 400  plein champ 2600
+2028  Apiacées       délai 4  demande 300 (abri 0)     libre abri 400  plein champ 3200
+2028  Fabacées       délai 5  demande 300 (abri 0)     libre abri 400  plein champ 3200
+2028  Cucurbitacées  délai 3  demande 565 (abri 165)   libre abri 70   plein champ 3300
+2028  Amaryllidacées délai 5  demande 300 (abri 0)     libre abri 400  plein champ 3200
+(lignes JSON du script remises en colonnes ; valeurs inchangées)
+
+## 7. Années suivantes, chaque plan bâti sur le précédent
+2028 reconduction à l'identique                  {"retours":47,"precedentsDefav":9,"voisinsDefav":0,"surOcc":0,"avecFavorable":1,"groupeSuivant":0,"nonPlacees":0,"espacesParCulture":15}
+2028 glouton                                     {"retours":14,"precedentsDefav":9,"voisinsDefav":0,"surOcc":0,"avecFavorable":18,"groupeSuivant":4,"nonPlacees":0,"espacesParCulture":22,"ms":56,"parCulture":{"Tomate":4,"Chouchou":1,"Courgette":2,"Concombre":2,"Brède petsaï":5}}
+2028 glouton + locale (alertes)                  {"retours":13,"precedentsDefav":9,"voisinsDefav":0,"surOcc":0,"avecFavorable":18,"groupeSuivant":4,"nonPlacees":0,"espacesParCulture":22,"passes":2,"deplacements":1}
+2028 retour arrière, budget 20 s                 {"meilleur":[14,9],"complet":false,"noeuds":75822}
+2029 reconduction à l'identique                  {"retours":49,"precedentsDefav":9,"voisinsDefav":0,"surOcc":0,"avecFavorable":1,"groupeSuivant":0,"nonPlacees":0,"espacesParCulture":15}
+2029 glouton                                     {"retours":28,"precedentsDefav":9,"voisinsDefav":0,"surOcc":0,"avecFavorable":22,"groupeSuivant":10,"nonPlacees":0,"espacesParCulture":20,"parCulture":{"Brède petsaï":15,"Tomate":4,"Concombre":3,"Chouchou":1,"Courgette":2,"Chou pommé":3}}
+2029 bilan                                       {"famille":"Brassicacées","delai":4,"demande":1440,"demandeAbri":0,"libreAbri":400,"librePleinChamp":400}
+
+## Diagnostic 2029, Brassicacées (script séparé, même code) : surface permise par espace au 1er janvier 2029
+Tunnel 1 et Tunnel 2 (abri)        200 + 200 m² permis, mais pas de place pour le plein champ
+Parcelle 1                         600 m², 560 dans le délai, 40 permis
+Parcelle 2                         600 m², 1 200 dans le délai, 0 permis
+Parcelle 3                         600 m², 880 dans le délai, 0 permis
+Parcelle 4                         600 m², 640 dans le délai, 0 permis
+Parcelle 5                         600 m², 560 dans le délai, 40 permis
+Treille de chouchou                300 m² permis, occupés toute l'année par le chouchou épinglé
+Parcelle haute                     500 m², 480 dans le délai, 20 permis
+→ aucune brède ni aucun chou de 80 m² ne tient ; « Brassicacées d'abord » donne aussi 28 retours trop tôt.
+```
+
+La section 8 du script (le plan 2027 ligne par ligne, avec les raisons de chaque plantation à sa nouvelle place et à sa place de 2026) est résumée au § 4.4 ; on l'obtient en relançant le prototype.
+
